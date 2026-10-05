@@ -16,9 +16,18 @@ export const S = {
   autoRefEnabled: null,
   autoRefDepth: null,
   outlineMode: null,
-  levelFilter: null,
+  // Show: which tiers are drawn.
+  tiers: { section: true, block: true, element: true },
+  // Automatic addresses already given, by element, and the last number used.
+  autoAddresses: null,
+  autoCounter: 0,
+  // Keymap.
+  keys: null,
+  // Hooks set by Pick and Find: leaveMode() leaves whichever is open and
+  // returns true if one was; keyActions.pick / .find start them.
+  leaveMode: null,
+  keyActions: null,
   presentationMode: null,
-  hotkey: null,
   theme: null,
   resolvedTheme: 'light',
   darkMediaQuery: null,

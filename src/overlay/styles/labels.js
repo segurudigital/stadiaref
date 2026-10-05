@@ -364,27 +364,19 @@ export const LABEL_CSS = [
   '  display: none !important;',
   '}',
 
-  // --- Level filter: Sections only ---
-  // body.stadiaref-filter-section hides icons/labels/badges on non-section refs.
-  // The class is set on body by applyLevelFilter(); the stadiaref-ref-class-*
-  // classes are added to [data-ref] elements by injectLabels().
-  'body.stadiaref-filter-section [data-ref]:not(.stadiaref-ref-class-section) .stadiaref-ref-icon,',
-  'body.stadiaref-filter-section [data-ref]:not(.stadiaref-ref-class-section) .stadiaref-ref-full-label,',
-  'body.stadiaref-filter-section [data-ref]:not(.stadiaref-ref-class-section) .stadiaref-ref-tooltip,',
-  'body.stadiaref-filter-section [data-ref]:not(.stadiaref-ref-class-section) .stadiaref-cluster-badge {',
-  '  display: none !important;',
-  '}',
-
-  // --- Level filter: Sections + Blocks ---
-  'body.stadiaref-filter-section-block [data-ref]:not(.stadiaref-ref-class-section):not(.stadiaref-ref-class-block) .stadiaref-ref-icon,',
-  'body.stadiaref-filter-section-block [data-ref]:not(.stadiaref-ref-class-section):not(.stadiaref-ref-class-block) .stadiaref-ref-full-label,',
-  'body.stadiaref-filter-section-block [data-ref]:not(.stadiaref-ref-class-section):not(.stadiaref-ref-class-block) .stadiaref-ref-tooltip,',
-  'body.stadiaref-filter-section-block [data-ref]:not(.stadiaref-ref-class-section):not(.stadiaref-ref-class-block) .stadiaref-cluster-badge {',
+  // --- Show: tiers hidden by the Show control ---
+  // applyTiers() lists the hidden tiers on <html>; every label node carries
+  // its own stadiaref-tier-* class. Unclassified labels show only while
+  // every tier is shown.
+  'html[data-stadiaref-hidden-tiers~="section"] .stadiaref-tier-section,',
+  'html[data-stadiaref-hidden-tiers~="block"] .stadiaref-tier-block,',
+  'html[data-stadiaref-hidden-tiers~="element"] .stadiaref-tier-element,',
+  'html[data-stadiaref-hidden-tiers] .stadiaref-tier-unclassified {',
   '  display: none !important;',
   '}',
 
   // --- Block group collapse badge ---
-  // When a section has >6 block-class refs and level filter is "All",
+  // When a section has >6 block-tier refs and blocks and elements are shown,
   // those blocks are collapsed. Their individual labels are hidden;
   // a "+N blocks" badge is placed on the section instead.
   '.stadiaref-ref-block-group-member .stadiaref-ref-icon,',

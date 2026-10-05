@@ -38,11 +38,13 @@ test('L cycles Labels Off → Icons → Full', async ({ page }) => {
   expect(seen).toEqual([1, 0, 2, 1]);
 });
 
-test('T cycles Target Off → Sections → Blocks → Elements → All → Off', async ({ page }) => {
+test('T and F are not bound in 3.0', async ({ page }) => {
+  // 2.5.0: T cycled Target and F cycled Level. 3.0 replaces both with Show
+  // (keys 1, 2, 3) and the auto-address setting.
   await open(page, harness({ page: { startHidden: false } }));
-  const seen = [];
-  for (let i = 0; i < 5; i++) { await press(page, 't'); seen.push(await a(page, 'getDepth()')); }
-  expect(seen).toEqual(['section', 'block', 'element', 'all', 'off']);
+  await press(page, 't');
+  await press(page, 'f');
+  expect(await page.evaluate(() => [window.seguruDebugToolbar.getDepth(), window.seguruDebugToolbar.getLevelFilter()])).toEqual(['off', 'all']);
 });
 
 test('O cycles Outline Off → Sections → Blocks → Off', async ({ page }) => {
@@ -52,23 +54,14 @@ test('O cycles Outline Off → Sections → Blocks → Off', async ({ page }) =>
   expect(seen).toEqual(['section', 'block', 'off']);
 });
 
-test('F cycles Level All → Sec+Blk → Sections → All', async ({ page }) => {
-  await open(page, harness({ page: { startHidden: false } }));
-  const seen = [];
-  for (let i = 0; i < 3; i++) { await press(page, 'f'); seen.push(await a(page, 'getLevelFilter()')); }
-  expect(seen).toEqual(['section-block', 'section', 'all']);
-});
-
-test('L, T, O, F work while the toolbar is hidden', async ({ page }) => {
+test('L and O work while the toolbar is hidden', async ({ page }) => {
   await open(page, harness());
   await press(page, 'l');
-  await press(page, 't');
   await press(page, 'o');
-  await press(page, 'f');
   expect(await page.evaluate(() => {
     const x = window.seguruDebugToolbar;
-    return [x.isVisible(), x.getState(), x.getDepth(), x.getOutline(), x.getLevelFilter()];
-  })).toEqual([false, 1, 'section', 'section', 'section-block']);
+    return [x.isVisible(), x.getState(), x.getOutline()];
+  })).toEqual([false, 1, 'section']);
 });
 
 test('Esc closes menus and the Tree and hides the toolbar in one press', async ({ page }) => {
@@ -85,10 +78,13 @@ test('Esc closes menus and the Tree and hides the toolbar in one press', async (
   expect(await a(page, 'isVisible()')).toBe(false);
 });
 
-test('keys are ignored with any modifier, Shift included (2.5.0)', async ({ page }) => {
+test('keys are ignored with Ctrl, Alt or Cmd held; Shift is allowed', async ({ page }) => {
   await open(page, harness({ page: { startHidden: false } }));
-  for (const k of ['Shift+L', 'Control+l', 'Alt+l', 'Meta+l', 'Shift+D', 'Shift+Escape']) await press(page, k);
+  // 2.5.0 ignored Shift too; 3.0 allows it so / and digits work on any layout.
+  for (const k of ['Control+l', 'Alt+l', 'Meta+l', 'Control+d', 'Alt+Escape']) await press(page, k);
   expect(await page.evaluate(() => [window.seguruDebugToolbar.getState(), window.seguruDebugToolbar.isVisible()])).toEqual([2, true]);
+  await press(page, 'Shift+L');
+  expect(await page.evaluate(() => window.seguruDebugToolbar.getState())).toBe(1);
 });
 
 test('keys are ignored while typing in inputs, textareas, selects and contenteditable', async ({ page }) => {

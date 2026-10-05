@@ -70,11 +70,13 @@ test('mixed fixture: level filter hides by stamped class', async ({ page }) => {
   expect({ all, sections, secBlk }).toEqual(BASELINE_MIXED_COUNTS);
 });
 
-test('mixed fixture: the void-hosted image label escapes the Sections filter (2.5.0 bug)', async ({ page }) => {
+test('mixed fixture: the void-hosted image label is filtered like any other (2.5.0 bug, fixed)', async ({ page }) => {
   await open(page, '/test/fixtures/v5-data-ref/mixed.html');
   await page.evaluate(() => { window.seguruDebugToolbar.show(); window.seguruDebugToolbar.setLevelFilter('section'); });
   // bad--ref was a section in 2.5.0; under the 3.0 core rules it is unclassified.
-  expect(await visibleFullLabelRefs(page)).toEqual(['hf-about', 'hf-header', 'hf-hero', 'hf-hero-image-01-01-hero', 'hf-services']);
+  // hf-hero-image-01-01-hero escaped the 2.5.0 filter from its void host;
+  // since Show (stage 4) each label node carries its tier, so it is hidden.
+  expect(await visibleFullLabelRefs(page)).toEqual(['hf-about', 'hf-header', 'hf-hero', 'hf-services']);
 });
 
 test('dense fixture: block-group collapse badge in All, gone in Sec+Blk', async ({ page }) => {
@@ -92,5 +94,6 @@ test('dense fixture: block-group collapse badge in All, gone in Sec+Blk', async 
 // host, which the level-filter CSS (a descendant selector) doesn't reach.
 // That is a 2.5.0 bug, recorded in TASKS.md; the baseline pins the code.
 // Since stage 3, bad--ref is unclassified (core rules), so it drops out of
-// Sections and Sec+Blk: 2.5.0 gave sections 6 and secBlk 17.
-const BASELINE_MIXED_COUNTS = { all: 22, sections: 5, secBlk: 16 };
+// Sections and Sec+Blk. Since stage 4 the image label is filtered too.
+// 2.5.0 gave sections 6 and secBlk 17.
+const BASELINE_MIXED_COUNTS = { all: 22, sections: 4, secBlk: 15 };

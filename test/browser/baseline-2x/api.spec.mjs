@@ -115,9 +115,10 @@ test('setLevelFilter / getLevelFilter', async ({ page }) => {
   expect(await page.evaluate(() => window.seguruDebugToolbar.getLevelFilter())).toBe('all');
   await page.evaluate(() => window.seguruDebugToolbar.setLevelFilter('section'));
   expect(await page.evaluate(() => window.seguruDebugToolbar.getLevelFilter())).toBe('section');
-  expect(await page.evaluate(() => document.body.classList.contains('stadiaref-filter-section'))).toBe(true);
+  // 3.0 keeps the Show state on <html>; 2.5.0 used body classes.
+  expect(await page.evaluate(() => document.documentElement.getAttribute('data-stadiaref-hidden-tiers'))).toBe('block element');
   await page.evaluate(() => window.seguruDebugToolbar.setLevelFilter('section-block'));
-  expect(await page.evaluate(() => document.body.classList.contains('stadiaref-filter-section-block'))).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.getAttribute('data-stadiaref-hidden-tiers'))).toBe('element');
   // invalid values are ignored with a warning
   const warnings = [];
   page.on('console', (m) => { if (m.type() === 'warning') warnings.push(m.text()); });

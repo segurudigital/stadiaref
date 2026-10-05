@@ -2,10 +2,10 @@ import { S } from './state.js';
 import { legacyConfigSources, mapLegacyKeys } from '../compat/aliases.js';
 
 // Config keys read at start. 2.x keys are mapped onto these by
-// mapLegacyKeys(); hotkey, levelFilter, autoRef and autoRefDepth keep their
-// 2.x names until the controls behind them are replaced.
-var CONFIG_KEYS = ['profile', 'labels', 'outline', 'startHidden', 'theme', 'dock', 'user', 'classConverter',
-  'pageSlug', 'hotkey', 'levelFilter', 'autoRef', 'autoRefDepth'];
+// mapLegacyKeys(). autoRefDepth has no 3.0 key: it is the 2.x single-tier
+// auto-address state, kept for pages that still set it.
+var CONFIG_KEYS = ['profile', 'labels', 'tiers', 'autoAddress', 'outline', 'startHidden', 'theme', 'dock',
+  'keys', 'user', 'classConverter', 'pageSlug', 'autoRefDepth'];
 
 // Merge config from every source. For each key the first source that sets
 // it wins: window.stadiarefConfig, then the 2.x objects (per-page before
@@ -26,6 +26,18 @@ export function readConfig() {
       }
     }
   }
+  // keys merges action by action: a higher source's binding for one action
+  // doesn't discard a lower source's binding for another.
+  var keys = {};
+  for (var s = sources.length - 1; s >= 0; s--) {
+    var k = sources[s].keys;
+    if (k && typeof k === 'object') {
+      for (var action in k) {
+        if (Object.prototype.hasOwnProperty.call(k, action)) keys[action] = k[action];
+      }
+    }
+  }
+  if (Object.keys(keys).length) config.keys = keys;
   return config;
 }
 
@@ -44,27 +56,6 @@ export function readScriptAttr(name) {
   if (!S.hostScriptEl) return undefined;
   var v = S.hostScriptEl.getAttribute(name);
   return v === null ? undefined : v;
-}
-
-// ─── Hotkey config ─────────────────────────────────────────
-// Single letter (case-insensitive) toggles visibility. `false` disables binding.
-// Default 'D' (for "Debug"). Esc is bound unconditionally as a global hide —
-// it closes any open dropdown, the Tree panel, and the toolbar in one press.
-// T (cycle Target) and O (cycle Outline) are fixed and not configurable.
-export function normalizeHotkey(value) {
-  if (value === false || value === 'false' || value === null) return false;
-  if (typeof value === 'undefined' || value === '') return 'D';
-  if (typeof value === 'string') {
-    var trimmed = value.trim();
-    if (!trimmed) return 'D';
-    var ch = trimmed.charAt(0).toUpperCase();
-    if (/^[A-Z]$/.test(ch)) return ch;
-    if (typeof console !== 'undefined' && console.warn) {
-      console.warn('[stadiaref] hotkey must be a single letter A–Z, got', value, '— falling back to D');
-    }
-    return 'D';
-  }
-  return 'D';
 }
 
 // ─── Theme config ──────────────────────────────────────────

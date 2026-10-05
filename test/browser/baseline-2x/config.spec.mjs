@@ -69,15 +69,18 @@ test.describe('per-page config (seguruDebugConfig)', () => {
   test('automatic addresses use pageSlug, position and context', async ({ page }) => {
     await open(page, harness({ page: { autoRef: true, autoRefDepth: 'section', pageSlug: 'demo' } }));
     const refs = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-ref')));
-    expect(refs).toEqual(['demo-03-section']);
+    // 3.0 numbers automatic addresses from a counter (2.5.0 gave demo-03-section,
+    // the position in the section list).
+    expect(refs).toEqual(['demo-01-section']);
   });
 
-  test('2.5.0 automatic address for a path-derived slug', async ({ page }) => {
-    // With no pageSlug, the slug comes from location.pathname: "/__harness" → "__harness".
-    // 2.5.0 does not sanitise it (stage 4 fixes this); the baseline records it.
+  test('automatic address for a path-derived slug is sanitised', async ({ page }) => {
+    // With no pageSlug, the slug comes from location.pathname: "/__harness".
+    // 2.5.0 used it as is ("__harness-03-section"); 3.0 sanitises it so every
+    // automatic address passes the core rules.
     await open(page, harness({ page: { autoRef: true, autoRefDepth: 'section' } }));
     const refs = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-ref')));
-    expect(refs).toEqual(['__harness-03-section']);
+    expect(refs).toEqual(['harness-01-section']);
   });
 
   test('outlineMode', async ({ page }) => {
@@ -89,7 +92,8 @@ test.describe('per-page config (seguruDebugConfig)', () => {
   test('levelFilter', async ({ page }) => {
     await open(page, harness({ page: { levelFilter: 'section' } }));
     expect(await get(page, 'getLevelFilter')).toBe('section');
-    expect(await page.evaluate(() => document.body.classList.contains('stadiaref-filter-section'))).toBe(true);
+    // Show state is on <html>, not a body class.
+    expect(await page.evaluate(() => document.documentElement.getAttribute('data-stadiaref-hidden-tiers'))).toBe('block element');
   });
 
   test('hotkey', async ({ page }) => {

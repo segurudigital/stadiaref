@@ -50,8 +50,8 @@ test.describe('demo page label counts', () => {
     await demo(page, '?ar=1');
     const autos = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => [e.getAttribute('data-ref'), e.getAttribute('data-stadiaref-auto-tier')]));
     expect(autos.length).toBe(AUTO_COUNT_DEMO);
-    // Over http the slug is the path, unsanitised: /test/demo.html → "test-demo.html".
-    for (const [ref] of autos) expect(ref).toMatch(/^test-demo\.html-\d{2}-[a-z0-9]+$/);
+    // Over http the slug is the path, sanitised: /test/demo.html → "test-demo-html".
+    for (const [ref] of autos) expect(ref).toMatch(/^test-demo-html-\d{2}-[a-z0-9]+$/);
     for (const r of DEMO_AUTHORED) expect(await page.locator(`[data-ref="${r}"]`).count()).toBe(1);
     expect(await countVisible(page, '.stadiaref-ref-full-label')).toBe(4 + AUTO_COUNT_DEMO - AUTO_HIDDEN_DEMO);
     expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-ref-full-label.stadiaref-ref-clustered').length)).toBe(AUTO_HIDDEN_DEMO);
@@ -62,8 +62,9 @@ test.describe('demo page label counts', () => {
     await open(page, '/test/demo.html?ar=1');
     await page.evaluate(() => window.seguruDebugToolbar.setDepth('section'));
     const autos = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-ref')));
-    // body > section: hero, features, testimonials, auto-ref, cta → the 4th is unaddressed
-    expect(autos).toEqual(['test-demo.html-03-section', 'test-demo.html-04-section']);
+    // The two unaddressed sections keep the addresses they were given when the
+    // page loaded with auto-address on (2.5.0 renumbered them: -03-, -04-).
+    expect(autos).toEqual(['test-demo-html-23-section', 'test-demo-html-26-section']);
   });
 });
 
@@ -169,8 +170,8 @@ test.describe('label structure', () => {
 
 // Measured on 2.5.0 (Target All on the demo page): every unaddressed
 // candidate in the selector lists, demo controls included, gets an address.
-// Numbers are positions in the full candidate list, so they skip the
-// positions held by authored addresses (19, 22, 31, 34).
+// 3.0 numbers them 01–31 from a counter; 2.5.0 used positions in the full
+// candidate list.
 const AUTO_COUNT_DEMO = 31;
 // Two of the demo-control buttons sit close enough at 1280×900 that the
 // overlap solver collapses their labels into "+N" cluster badges.

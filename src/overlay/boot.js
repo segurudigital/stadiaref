@@ -1,13 +1,12 @@
 import { S } from './state.js';
-import { S_MARK_SVG } from './brand.js';
 import { hideActiveRefTree, showActiveRefTree } from './chain.js';
-import { normalizeHotkey, readConfig, readPersistedTheme } from './config.js';
+import { readConfig, readPersistedTheme } from './config.js';
 import { migrateLegacyStorage } from '../compat/aliases.js';
-import { DEPTH_LABELS, LEVEL_LABELS, MODE_LABELS, OUTLINE_LABELS, VERSION } from './constants.js';
+import { VERSION } from './constants.js';
 import { applyDockPosition, normalizeDock, pickAutoDock } from './dock.js';
 import { closestMatch, forEachNode } from './dom.js';
 import { emitEvent } from './events.js';
-import { attachKeys } from './keys.js';
+import { attachKeys, defaultKeys, mergeKeys } from './keys.js';
 import { selectProfile } from './profile.js';
 import { MARKER, injectLabels, resolveLabelOverlaps, syncAllVoidHosts, syncVoidHost } from './labels.js';
 import { applyVisibility } from './lifecycle.js';
@@ -17,8 +16,8 @@ import { LABEL_CSS } from './styles/labels.js';
 import { buildShadowCss } from './styles/shadow.js';
 import { autoRefSections, convertClassRefs } from './survey.js';
 import { applyTheme, setupHtmlClassObserver, setupThemeMediaListener } from './theme.js';
-import { applyLevelFilter, setDepth, setLevelFilter } from './tiers.js';
-import { closeAllDropdowns, toggleDropdown, updateModeHint } from './toolbar.js';
+import { applyTiers, getTiers, parseTiers, toggleTier } from './tiers.js';
+import { closeAllDropdowns, toggleDropdown, toolbarHtml, updateAutoChip, updateKeyHints, updateShowControl } from './toolbar.js';
 import { buildTreePanel, toggleTree } from './tree.js';
 import { renderUser, snapshotUser } from './user.js';
 import { applyLabelVisibilityState, eagerHideDescendantLabels, scheduleVisibilityRecheck } from './visibility.js';
@@ -45,17 +44,21 @@ export function boot() {
   // Auto-ref is OFF by default — only the WordPress plugin sets autoRef: true
   // via its injected config. Standard hosts label elements manually
   // with data-ref; auto-tagging is opt-in via the autoRef config key.
-  S.autoRefEnabled = S.config.autoRef === '1' || S.config.autoRef === true;
+  // autoAddress is the 3.0 switch; the 2.x autoRef maps onto it. A 2.x
+  // autoRefDepth of section, block or element keeps its single-tier meaning.
+  S.autoRefEnabled = S.config.autoAddress === true || S.config.autoAddress === '1';
   S.autoRefDepth = S.config.autoRefDepth || 'all'; // section | block | element | all (default all)
+  S.autoAddresses = new WeakMap();
+  S.autoCounter = 0;
   S.outlineMode = S.config.outline || 'off'; // off | section | block
-  S.levelFilter = S.config.levelFilter || 'all'; // all | section | section-block
+  S.tiers = parseTiers(S.config.tiers) || { section: true, block: true, element: true };
 
   // Presentation mode — visibility hotkey toggles toolbar + label visibility.
   // Default ON so the toolbar stays out of screenshots, Chrome debug sessions
   // (e.g. captured by AI agents), and client demos until explicitly revealed.
   // Set startHidden: false to start visible.
   S.presentationMode = !(S.config.startHidden === '0' || S.config.startHidden === false);
-  S.hotkey = normalizeHotkey(S.config.hotkey);
+  S.keys = mergeKeys(defaultKeys(), S.config.keys);
   S.theme = (function () {
     var raw = S.config.theme;
     if (raw === 'light' || raw === 'dark' || raw === 'auto') return raw;
@@ -91,127 +94,12 @@ export function boot() {
   S.shadowCss = buildShadowCss();
 
 
-  var initModeLabel = MODE_LABELS[S.state] || 'Icons';
-  var initDepthLabel = S.autoRefEnabled ? (DEPTH_LABELS[S.autoRefDepth] || 'All') : 'Off';
-  var initOutlineLabel = OUTLINE_LABELS[S.outlineMode] || 'Off';
-  var initLevelFilterLabel = LEVEL_LABELS[S.levelFilter] || 'All';
-
   // ─── Build toolbar DOM ──────────────────────────────────────
   S.toolbar = document.createElement('div');
   S.toolbar.className = 'stadiaref-toolbar';
   S.toolbar.setAttribute('role', 'toolbar');
   S.toolbar.setAttribute('aria-label', 'StadiaRef');
-  S.toolbar.innerHTML =
-    '<a class="stadiaref-toolbar__badge" href="https://seguru.digital" target="_blank" rel="noopener" aria-label="Powered by Seguru Digital">' +
-      S_MARK_SVG +
-      '<span class="stadiaref-toolbar__badge-tip">Powered by Seguru Digital</span>' +
-    '</a>' +
-    '<div class="stadiaref-toolbar__user" data-stadiaref-user-pill role="status">' +
-      '<span class="stadiaref-toolbar__user-avatar" data-stadiaref-user-avatar aria-hidden="true"></span>' +
-      '<span class="stadiaref-toolbar__user-name" data-stadiaref-user-name></span>' +
-      '<span class="stadiaref-toolbar__user-role" data-stadiaref-user-role></span>' +
-    '</div>' +
-    '<div class="stadiaref-toolbar__cluster stadiaref-toolbar__cluster--primary">' +
-      // ── Mode dropdown ──
-      '<div class="stadiaref-toolbar__group stadiaref-toolbar__group--primary" data-stadiaref-group="mode">' +
-        '<button class="stadiaref-toolbar__select stadiaref-toolbar__select--active" data-stadiaref-toggle="mode">' +
-          '<span class="stadiaref-toolbar__key">Labels</span>' +
-          '<span class="stadiaref-toolbar__value">' + initModeLabel + '</span>' +
-          '<span class="stadiaref-toolbar__caret">&#9662;</span>' +
-        '</button>' +
-        '<div class="stadiaref-toolbar__dropdown" data-stadiaref-menu="mode">' +
-          '<div class="stadiaref-toolbar__hint" data-stadiaref-mode-hint>Press L to cycle</div>' +
-          '<button class="stadiaref-toolbar__option' + (S.state === 2 ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-state="2">' +
-            '<span class="stadiaref-toolbar__option-dot"></span> Full' +
-          '</button>' +
-          '<button class="stadiaref-toolbar__option' + (S.state === 0 ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-state="0">' +
-            '<span class="stadiaref-toolbar__option-dot"></span> Icons' +
-          '</button>' +
-          '<button class="stadiaref-toolbar__option' + (S.state === 1 ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-state="1">' +
-            '<span class="stadiaref-toolbar__option-dot"></span> Off' +
-          '</button>' +
-        '</div>' +
-      '</div>' +
-      // ── Target (depth) dropdown ──
-      // The user-facing label is "Target"; internally we still call this
-      // "depth" — public API methods setDepth/getDepth keep their names so
-      // existing consumers don't break.
-      '<div class="stadiaref-toolbar__group stadiaref-toolbar__group--primary" data-stadiaref-group="depth">' +
-        '<button class="stadiaref-toolbar__select' + (S.autoRefEnabled ? ' stadiaref-toolbar__select--active' : '') + '" data-stadiaref-toggle="depth">' +
-          '<span class="stadiaref-toolbar__key">Target</span>' +
-          '<span class="stadiaref-toolbar__value">' + initDepthLabel + '</span>' +
-          '<span class="stadiaref-toolbar__caret">&#9662;</span>' +
-        '</button>' +
-        '<div class="stadiaref-toolbar__dropdown" data-stadiaref-menu="depth">' +
-          '<div class="stadiaref-toolbar__hint">Press T to cycle</div>' +
-          '<button class="stadiaref-toolbar__option' + (S.autoRefEnabled && S.autoRefDepth === 'all' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-depth="all">' +
-            '<span class="stadiaref-toolbar__option-dot"></span> All — sections, blocks &amp; elements' +
-          '</button>' +
-          '<button class="stadiaref-toolbar__option' + (S.autoRefEnabled && S.autoRefDepth === 'element' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-depth="element">' +
-            '<span class="stadiaref-toolbar__option-dot"></span> Elements — headings, text, images, buttons only' +
-          '</button>' +
-          '<button class="stadiaref-toolbar__option' + (S.autoRefEnabled && S.autoRefDepth === 'block' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-depth="block">' +
-            '<span class="stadiaref-toolbar__option-dot"></span> Blocks — containers only' +
-          '</button>' +
-          '<button class="stadiaref-toolbar__option' + (S.autoRefEnabled && S.autoRefDepth === 'section' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-depth="section">' +
-            '<span class="stadiaref-toolbar__option-dot"></span> Sections — top-level page sections only' +
-          '</button>' +
-          '<button class="stadiaref-toolbar__option' + (!S.autoRefEnabled ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-depth="off">' +
-            '<span class="stadiaref-toolbar__option-dot"></span> Off — manual labels only' +
-          '</button>' +
-        '</div>' +
-      '</div>' +
-      // ── Level filter dropdown ──
-      // Controls which grammar classes are shown: All (default), Sections only,
-      // Sections + Blocks. Filters by stadiaref-ref-class-* applied in injectLabels().
-      '<div class="stadiaref-toolbar__group stadiaref-toolbar__group--primary" data-stadiaref-group="level">' +
-        '<button class="stadiaref-toolbar__select' + (S.levelFilter !== 'all' ? ' stadiaref-toolbar__select--active' : '') + '" data-stadiaref-toggle="level">' +
-          '<span class="stadiaref-toolbar__key">Level</span>' +
-          '<span class="stadiaref-toolbar__value">' + initLevelFilterLabel + '</span>' +
-          '<span class="stadiaref-toolbar__caret">&#9662;</span>' +
-        '</button>' +
-        '<div class="stadiaref-toolbar__dropdown" data-stadiaref-menu="level">' +
-          '<div class="stadiaref-toolbar__hint">Press F to cycle</div>' +
-          '<button class="stadiaref-toolbar__option' + (S.levelFilter === 'all' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-level="all">' +
-            '<span class="stadiaref-toolbar__option-dot"></span> All — sections, blocks, elements' +
-          '</button>' +
-          '<button class="stadiaref-toolbar__option' + (S.levelFilter === 'section-block' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-level="section-block">' +
-            '<span class="stadiaref-toolbar__option-dot"></span> Sec + Blk — sections and blocks' +
-          '</button>' +
-          '<button class="stadiaref-toolbar__option' + (S.levelFilter === 'section' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-level="section">' +
-            '<span class="stadiaref-toolbar__option-dot"></span> Sections — top-level sections only' +
-          '</button>' +
-        '</div>' +
-      '</div>' +
-    '</div>' +
-    '<div class="stadiaref-toolbar__cluster stadiaref-toolbar__cluster--utility">' +
-      // ── Outline dropdown ──
-      '<div class="stadiaref-toolbar__group stadiaref-toolbar__group--utility" data-stadiaref-group="outline">' +
-        '<button class="stadiaref-toolbar__select stadiaref-toolbar__select--utility stadiaref-toolbar__select--diagnostic' + (S.outlineMode !== 'off' ? ' stadiaref-toolbar__select--active' : '') + '" data-stadiaref-toggle="outline">' +
-          '<span class="stadiaref-toolbar__key">Outline</span>' +
-          '<span class="stadiaref-toolbar__value">' + initOutlineLabel + '</span>' +
-          '<span class="stadiaref-toolbar__caret">&#9662;</span>' +
-        '</button>' +
-        '<div class="stadiaref-toolbar__dropdown" data-stadiaref-menu="outline">' +
-          '<div class="stadiaref-toolbar__hint">Press O to cycle</div>' +
-          '<button class="stadiaref-toolbar__option' + (S.outlineMode === 'block' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-outline="block">' +
-            '<span class="stadiaref-toolbar__option-dot"></span> Blocks — sections plus inner containers' +
-          '</button>' +
-          '<button class="stadiaref-toolbar__option' + (S.outlineMode === 'section' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-outline="section">' +
-            '<span class="stadiaref-toolbar__option-dot"></span> Sections — top-level wrappers only' +
-          '</button>' +
-          '<button class="stadiaref-toolbar__option' + (S.outlineMode === 'off' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-outline="off">' +
-            '<span class="stadiaref-toolbar__option-dot"></span> Off — no spacing guides' +
-          '</button>' +
-        '</div>' +
-      '</div>' +
-      // ── Tree toggle ──
-      '<div class="stadiaref-toolbar__group stadiaref-toolbar__group--tree stadiaref-toolbar__group--utility" data-stadiaref-group="tree">' +
-        '<button class="stadiaref-toolbar__select stadiaref-toolbar__select--utility stadiaref-toolbar__select--diagnostic" data-stadiaref-toggle-tree>' +
-          '<span class="stadiaref-toolbar__value">\u229E Tree</span>' +
-        '</button>' +
-      '</div>' +
-    '</div>';
+  S.toolbar.innerHTML = toolbarHtml();
 
 
   // ─── Toast element ──────────────────────────────────────────
@@ -280,8 +168,9 @@ function init() {
   // Render user pill if a user was supplied via init config.
   renderUser();
 
-  // Reflect the configured hotkey in the mode dropdown hint.
-  updateModeHint();
+  // Reflect the configured keys in the menu hints and the AUTO chip state.
+  updateKeyHints();
+  updateAutoChip();
 
   convertClassRefs();
   autoRefSections();
@@ -291,7 +180,8 @@ function init() {
 
   if (S.state !== 0) applyState(S.state);
   if (S.outlineMode !== 'off') setOutline(S.outlineMode);
-  if (S.levelFilter !== 'all') applyLevelFilter();
+  if (getTiers().length !== 3) applyTiers();
+  updateShowControl();
 
   // Apply initial visibility (hidden by default — press the visibility
   // hotkey to reveal). hide()/show() called pre-boot have already updated
@@ -313,13 +203,6 @@ function init() {
     });
   });
 
-  // Depth option clicks
-  forEachNode(S.toolbar.querySelectorAll('[data-stadiaref-depth]'), function (opt) {
-    opt.addEventListener('click', function () {
-      setDepth(opt.getAttribute('data-stadiaref-depth'));
-    });
-  });
-
   // Outline option clicks
   forEachNode(S.toolbar.querySelectorAll('[data-stadiaref-outline]'), function (opt) {
     opt.addEventListener('click', function () {
@@ -327,10 +210,11 @@ function init() {
     });
   });
 
-  // Level filter option clicks
-  forEachNode(S.toolbar.querySelectorAll('[data-stadiaref-level]'), function (opt) {
-    opt.addEventListener('click', function () {
-      setLevelFilter(opt.getAttribute('data-stadiaref-level'));
+  // Show: tick boxes toggle a tier each and leave the menu open.
+  forEachNode(S.toolbar.querySelectorAll('[data-stadiaref-tier]'), function (opt) {
+    opt.addEventListener('click', function (e) {
+      e.stopPropagation();
+      toggleTier(opt.getAttribute('data-stadiaref-tier'));
     });
   });
 

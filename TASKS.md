@@ -46,11 +46,11 @@ StadiaRef 3.0.0, built in stages. A new session starts at the first unticked sta
   - [x] Unit tests for all three profiles, the core rules, the registry and the throwaway third-party profile (`test/unit/core.test.mjs`; overlay side in `test/browser/profiles.spec.mjs`)
   - [x] The v5 fixtures classify exactly as before with `profile: 'titan'`, with one exception raised for a decision: `bad--ref` in `mixed.html` breaks the core rule against doubled hyphens, so it is `unclassified` (brief 5.5: invalid addresses are unclassified in every profile), where 2.5.0 said `section`. `classifyDataRef()` still says `section`
   - [x] `node -e "import('./dist/core.mjs')"` succeeds
-- [ ] **Stage 4 — Show, Auto-address, keys.**
-  - [ ] Every non-empty tier combination shows what it says, on authored and on automatic-only pages; `setTiers([])` shows no labels
-  - [ ] Automatic addresses stay valid, unique and unchanged across ten forced surveys
-  - [ ] Alias tests pass, including the five Target values and three Level values against 2.5.0 (titan profile)
-  - [ ] Keys rebind, disable, and work with Shift held
+- [x] **Stage 4 — Show, Auto-address, keys.**
+  - [x] Every non-empty tier combination shows what it says, on authored and on automatic-only pages; `setTiers([])` shows no labels (`show-auto-keys.spec.mjs`)
+  - [x] Automatic addresses stay valid, unique and unchanged across ten forced surveys
+  - [x] Alias tests pass, including the five Target values and three Level values against 2.5.0 (titan profile): `legacy-vs-2.5.0.spec.mjs` runs the frozen 2.5.0 bundle and the current build on the demo page and the four fixtures and compares which elements show a label. The only differences are the two intended ones it lists: void-element labels now follow the filter, and `bad--ref` is unclassified
+  - [x] Keys rebind, disable, and work with Shift held
 - [ ] **Stage 5 — Brand, toolbar and labels.**
   - [ ] Screenshots of the toolbar (light, dark, desktop, 390px) and the sample page in each label mode, compared against the wireframe values
   - [ ] Every text and background pair at least 4.5:1 by calculation
@@ -99,6 +99,12 @@ The baseline tests pin what the 2.5.0 code does, not what the README says. Where
 | Tree copy button | Copies, emits no event | n/a (stage 6 adds `source: 'tree'`) | `baseline-events` › Tree row |
 
 For stage 3: `bad--ref` breaks the core rule against doubled hyphens, so under 3.0 it is `unclassified` in every profile, including titan. That is the one fixture address whose class changes. Raise it at stage 3 (brief, decision 2).
+
+Left for later stages on purpose (stage 4):
+
+- Keys P and / are in the keymap but do nothing until Pick and Find exist (stage 6). Esc already calls the hook Pick and Find will use.
+- The Show menu and AUTO chip use the 2.5 toolbar styles with the wireframe's tick-box and chip values. Stage 5 restyles the toolbar as a whole.
+- The frozen 2.5.0 script now lives at `wordpress/bridge/assets/seguru-debug-toolbar.min.js` (byte-identical to the v2.5.0 release asset). Stage 9's bridge uses it.
 
 Left for later stages on purpose (stage 2):
 

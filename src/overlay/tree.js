@@ -1,5 +1,6 @@
 import { S } from './state.js';
-import { DEPTH_LABELS, OUTLINE_LABELS } from './constants.js';
+import { OUTLINE_LABELS } from './constants.js';
+import { showText } from './tiers.js';
 import { copyRef } from './copy.js';
 import { forEachNode, setClassState, toArray } from './dom.js';
 import { getElementContext } from './survey.js';
@@ -45,7 +46,7 @@ export function jumpToTreeTarget(target) {
 
 export function buildTreePanel() {
   var refs = toArray(document.querySelectorAll('[data-ref]'));
-  var depthLabel = S.autoRefEnabled ? (DEPTH_LABELS[S.autoRefDepth] || 'All') : 'Off';
+  var showLabel = showText() + (S.autoRefEnabled ? ' · AUTO' : '');
   var outlineLabel = OUTLINE_LABELS[S.outlineMode] || 'Off';
 
   clearTreeHoverHighlights();
@@ -70,7 +71,7 @@ export function buildTreePanel() {
   countMeta.textContent = refs.length + (refs.length === 1 ? ' address' : ' addresses');
   var depthMeta = document.createElement('span');
   depthMeta.className = 'stadiaref-tree-panel__meta-item';
-  depthMeta.textContent = 'Depth: ' + depthLabel;
+  depthMeta.textContent = 'Show: ' + showLabel;
   var outlineMeta = document.createElement('span');
   outlineMeta.className = 'stadiaref-tree-panel__meta-item';
   outlineMeta.textContent = 'Outline: ' + outlineLabel;
@@ -90,7 +91,7 @@ export function buildTreePanel() {
   header.appendChild(headerMain);
   var hint = document.createElement('div');
   hint.className = 'stadiaref-tree-panel__hint';
-  hint.textContent = refs.length ? 'Hover to preview the target. Click a row to jump to it.' : 'Select a depth to begin.';
+  hint.textContent = refs.length ? 'Hover to preview the target. Click a row to jump to it.' : 'Add data-ref attributes, or turn on auto-address.';
   header.appendChild(hint);
 
   var body = document.createElement('div');

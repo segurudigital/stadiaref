@@ -12,6 +12,7 @@ export const NEW = {
   configParam: 'cfg', // window.stadiarefConfig
   events: [
     'ready', 'show', 'hide', 'theme-change', 'user-change', 'labels-change', 'outline-change',
+    'tiers-change', 'auto-address-change',
     'address-click', 'address-hover', 'address-leave',
   ],
 };

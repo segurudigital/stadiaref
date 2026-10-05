@@ -1,6 +1,6 @@
 // Baseline on the 3.0 names: the API object, member by member.
-// Target, Level, the hotkey and classifyDataRef have no 3.0 name until later
-// stages; the 2.x copy in baseline-2x/ and aliases.spec.mjs cover them.
+// The 2.x names (setDepth, setLevelFilter, setHotkey, classifyDataRef, …) are
+// covered by baseline-2x/ and aliases.spec.mjs.
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import { harness, open, recordEvents, events, countVisible, shadow, HOST_ID } from './helpers.mjs';
@@ -9,7 +9,8 @@ const pkg = JSON.parse(fs.readFileSync(new URL('../../../package.json', import.m
 
 const MEMBERS = [
   'version', 'ready', 'init', 'show', 'hide', 'toggle', 'isVisible', 'refresh',
-  'setLabels', 'getLabels', 'setOutline', 'getOutline', 'toggleTree',
+  'setLabels', 'getLabels', 'setTiers', 'getTiers', 'setAutoAddress', 'getAutoAddress',
+  'setOutline', 'getOutline', 'toggleTree', 'setKeys', 'getKeys',
   'setTheme', 'getTheme', 'setDock', 'getDock', 'setUser', 'getUser',
   'setProfile', 'getProfile', 'registerProfile', 'classify', 'validate',
 ];

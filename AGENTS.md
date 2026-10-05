@@ -233,20 +233,14 @@ The `baseline-*` browser tests pin what 2.5.0 does. They are the safety net for 
 
 ## Key behaviours to preserve
 
-- **L key** cycles Labels: Off → Icons → Full
-- **T key** cycles Target depth: Off → Sections → Blocks → Elements → All (renamed from D in v2.3.0)
-- **O key** cycles Outline: Off → Sections → Blocks (new in v2.3.0)
-- **D key** (default visibility hotkey, configurable via `setHotkey()`) toggles the toolbar — was `H` pre-2.3.0
-- **Escape** is a global one-shot hide — closes any open dropdown, the Tree panel, and dismisses the toolbar in one press
-- All keys ignore typing targets (`<input>`, `<textarea>`, `<select>`, contenteditable) and modifier-key combos
-- **Click any label** → copies `data-ref` value to clipboard
-- **Toast** confirms copy, stays 1800ms
-- **`refresh()`** re-runs converters + label injection + tree rebuild
-- **`clearAutoRefs()`** removes auto-generated refs (called on depth change)
-- **`_stadiarefLabelled` marker** prevents double-injection on refresh
-- **Luminance detection** applies `stadiaref-on-dark` class to labels on dark backgrounds
-- **Auto-ref defaults OFF in v2.4.1** — standard embeds need `autoRef: true` / `'1'` in the config; when enabled, Target boots at All unless `autoRefDepth` overrides it.
-- **Default visibility hotkey changed to `D`** in v2.3.0 — was `H`. Configurable via `setHotkey()` / `data-hotkey` / `init({ hotkey })`.
+- **Keys** (one keymap, all rebindable or `false`): D toggles the toolbar, L cycles Labels (Off → Icons → Full), 1 2 3 switch sections, blocks and elements in Show, O cycles Outline (Off → Sections → Blocks), P Pick and / Find (stage 6), Esc hides. T and F are unbound since 3.0.
+- **Esc** leaves Pick or Find first; otherwise it is left to an open modal dialog of the host page; otherwise it closes any menu, the Tree and the chain panel and hides the toolbar in one press.
+- Keys match `event.key` (Shift allowed) and ignore typing targets (read from `composedPath()[0]`) and Cmd, Ctrl or Alt.
+- **Show** filters every label, authored or automatic, by tier. **Auto-address** is one switch; the 2.x single-tier Target values survive only through `setDepth()` / `autoRefDepth`.
+- **Click any label** → copies the address; the toast stays 1800ms.
+- **`refresh()`** re-runs the converter, auto-address and labelling, and re-classifies every label.
+- **Automatic addresses** are sanitised, numbered from a counter, and stable per element for the page view.
+- **Luminance detection** applies `stadiaref-on-dark` to labels on dark backgrounds.
 
 ---
 

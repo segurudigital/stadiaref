@@ -17,12 +17,20 @@ Seguru Debug Toolbar becomes **StadiaRef**. Every 2.x name keeps working through
 - **`init()` takes every config key.** In 2.x it only read `hotkey`, `theme`, `dock` and `user`. `init({ startHidden: false })` after start now shows the toolbar; 2.x key names are accepted and mapped.
 - **The default address profile is `generic`.** 2.x sorted every address with the Titan grammar. 3.0 reads the tier from nesting by default: no addressed ancestor is a section; inside one, with addressed elements inside it, a block; otherwise an element. Labels may land in a different tier, which affects the Level filter (and Show, later). Pages written to the Titan grammar keep their old tiers with `profile: 'titan'`.
 - **Invalid addresses are unclassified in every profile.** The core rules: lower-case letters, digits and hyphens; no leading, trailing or doubled hyphen; at most 160 characters. Under the titan profile, an address such as `bad--ref`, which 2.x read as a section, is now unclassified. `classifyDataRef()` still returns its 2.x answer.
+- **Show replaces Target and Level.** The toolbar's Target and Level menus are gone. **Show** is one button with a tick box per tier (sections, blocks, elements) in any mix, on keys **1**, **2**, **3**. **Auto-address** is one on/off setting (`autoAddress`, `setAutoAddress()`), not a toolbar control; an **AUTO** chip shows on the toolbar while it is on. `setDepth()`, `setLevelFilter()` and the `autoRef`, `autoRefDepth` and `levelFilter` keys keep their 2.x behaviour.
+- **Keys T and F are no longer bound.** Every key is now in one keymap (`keys`, `setKeys()`, `getKeys()`): toggle D, labels L, section 1, block 2, element 3, pick P, find /, outline O, hide Escape. Any key can be rebound or set to `false`.
+- **Keys work with Shift held**, so a digit or `/` that needs Shift on some layouts still works. Cmd, Ctrl and Alt still turn keys off.
+- **Esc is left to an open modal dialog of the host page.** With none open, Esc hides everything as before.
+- **Automatic addresses changed form.** The slug and the element part are sanitised so every automatic address passes the core rules (`/test/demo.html` gives `test-demo-html-…`, not `test-demo.html-…`), and they are numbered from a counter instead of by position.
 - **Address events have a new detail.** `stadiaref:address-click`, `-hover` and `-leave` carry `{ address, tier, element }`, and the click adds `source`. `sdt:dataref-*` keep `{ dataRef, element, current }`.
 
 ### Added
 
 - `setLabels('full' | 'icons' | 'off')` / `getLabels()`, the `labels` config key, the `data-labels` script attribute, and `stadiaref:labels-change` `{ labels }`.
 - `stadiaref.ready`, a promise that resolves with the API once StadiaRef has started.
+- `setTiers()` / `getTiers()`, the `tiers` config key and `stadiaref:tiers-change` `{ tiers }`. `setTiers([])` shows no labels. Unclassified labels show only while every tier is shown.
+- `setAutoAddress()` / `getAutoAddress()`, the `autoAddress` config key and `stadiaref:auto-address-change` `{ autoAddress }`.
+- `setKeys()` / `getKeys()` and the `keys` config key.
 - **Profiles.** `generic` (default, tiers from nesting), `app` (`[product]-[surface]-[screen]-[part]` for web apps and PWAs, tiers from nesting) and `titan` (the Titan Foundation grammar). Choose one with the `profile` config key, the `data-profile` script attribute, `setProfile()` or `init({ profile })`; `getProfile()` returns it. A name that isn't registered warns once and uses generic until it is.
 - `registerProfile({ name, classify, validate?, parse? })` adds your own profile. Taken names throw, so built-ins can't be replaced.
 - `classify(address)` and `validate(address)` on the API, using the active profile.
@@ -31,6 +39,8 @@ Seguru Debug Toolbar becomes **StadiaRef**. Every 2.x name keeps working through
 
 ### Fixed
 
+- Labels of `<img>`, `<input>` and other void elements escaped the Level filter, because they mount in a host beside the element. Every label node now carries its own tier, so Show hides them like any other.
+- Automatic addresses could repeat or change from one survey to the next. An element now keeps its automatic address for as long as it is in the page, and a new element never reuses a number.
 - Start-up order. The global is assigned before start, calls made before start are queued and applied once it has, then `ready` resolves, then `stadiaref:ready` fires. In 2.5.0 a deferred script fired `sdt:ready` before `window.seguruDebugToolbar` existed, and a setter called before `DOMContentLoaded` from a script in `<head>` could throw.
 
 ### Deprecated

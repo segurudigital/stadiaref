@@ -18,6 +18,4 @@ export const FONT_UI = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, s
 
 // ─── Mode + depth display labels ─────────────────────────────
 export const MODE_LABELS = { 0: 'Icons', 1: 'Off', 2: 'Full' };
-export const DEPTH_LABELS = { 'off': 'Off', 'section': 'Sections', 'block': 'Blocks', 'element': 'Elements', 'all': 'All' };
 export const OUTLINE_LABELS = { 'off': 'Off', 'section': 'Sections', 'block': 'Blocks' };
-export const LEVEL_LABELS = { 'all': 'All', 'section': 'Sections', 'section-block': 'Sec+Blk' };

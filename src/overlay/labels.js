@@ -4,7 +4,7 @@ import { copyRef } from './copy.js';
 import { forEachNode, rectsOverlap, toArray } from './dom.js';
 import { emitAddressEvent } from './events.js';
 import { getElementContext } from './survey.js';
-import { applyBlockGroupCollapse, clearBlockGroupCollapse } from './tiers.js';
+import { applyBlockGroupCollapse, clearBlockGroupCollapse, tierShown } from './tiers.js';
 import { applyLabelVisibilityState, getEffectiveBgLuminance } from './visibility.js';
 
 // Label injection
@@ -91,7 +91,7 @@ export function resolveLabelOverlaps() {
   // Block group collapse: sections with >6 direct block children when
   // level filter is All. Must run before the placement loop so collapsed
   // block labels don't consume collision slots.
-  if (S.levelFilter === 'all') applyBlockGroupCollapse();
+  if (S.tiers.block && S.tiers.element) applyBlockGroupCollapse();
 
   refs = toArray(document.querySelectorAll('[data-ref]'));
   refs.sort(function (a, b) {
@@ -106,9 +106,10 @@ export function resolveLabelOverlaps() {
     // labels would push visible labels around.
     if (el._stadiarefVisible === false) return;
 
-    // Skip block-group-collapsed members — their labels are hidden by CSS
-    // and they must not participate in collision detection.
+    // Skip block-group-collapsed members and tiers Show is hiding — their
+    // labels are hidden by CSS and must not take part in collision detection.
     if (el._stadiarefBlockGroupMember) return;
+    if (!tierShown(el._stadiarefTier)) return;
 
     var anchor = getActiveLabel(el);
     var attempt;
@@ -390,6 +391,7 @@ export function injectLabels() {
     el._stadiarefFullLabel = fullLabel;
     el._stadiarefDepth = getRefDepth(el);
     setLabelOffset(el, getDepthLift(el._stadiarefDepth), el._stadiarefDepth);
+    setLabelTier(el, refClass);
   });
   reclassifyLabels();
   // Mark hidden-ancestor refs and add .stadiaref-ref-hidden to their labels so
@@ -416,5 +418,21 @@ export function reclassifyLabels() {
       clearDataRefClass(el);
       el.classList.add('stadiaref-ref-class-' + tier);
     }
+    if (el._stadiarefTier !== tier) setLabelTier(el, tier);
   });
+}
+
+// Each label node carries its tier, so Show can hide it wherever it is
+// mounted (inside the element, or in a void host beside it).
+var TIER_CLASSES = ['stadiaref-tier-section', 'stadiaref-tier-block', 'stadiaref-tier-element', 'stadiaref-tier-unclassified'];
+
+export function setLabelTier(el, tier) {
+  el._stadiarefTier = tier;
+  var nodes = [el._stadiarefIcon, el._stadiarefTooltip, el._stadiarefFullLabel, el._stadiarefLink];
+  for (var i = 0; i < nodes.length; i++) {
+    var n = nodes[i];
+    if (!n) continue;
+    for (var j = 0; j < TIER_CLASSES.length; j++) n.classList.remove(TIER_CLASSES[j]);
+    n.classList.add('stadiaref-tier-' + tier);
+  }
 }

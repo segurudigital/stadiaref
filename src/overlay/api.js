@@ -1,14 +1,14 @@
 import { S } from './state.js';
 import { VERSION } from './constants.js';
 import { setDock } from './dock.js';
-import { setHotkey } from './keys.js';
+import { getKeys, setKeys } from './keys.js';
 import { injectLabels, resolveLabelOverlaps } from './labels.js';
 import { hide, show, toggleVisibility } from './lifecycle.js';
 import { getLabels, setLabels } from './mode.js';
 import { applyOutlineMode, setOutline } from './outline.js';
 import { autoRefSections, convertClassRefs } from './survey.js';
 import { getTheme, setTheme } from './theme.js';
-import { applyLevelFilter, setDepth, setLevelFilter } from './tiers.js';
+import { applyAutoAddress, getAutoAddress, getTiers, setAutoAddress, setTiers } from './tiers.js';
 import { buildTreePanel, toggleTree } from './tree.js';
 import { getUser, setUser } from './user.js';
 import { activeProfile, classifyAddress } from './classify.js';
@@ -22,7 +22,7 @@ import { mapLegacyKeys } from '../compat/aliases.js';
 export function publicInit(opts) {
   if (!opts || typeof opts !== 'object') return api;
   var o = mapLegacyKeys(opts);
-  if ('hotkey' in o) setHotkey(o.hotkey);
+  if ('keys' in o) setKeys(o.keys);
   if ('theme' in o && (o.theme === 'auto' || o.theme === 'light' || o.theme === 'dark')) {
     setTheme(o.theme);
   }
@@ -30,13 +30,15 @@ export function publicInit(opts) {
   if ('user' in o) setUser(o.user);
   if ('labels' in o) setLabels(o.labels);
   if ('outline' in o) setOutline(o.outline);
-  if ('levelFilter' in o) setLevelFilter(o.levelFilter);
+  if ('tiers' in o) setTiers(o.tiers);
   if ('profile' in o) setProfile(o.profile);
   if ('pageSlug' in o) S.config.pageSlug = o.pageSlug;
   if ('classConverter' in o) S.classConverterEnabled = o.classConverter === true || o.classConverter === '1';
-  if ('autoRef' in o || 'autoRefDepth' in o) {
-    var on = 'autoRef' in o ? (o.autoRef === true || o.autoRef === '1') : S.autoRefEnabled;
-    setDepth(on ? (o.autoRefDepth || S.autoRefDepth || 'all') : 'off');
+  if ('autoAddress' in o || 'autoRefDepth' in o) {
+    // A 2.x autoRefDepth of section, block or element keeps its single-tier
+    // meaning; anything else is the 3.0 switch.
+    var on = 'autoAddress' in o ? (o.autoAddress === true || o.autoAddress === '1') : S.autoRefEnabled;
+    applyAutoAddress(on ? (o.autoRefDepth || 'all') : 'off');
   } else if ('pageSlug' in o || o.classConverter === true || o.classConverter === '1') {
     refresh();
   }
@@ -69,7 +71,6 @@ export function refresh() {
   injectLabels();
   resolveLabelOverlaps();
   applyOutlineMode();
-  applyLevelFilter();
   if (S.treeOpen) buildTreePanel();
 }
 
@@ -98,6 +99,10 @@ export const api = {
   refresh: queueable(refresh),
   setLabels: queueable(setLabels),
   getLabels: getLabels,
+  setTiers: queueable(setTiers),
+  getTiers: getTiers,
+  setAutoAddress: queueable(setAutoAddress),
+  getAutoAddress: getAutoAddress,
   setOutline: queueable(setOutline),
   getOutline: function () { return S.outlineMode; },
   toggleTree: queueable(toggleTree),
@@ -105,6 +110,8 @@ export const api = {
   getTheme: getTheme,
   setDock: queueable(setDock),
   getDock: function () { return S.position; },
+  setKeys: queueable(setKeys),
+  getKeys: getKeys,
   setUser: queueable(setUser),
   getUser: getUser,
   setProfile: setProfile,

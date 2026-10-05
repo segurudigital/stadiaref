@@ -13,19 +13,19 @@ test('D toggles the toolbar', async ({ page }) => {
   expect(await a(page, 'isVisible()')).toBe(false);
 });
 
-test('rebound hotkey replaces D; false disables it', async ({ page }) => {
-  await open(page, harness({ page: { hotkey: 'k' } }));
+test('a rebound toggle key replaces D; false disables it', async ({ page }) => {
+  await open(page, harness({ page: { keys: { toggle: 'K' } } }));
   await press(page, 'd');
   expect(await a(page, 'isVisible()')).toBe(false);
   await press(page, 'k');
   expect(await a(page, 'isVisible()')).toBe(true);
-  await open(page, harness({ page: { hotkey: false } }));
+  await open(page, harness({ page: { keys: { toggle: false } } }));
   await press(page, 'd');
   expect(await a(page, 'isVisible()')).toBe(false);
 });
 
-test('a hotkey rebound to L toggles instead of cycling labels', async ({ page }) => {
-  await open(page, harness({ page: { hotkey: 'l', startHidden: false } }));
+test('a toggle key rebound to L toggles instead of cycling labels', async ({ page }) => {
+  await open(page, harness({ page: { keys: { toggle: 'L' }, startHidden: false } }));
   await press(page, 'l');
   expect(await a(page, 'isVisible()')).toBe(false);
   expect(await a(page, 'getLabels()')).toBe('full');
@@ -69,10 +69,13 @@ test('Esc closes menus and the Tree and hides the toolbar in one press', async (
   expect(await a(page, 'isVisible()')).toBe(false);
 });
 
-test('keys are ignored with any modifier, Shift included (2.5.0)', async ({ page }) => {
+test('keys are ignored with Ctrl, Alt or Cmd held; Shift is allowed', async ({ page }) => {
   await open(page, harness({ page: { startHidden: false } }));
-  for (const k of ['Shift+L', 'Control+l', 'Alt+l', 'Meta+l', 'Shift+D', 'Shift+Escape']) await press(page, k);
+  // 2.5.0 ignored Shift too; 3.0 allows it so / and digits work on any layout.
+  for (const k of ['Control+l', 'Alt+l', 'Meta+l', 'Control+d', 'Alt+Escape']) await press(page, k);
   expect(await page.evaluate(() => [window.stadiaref.getLabels(), window.stadiaref.isVisible()])).toEqual(['full', true]);
+  await press(page, 'Shift+L');
+  expect(await page.evaluate(() => window.stadiaref.getLabels())).toBe('off');
 });
 
 test('keys are ignored while typing in inputs, textareas, selects and contenteditable', async ({ page }) => {

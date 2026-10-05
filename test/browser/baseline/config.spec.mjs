@@ -1,7 +1,6 @@
 // Baseline on the 3.0 names: config keys read from window.stadiarefConfig,
-// and the script-tag attributes. Keys that keep their 2.x name until a later
-// stage (autoRef, autoRefDepth, levelFilter, hotkey) are read from
-// stadiarefConfig too. Precedence across the 2.x objects is in baseline-2x/.
+// and the script-tag attributes. Precedence across the 2.x objects is in
+// baseline-2x/ and aliases.spec.mjs.
 import { test, expect } from '@playwright/test';
 import { harness, open, countVisible, shadow, HOST_ID } from './helpers.mjs';
 
@@ -51,34 +50,37 @@ test.describe('per-page config (stadiarefConfig)', () => {
     expect(await page.evaluate(() => document.querySelector('.intro').getAttribute('data-ref'))).toBe('home-intro');
   });
 
-  test('autoRef and autoRefDepth', async ({ page }) => {
-    await open(page, harness({ page: { autoRef: true } }));
-    expect(await get(page, 'getDepth')).toBe('all');
+  test('autoAddress, and the 2.x autoRefDepth', async ({ page }) => {
+    await open(page, harness({ page: { autoAddress: true } }));
+    expect(await get(page, 'getAutoAddress')).toBe(true);
     expect(await page.evaluate(() => document.querySelectorAll('[data-stadiaref-auto]').length)).toBeGreaterThan(0);
 
-    await open(page, harness({ page: { autoRef: '1', autoRefDepth: 'section' } }));
-    expect(await get(page, 'getDepth')).toBe('section');
+    await open(page, harness({ page: { autoAddress: true, autoRefDepth: 'section' } }));
+    expect(await get(page, 'getAutoAddress')).toBe(true);
     const levels = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-stadiaref-auto-tier')));
     expect(levels.length).toBeGreaterThan(0);
     for (const l of levels) expect(l).toBe('section');
 
-    await open(page, harness({ page: { autoRef: false, autoRefDepth: 'section' } }));
-    expect(await get(page, 'getDepth')).toBe('off');
+    await open(page, harness({ page: { autoAddress: false, autoRefDepth: 'section' } }));
+    expect(await get(page, 'getAutoAddress')).toBe(false);
     expect(await page.evaluate(() => document.querySelectorAll('[data-stadiaref-auto]').length)).toBe(0);
   });
 
   test('automatic addresses use pageSlug, position and context', async ({ page }) => {
-    await open(page, harness({ page: { autoRef: true, autoRefDepth: 'section', pageSlug: 'demo' } }));
+    await open(page, harness({ page: { autoAddress: true, autoRefDepth: 'section', pageSlug: 'demo' } }));
     const refs = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-ref')));
-    expect(refs).toEqual(['demo-03-section']);
+    // 3.0 numbers automatic addresses from a counter (2.5.0 gave demo-03-section,
+    // the position in the section list).
+    expect(refs).toEqual(['demo-01-section']);
   });
 
-  test('2.5.0 automatic address for a path-derived slug', async ({ page }) => {
-    // With no pageSlug, the slug comes from location.pathname: "/__harness" → "__harness".
-    // 2.5.0 does not sanitise it (stage 4 fixes this); the baseline records it.
-    await open(page, harness({ page: { autoRef: true, autoRefDepth: 'section' } }));
+  test('automatic address for a path-derived slug is sanitised', async ({ page }) => {
+    // With no pageSlug, the slug comes from location.pathname: "/__harness".
+    // 2.5.0 used it as is ("__harness-03-section"); 3.0 sanitises it so every
+    // automatic address passes the core rules.
+    await open(page, harness({ page: { autoAddress: true, autoRefDepth: 'section' } }));
     const refs = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-ref')));
-    expect(refs).toEqual(['__harness-03-section']);
+    expect(refs).toEqual(['harness-01-section']);
   });
 
   test('outlineMode', async ({ page }) => {
@@ -87,17 +89,18 @@ test.describe('per-page config (stadiarefConfig)', () => {
     expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-outline-section').length)).toBeGreaterThan(0);
   });
 
-  test('levelFilter', async ({ page }) => {
-    await open(page, harness({ page: { levelFilter: 'section' } }));
-    expect(await get(page, 'getLevelFilter')).toBe('section');
-    expect(await page.evaluate(() => document.body.classList.contains('stadiaref-filter-section'))).toBe(true);
+  test('tiers', async ({ page }) => {
+    await open(page, harness({ page: { tiers: ['section'] } }));
+    expect(await get(page, 'getTiers')).toEqual(['section']);
+    // Show state is on <html>, not a body class.
+    expect(await page.evaluate(() => document.documentElement.getAttribute('data-stadiaref-hidden-tiers'))).toBe('block element');
   });
 
-  test('hotkey', async ({ page }) => {
-    await open(page, harness({ page: { hotkey: 'k' } }));
-    expect(await get(page, 'getHotkey')).toBe('K');
-    await open(page, harness({ page: { hotkey: false } }));
-    expect(await get(page, 'getHotkey')).toBe(false);
+  test('keys', async ({ page }) => {
+    await open(page, harness({ page: { keys: { toggle: 'K' } } }));
+    expect((await get(page, 'getKeys')).toggle).toBe('K');
+    await open(page, harness({ page: { keys: { toggle: false } } }));
+    expect((await get(page, 'getKeys')).toggle).toBe(false);
   });
 
   test('theme', async ({ page }) => {
@@ -134,7 +137,7 @@ test.describe('script-tag attributes', () => {
     await open(page, harness({ attrs: { 'data-hotkey': 'j', 'data-theme': 'dark', 'data-dock': 'top-left' } }));
     expect(await page.evaluate(() => {
       const a = window.stadiaref;
-      return [a.getHotkey(), a.getTheme(), a.getDock()];
+      return [a.getKeys().toggle, a.getTheme(), a.getDock()];
     })).toEqual(['J', 'dark', 'top-left']);
   });
 
@@ -150,9 +153,9 @@ test.describe('script-tag attributes', () => {
 
   test('config objects win over script attributes', async ({ page }) => {
     await open(page, harness({ attrs: { 'data-hotkey': 'j' }, wp: { hotkey: 'w' } }));
-    expect(await get(page, 'getHotkey')).toBe('W');
-    await open(page, harness({ attrs: { 'data-hotkey': 'j' }, page: { hotkey: 'p' } }));
-    expect(await get(page, 'getHotkey')).toBe('P');
+    expect((await get(page, 'getKeys')).toggle).toBe('W');
+    await open(page, harness({ attrs: { 'data-hotkey': 'j' }, page: { keys: { toggle: 'P' } } }));
+    expect((await get(page, 'getKeys')).toggle).toBe('P');
   });
 });
 
@@ -187,7 +190,7 @@ test.describe('pre-boot calls and load order', () => {
 test('existing QA page: hotkey disabled', async ({ page }) => {
   await page.goto('/test/qa-hotkey-disabled.html');
   await page.waitForFunction(() => !!window.stadiaref);
-  expect(await page.evaluate(() => window.stadiaref.getHotkey())).toBe(false);
+  expect(await page.evaluate(() => window.stadiaref.getKeys().toggle)).toBe(false);
 });
 
 test('labels are injected at boot even while hidden (2.5.0 behaviour)', async ({ page }) => {

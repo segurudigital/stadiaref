@@ -1,4 +1,5 @@
 import { S } from './state.js';
+import { MAX_LENGTH } from '../core/index.js';
 import { clearDataRefClass } from './classify.js';
 import { arrayContainsNode, forEachNode, matchesSelector } from './dom.js';
 import { MARKER, removeVoidHost } from './labels.js';
@@ -163,17 +164,46 @@ export function getPageSlug() {
   return path || 'home';
 }
 
+// Lower-case a-z, digits and single hyphens, as the core rules require.
+export function sanitizeAddressPart(text) {
+  return String(text || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+// A new automatic address: <slug>-<NN>-<what it is>. Numbers come from a
+// counter that only goes up, so an address is never minted twice in a page
+// view, and a number is skipped if an address on the page already uses it.
+function mintAutoAddress(el) {
+  var slug = sanitizeAddressPart(getPageSlug()) || 'home';
+  var what = sanitizeAddressPart(getElementContext(el)) || 'el';
+  var taken = {};
+  forEachNode(document.querySelectorAll('[data-ref]'), function (n) { taken[n.getAttribute('data-ref')] = true; });
+  var address;
+  do {
+    S.autoCounter++;
+    var num = String(S.autoCounter);
+    if (num.length < 2) num = '0' + num;
+    var tail = '-' + num + '-' + what;
+    address = slug.slice(0, MAX_LENGTH - tail.length).replace(/-+$/, '') + tail;
+  } while (taken[address]);
+  return address;
+}
+
+// Stamp an automatic address on every target without one. An element keeps
+// the address it was first given for as long as it is in the DOM, through
+// every survey and every switch of auto-address.
 export function autoRefSections() {
   if (!S.autoRefEnabled) return;
-  var slug = getPageSlug();
-  var allSections = collectTargetsByDepth(S.autoRefDepth);
+  var targets = collectTargetsByDepth(S.autoRefDepth);
 
-  for (var i = 0; i < allSections.length; i++) {
-    var el = allSections[i];
+  for (var i = 0; i < targets.length; i++) {
+    var el = targets[i];
     if (!el.getAttribute('data-ref')) {
-      var num = String(i + 1);
-      if (num.length < 2) num = '0' + num;
-      el.setAttribute('data-ref', slug + '-' + num + '-' + getElementContext(el));
+      var address = S.autoAddresses.get(el);
+      if (!address) {
+        address = mintAutoAddress(el);
+        S.autoAddresses.set(el, address);
+      }
+      el.setAttribute('data-ref', address);
       el.setAttribute('data-stadiaref-auto', '1');
       el.setAttribute('data-stadiaref-auto-tier', getAutoRefLevel(el, S.autoRefDepth));
     }

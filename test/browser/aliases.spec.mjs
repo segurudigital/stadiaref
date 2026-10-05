@@ -196,9 +196,9 @@ test.describe('2.x methods', () => {
       expect(await page.evaluate(() => window.seguruDebugToolbar.getLevelFilter())).toBe(v);
       counts[v] = await countVisible(page, '.stadiaref-ref-full-label');
     }
-    // 1 section, 3 blocks, 7 elements in the fixture. Sec+Blk shows 5, not 4:
-    // the <img> element's label sits in a void host the 2.5.0 filter misses.
-    expect(counts).toEqual({ section: 1, 'section-block': 5, all: 11 });
+    // 1 section, 3 blocks, 7 elements in the fixture. (2.5.0 showed 5 for
+    // Sec+Blk: an <img> label in a void host escaped its filter.)
+    expect(counts).toEqual({ section: 1, 'section-block': 4, all: 11 });
     expect((await O.events(page, 'level-filter-change')).map((e) => e.detail.levelFilter)).toEqual(['section', 'section-block', 'all']);
   });
 
@@ -286,11 +286,11 @@ test.describe('2.x events', () => {
 });
 
 test.describe('2.x keys', () => {
-  test('T and F still cycle Target and Level until stage 4', async ({ page }) => {
+  test('T and F are not bound', async ({ page }) => {
     await N.open(page, N.harness());
     await press(page, 't');
     await press(page, 'f');
-    expect(await page.evaluate(() => [window.stadiaref.getDepth(), window.stadiaref.getLevelFilter()])).toEqual(['section', 'section-block']);
+    expect(await page.evaluate(() => [window.stadiaref.getDepth(), window.stadiaref.getLevelFilter(), window.stadiaref.getTiers().length])).toEqual(['off', 'all', 3]);
   });
 });
 

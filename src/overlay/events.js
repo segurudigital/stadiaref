@@ -6,6 +6,8 @@ import { tierOf } from './classify.js';
 //   stadiaref:ready          → started and the API is callable { version }
 //   stadiaref:show / hide    → toolbar revealed or dismissed {}
 //   stadiaref:labels-change  → label mode changed { labels }
+//   stadiaref:tiers-change   → the Show control changed { tiers }
+//   stadiaref:auto-address-change → auto-address switched { autoAddress }
 //   stadiaref:outline-change → outline mode changed { outline }
 //   stadiaref:theme-change   → resolved theme changed { theme, mode }
 //   stadiaref:user-change    → setUser() called { user }
@@ -32,12 +34,6 @@ export function dispatchWindowEvent(type, detail) {
 export function emitEvent(name, detail, legacyDetail) {
   dispatchWindowEvent('stadiaref:' + name, detail || {});
   if (S.legacyEmit) S.legacyEmit(name, legacyDetail || detail || {});
-}
-
-// Events that exist only under their 2.x name until the control behind them
-// is replaced (Target and Level, in stage 4 of the 3.0 build).
-export function emitLegacyEvent(name, detail) {
-  if (S.legacyEmit) S.legacyEmit(name, detail || {});
 }
 
 // stadiaref:address-<kind> with { address, tier, element } plus `extra`.
