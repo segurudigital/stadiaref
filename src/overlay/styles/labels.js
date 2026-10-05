@@ -42,6 +42,7 @@ html[data-stadiaref-hidden-tiers] .stadiaref-tier-unclassified { display: none !
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  width: max-content;
   max-width: 280px;
   padding: 2px 5px;
   border: 1px solid transparent;
@@ -64,6 +65,7 @@ html[data-stadiaref-hidden-tiers] .stadiaref-tier-unclassified { display: none !
   color: inherit;
   font-weight: 700;
   letter-spacing: 0.3px;
+  white-space: nowrap;
   flex-shrink: 0;
 }
 .stadiaref-ref-address {
@@ -73,6 +75,7 @@ html[data-stadiaref-hidden-tiers] .stadiaref-tier-unclassified { display: none !
   line-height: inherit;
   color: inherit;
   min-width: 0;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }

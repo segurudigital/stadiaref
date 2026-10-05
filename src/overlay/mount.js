@@ -5,6 +5,7 @@ import { autoRefSections, clearAutoRefs, convertClassRefs } from './survey.js';
 import { TIER_NAMES } from './tiers.js';
 import { buildTreePanel } from './tree.js';
 import { LABEL_NAMES } from './mode.js';
+import { applyDockPosition } from './dock.js';
 
 // ─── Nothing is written to the page while StadiaRef is hidden ─────
 // Until the toolbar is first shown, StadiaRef keeps everything in memory:
@@ -54,6 +55,7 @@ export function survey() {
 export function goLive() {
   mount();
   S.shadowHost.style.display = '';
+  applyDockPosition();
   applyRootState();
   survey();
 }

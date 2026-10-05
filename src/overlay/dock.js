@@ -11,33 +11,10 @@ export function normalizeDock(value) {
   var lower = value.toLowerCase();
   return DOCK_VALUES[lower] ? lower : null;
 }
-export const posMap = {
-  'bottom-right': 'bottom:20px;right:20px;',
-  'bottom-left':  'bottom:20px;left:20px;right:auto;',
-  'top-right':    'top:20px;bottom:auto;right:20px;',
-  'top-left':     'top:20px;bottom:auto;left:20px;right:auto;'
-};
-export const toastPosMap = {
-  'bottom-right': 'bottom:64px;right:20px;',
-  'bottom-left':  'bottom:64px;left:20px;right:auto;',
-  'top-right':    'top:64px;bottom:auto;right:20px;',
-  'top-left':     'top:64px;bottom:auto;left:20px;right:auto;'
-};
-export const treePanelPosMap = {
-  'bottom-right': 'bottom:64px;right:20px;',
-  'bottom-left':  'bottom:64px;left:20px;right:auto;',
-  'top-right':    'top:64px;bottom:auto;right:20px;',
-  'top-left':     'top:64px;bottom:auto;left:20px;right:auto;'
-};
-// Active-ref tree anchors at the opposite vertical edge so it never
-// overlaps the toolbar. Same horizontal side as the toolbar.
-export const activeRefTreePosMap = {
-  'bottom-right': 'top:20px;right:20px;',
-  'bottom-left':  'top:20px;left:20px;right:auto;',
-  'top-right':    'bottom:20px;top:auto;right:20px;',
-  'top-left':     'bottom:20px;top:auto;left:20px;right:auto;'
-};
-
+// Distance from the viewport edges, and the gap between the toolbar and the
+// panels and toast that open beside it.
+var EDGE = 20;
+var GAP = 8;
 export function applyStyleSnippet(el, snippet) {
   if (!el) return;
   el.style.top = '';
@@ -59,11 +36,24 @@ export function applyStyleSnippet(el, snippet) {
   }
 }
 
+// Place the toolbar in its corner; the toast and the Tree open beside it,
+// clear of its measured height (the compact toolbar wraps onto more rows);
+// the address chain opens at the opposite edge so it never covers the
+// toolbar.
 export function applyDockPosition() {
-  applyStyleSnippet(S.toolbar, posMap[S.position] || posMap['bottom-right']);
-  applyStyleSnippet(S.toast, toastPosMap[S.position] || toastPosMap['bottom-right']);
-  applyStyleSnippet(S.treePanel, treePanelPosMap[S.position] || treePanelPosMap['bottom-right']);
-  applyStyleSnippet(S.activeRefTree, activeRefTreePosMap[S.position] || activeRefTreePosMap['bottom-right']);
+  var pos = DOCK_VALUES[S.position] ? S.position : 'bottom-right';
+  var parts = pos.split('-');
+  var v = parts[0];
+  var h = parts[1];
+  var opposite = v === 'top' ? 'bottom' : 'top';
+  var barHeight = (S.toolbar && S.toolbar.offsetHeight) || 40;
+  var near = EDGE + barHeight + GAP;
+  var side = h + ':' + EDGE + 'px;' + (h === 'left' ? 'right:auto;' : 'left:auto;');
+  applyStyleSnippet(S.toolbar, v + ':' + EDGE + 'px;' + opposite + ':auto;' + side);
+  applyStyleSnippet(S.toast, v + ':' + near + 'px;' + opposite + ':auto;' + side);
+  applyStyleSnippet(S.treePanel, v + ':' + near + 'px;' + opposite + ':auto;' + side);
+  applyStyleSnippet(S.activeRefTree, opposite + ':' + EDGE + 'px;' + v + ':auto;' + side);
+  if (S.shadowHost) S.shadowHost.setAttribute('data-stadiaref-dock', pos);
 }
 
 // Heuristic for `dock: 'auto'` — pick the corner least likely to collide

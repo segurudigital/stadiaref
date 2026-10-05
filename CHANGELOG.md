@@ -35,6 +35,9 @@ Seguru Debug Toolbar becomes **StadiaRef**. Every 2.x name keeps working through
 - `setAutoAddress()` / `getAutoAddress()`, the `autoAddress` config key and `stadiaref:auto-address-change` `{ autoAddress }`.
 - `setKeys()` / `getKeys()` and the `keys` config key.
 - **Labels coded by tier**: sections solid orange (`SEC`), blocks dark (`BLK`), elements light with a border (`EL`), unclassified dashed amber (`?`), automatic addresses dashed (`AUTO`), each with a version for dark surfaces.
+- **New toolbar and brand.** The StadiaRef icon and logotype (always present; nothing removes them), Labels, Show, the AUTO chip, Pick, Find, Outline and Tree, restyled to the 3.0 design in light and dark. Menus are proper ARIA menus with keyboard support; Pick, Find and Tree report their pressed state; every control shows a focus ring.
+- **Compact layout.** Under 480px wide, or with a coarse pointer, the toolbar wraps onto extra rows, captions shrink to their key letter and every control is at least 44px tall. Under 480px the logotype drops and the icon stays.
+- The Tree, the address chain and the toast carry tier tags (SEC, BLK, EL, ?, AUTO) and the new styles. The toast is announced to assistive technology.
 - The shadow host carries `data-stadiaref-root`, the marker to search a production build for.
 - **Profiles.** `generic` (default, tiers from nesting), `app` (`[product]-[surface]-[screen]-[part]` for web apps and PWAs, tiers from nesting) and `titan` (the Titan Foundation grammar). Choose one with the `profile` config key, the `data-profile` script attribute, `setProfile()` or `init({ profile })`; `getProfile()` returns it. A name that isn't registered warns once and uses generic until it is.
 - `registerProfile({ name, classify, validate?, parse? })` adds your own profile. Taken names throw, so built-ins can't be replaced.
@@ -44,6 +47,8 @@ Seguru Debug Toolbar becomes **StadiaRef**. Every 2.x name keeps working through
 
 ### Fixed
 
+- In `sdt:dataref-click` from the address chain, `current` was always the chain's last row; it is now the row that was clicked.
+- Labels no longer wrap onto several lines inside narrow elements such as buttons.
 - Labels of `<img>`, `<input>` and other void elements escaped the Level filter, because they mount in a host beside the element. Every label node now carries its own tier, so Show hides them like any other.
 - Automatic addresses could repeat or change from one survey to the next. An element now keeps its automatic address for as long as it is in the page, and a new element never reuses a number.
 - Start-up order. The global is assigned before start, calls made before start are queued and applied once it has, then `ready` resolves, then `stadiaref:ready` fires. In 2.5.0 a deferred script fired `sdt:ready` before `window.seguruDebugToolbar` existed, and a setter called before `DOMContentLoaded` from a script in `<head>` could throw.

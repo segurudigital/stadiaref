@@ -153,7 +153,7 @@ test('hovering a label opens the address chain; a chain row click emits dataref-
   const [click] = await events(page, 'dataref-click');
   expect(click.detail.dataRef).toBe('hf-hero');
   expect(click.detail.element.ref).toBe('hf-hero');
-  // 2.5.0 bug: `current` is captured from a loop `var`, so it is always the
-  // last row of the chain, not the row that was clicked.
-  expect(click.detail.current.cls).toContain('stadiaref-active-ref-tree__row--current');
+  // 2.5.0 captured `current` from a loop `var`, so it was always the last
+  // row of the chain. Fixed in 3.0: it is the row that was clicked.
+  expect(click.detail.current.cls).toBe('stadiaref-active-ref-tree__row');
 });

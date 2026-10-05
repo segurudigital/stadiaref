@@ -18,7 +18,7 @@ import { buildShadowCss } from './styles/shadow.js';
 import { autoRefSections, convertClassRefs } from './survey.js';
 import { applyTheme, setupHtmlClassObserver, setupThemeMediaListener } from './theme.js';
 import { parseTiers, toggleTier } from './tiers.js';
-import { closeAllDropdowns, toggleDropdown, toolbarHtml, updateAutoChip, updateKeyHints, updateShowControl } from './toolbar.js';
+import { attachMenuKeys, closeAllDropdowns, toggleDropdown, toolbarHtml, updateAutoChip, updateKeyHints, updateShowControl } from './toolbar.js';
 import { buildTreePanel, toggleTree } from './tree.js';
 import { renderUser, snapshotUser } from './user.js';
 import { applyLabelVisibilityState, eagerHideDescendantLabels, scheduleVisibilityRecheck } from './visibility.js';
@@ -187,7 +187,8 @@ function init() {
   forEachNode(S.toolbar.querySelectorAll('[data-stadiaref-toggle]'), function (trigger) {
     trigger.addEventListener('click', function (e) {
       e.stopPropagation();
-      toggleDropdown(trigger.getAttribute('data-stadiaref-toggle'));
+      // A click with no pointer detail came from the keyboard (Enter or Space).
+      toggleDropdown(trigger.getAttribute('data-stadiaref-toggle'), e.detail === 0);
     });
   });
 
@@ -212,6 +213,17 @@ function init() {
       toggleTier(opt.getAttribute('data-stadiaref-tier'));
     });
   });
+
+  // Pick and Find (stage 6 wires their actions through S.keyActions).
+  forEachNode(S.toolbar.querySelectorAll('[data-stadiaref-pick], [data-stadiaref-find]'), function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var action = btn.hasAttribute('data-stadiaref-pick') ? 'pick' : 'find';
+      if (S.keyActions && S.keyActions[action]) S.keyActions[action]();
+    });
+  });
+
+  attachMenuKeys();
 
   // Tree panel toggle
   var treeToggleBtn = S.toolbar.querySelector('[data-stadiaref-toggle-tree]');
@@ -251,6 +263,7 @@ function init() {
   });
 
   window.addEventListener('resize', function () {
+    if (isLive()) applyDockPosition();
     syncAllVoidHosts();
     applyLabelVisibilityState();
     resolveLabelOverlaps();

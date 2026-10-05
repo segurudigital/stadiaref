@@ -1,9 +1,10 @@
 import { S } from './state.js';
 import { OUTLINE_LABELS } from './constants.js';
+import { tierOf } from './classify.js';
+import { TAGS } from './styles/tokens.js';
 import { showText } from './tiers.js';
 import { copyRef } from './copy.js';
 import { forEachNode, setClassState, toArray } from './dom.js';
-import { getElementContext } from './survey.js';
 import { highlight, placeHighlights, unhighlight } from './highlight.js';
 
 export function clearTreeJumpHighlight() {
@@ -43,9 +44,28 @@ export function jumpToTreeTarget(target) {
   }, 1400);
 }
 
+var CLOSE_SVG = '<svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14"></path><path d="M19 5L5 19"></path></svg>';
+var COPY_SVG = '<svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a2 2 0 0 1 2-2h9"></path></svg>';
+
+// A tier tag: SEC, BLK, EL or ?, or AUTO for an automatic address.
+export function tierTag(el) {
+  var tier = tierOf(el);
+  var auto = el.hasAttribute('data-stadiaref-auto');
+  var tag = document.createElement('span');
+  tag.className = 'stadiaref-tag stadiaref-tag--' + tier + (auto ? ' stadiaref-tag--auto' : '');
+  tag.textContent = auto ? 'AUTO' : TAGS[tier].tag;
+  return tag;
+}
+
+function el(tag, className, text) {
+  var n = document.createElement(tag);
+  if (className) n.className = className;
+  if (text !== undefined) n.textContent = text;
+  return n;
+}
+
 export function buildTreePanel() {
   var refs = toArray(document.querySelectorAll('[data-ref]'));
-  var showLabel = showText() + (S.autoRefEnabled ? ' · AUTO' : '');
   var outlineLabel = OUTLINE_LABELS[S.outlineMode] || 'Off';
 
   clearTreeHoverHighlights();
@@ -54,138 +74,94 @@ export function buildTreePanel() {
     return (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
   });
 
-  var header = document.createElement('div');
-  header.className = 'stadiaref-tree-panel__header';
-  var headerMain = document.createElement('div');
-  headerMain.className = 'stadiaref-tree-panel__header-main';
-  var titleWrap = document.createElement('div');
-  titleWrap.className = 'stadiaref-tree-panel__title-wrap';
-  var title = document.createElement('span');
-  title.className = 'stadiaref-tree-panel__title';
-  title.textContent = 'Address tree';
-  var meta = document.createElement('div');
-  meta.className = 'stadiaref-tree-panel__meta';
-  var countMeta = document.createElement('span');
-  countMeta.className = 'stadiaref-tree-panel__meta-item';
-  countMeta.textContent = refs.length + (refs.length === 1 ? ' address' : ' addresses');
-  var depthMeta = document.createElement('span');
-  depthMeta.className = 'stadiaref-tree-panel__meta-item';
-  depthMeta.textContent = 'Show: ' + showLabel;
-  var outlineMeta = document.createElement('span');
-  outlineMeta.className = 'stadiaref-tree-panel__meta-item';
-  outlineMeta.textContent = 'Outline: ' + outlineLabel;
-  meta.appendChild(countMeta);
-  meta.appendChild(depthMeta);
-  meta.appendChild(outlineMeta);
-  titleWrap.appendChild(title);
-  titleWrap.appendChild(meta);
-  var closeBtn = document.createElement('button');
-  closeBtn.className = 'stadiaref-tree-panel__close';
+  var header = el('div', 'stadiaref-tree-panel__header');
+  var headerMain = el('div', 'stadiaref-tree-panel__header-main');
+  var titleWrap = el('div', 'stadiaref-tree-panel__title-wrap');
+  titleWrap.appendChild(el('span', 'stadiaref-tree-panel__title', 'Address tree'));
+  var count = el('span', 'stadiaref-tree-panel__count', String(refs.length));
+  count.setAttribute('aria-label', refs.length + (refs.length === 1 ? ' address' : ' addresses'));
+  titleWrap.appendChild(count);
+  var closeBtn = el('button', 'stadiaref-tree-panel__close');
   closeBtn.type = 'button';
-  closeBtn.textContent = '\u00D7';
-  closeBtn.title = 'Close tree panel';
+  closeBtn.innerHTML = CLOSE_SVG;
+  closeBtn.setAttribute('aria-label', 'Close tree panel');
   closeBtn.addEventListener('click', function () { toggleTree(); });
   headerMain.appendChild(titleWrap);
   headerMain.appendChild(closeBtn);
   header.appendChild(headerMain);
-  var hint = document.createElement('div');
-  hint.className = 'stadiaref-tree-panel__hint';
-  hint.textContent = refs.length ? 'Hover to preview the target. Click a row to jump to it.' : 'Add data-ref attributes, or turn on auto-address.';
-  header.appendChild(hint);
+  var meta = el('div', 'stadiaref-tree-panel__meta');
+  meta.appendChild(el('span', 'stadiaref-tree-panel__meta-item', 'Show ' + showText()));
+  meta.appendChild(el('span', 'stadiaref-tree-panel__meta-item', 'Auto-address ' + (S.autoRefEnabled ? 'on' : 'off')));
+  meta.appendChild(el('span', 'stadiaref-tree-panel__meta-item', 'Outline ' + outlineLabel));
+  header.appendChild(meta);
+  header.appendChild(el('div', 'stadiaref-tree-panel__hint', refs.length
+    ? 'Hover a row to find it on the page. Click to jump there.'
+    : 'Add data-ref attributes, or turn on auto-address.'));
 
-  var body = document.createElement('div');
-  body.className = 'stadiaref-tree-panel__body';
+  var body = el('div', 'stadiaref-tree-panel__body');
 
   if (refs.length === 0) {
-    var empty = document.createElement('div');
-    empty.className = 'stadiaref-tree-empty';
-    empty.textContent = 'No addresses on this screen yet.';
-    body.appendChild(empty);
+    body.appendChild(el('div', 'stadiaref-tree-empty', 'No addresses on this screen yet.'));
   } else {
-    forEachNode(refs, function (el) {
+    forEachNode(refs, function (target) {
       var depth = 0;
-      var ancestor = el.parentElement;
-      while (ancestor) {
+      for (var ancestor = target.parentElement; ancestor; ancestor = ancestor.parentElement) {
         if (ancestor.hasAttribute('data-ref')) depth++;
-        ancestor = ancestor.parentElement;
       }
+      var address = target.getAttribute('data-ref');
 
-      var row = document.createElement('div');
-      row.className = 'stadiaref-tree-row';
+      var row = el('div', 'stadiaref-tree-row');
       row.tabIndex = 0;
-      row.title = 'Jump to ' + el.getAttribute('data-ref');
+      row.title = 'Jump to ' + address;
+      row.style.paddingLeft = (12 + depth * 18) + 'px';
+      row.appendChild(tierTag(target));
 
-      var gutter = document.createElement('div');
-      gutter.className = 'stadiaref-tree-gutter';
+      var ref = el('span', 'stadiaref-tree-ref', address);
+      row.appendChild(ref);
 
-      for (var i = 0; i < depth; i++) {
-        var indent = document.createElement('span');
-        indent.className = 'stadiaref-tree-indent';
-        gutter.appendChild(indent);
-      }
-
-      row.appendChild(gutter);
-
-      var content = document.createElement('div');
-      content.className = 'stadiaref-tree-content';
-
-      var tag = document.createElement('span');
-      tag.className = 'stadiaref-tree-tag';
-      tag.textContent = getElementContext(el);
-
-      var ref = document.createElement('span');
-      ref.className = 'stadiaref-tree-ref';
-      ref.textContent = el.getAttribute('data-ref');
-      ref.title = el.getAttribute('data-ref');
-
-      var copyBtn = document.createElement('button');
-      copyBtn.className = 'stadiaref-tree-copy';
-      copyBtn.textContent = '\u2398';
-      copyBtn.title = 'Copy address';
-      (function (refVal) {
-        copyBtn.addEventListener('click', function (e) {
-          e.stopPropagation();
-          copyRef(refVal);
-        });
-      }(el.getAttribute('data-ref')));
-
-      (function (target) {
-        row.addEventListener('mouseenter', function () {
-          highlight('hover', target);
-          row.classList.add('stadiaref-tree-row--active');
-        });
-        row.addEventListener('mouseleave', function () {
-          unhighlight('hover');
-          row.classList.remove('stadiaref-tree-row--active');
-        });
-        row.addEventListener('focus', function () {
-          highlight('hover', target);
-          row.classList.add('stadiaref-tree-row--active');
-        });
-        row.addEventListener('blur', function () {
-          unhighlight('hover');
-          row.classList.remove('stadiaref-tree-row--active');
-        });
-        row.addEventListener('click', function () {
-          jumpToTreeTarget(target);
-        });
-        row.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter' || e.key === ' ' || e.keyCode === 13 || e.keyCode === 32) {
-            e.preventDefault();
-            jumpToTreeTarget(target);
-          }
-        });
-      }(el));
-
-      content.appendChild(tag);
-      content.appendChild(ref);
-      row.appendChild(content);
+      var copyBtn = el('button', 'stadiaref-tree-copy');
+      copyBtn.type = 'button';
+      copyBtn.innerHTML = COPY_SVG;
+      copyBtn.setAttribute('aria-label', 'Copy ' + address);
+      copyBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        copyRef(address);
+      });
       row.appendChild(copyBtn);
+
+      row.addEventListener('mouseenter', function () {
+        highlight('hover', target);
+        row.classList.add('stadiaref-tree-row--active');
+      });
+      row.addEventListener('mouseleave', function () {
+        unhighlight('hover');
+        row.classList.remove('stadiaref-tree-row--active');
+      });
+      row.addEventListener('focus', function () {
+        highlight('hover', target);
+        row.classList.add('stadiaref-tree-row--active');
+      });
+      row.addEventListener('blur', function () {
+        unhighlight('hover');
+        row.classList.remove('stadiaref-tree-row--active');
+      });
+      row.addEventListener('click', function () {
+        jumpToTreeTarget(target);
+      });
+      row.addEventListener('keydown', function (e) {
+        if (e.target !== row) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          jumpToTreeTarget(target);
+        }
+      });
       body.appendChild(row);
     });
   }
 
   S.treePanel.innerHTML = '';
+  S.treePanel.setAttribute('role', 'dialog');
+  S.treePanel.setAttribute('aria-label', 'Address tree');
   S.treePanel.appendChild(header);
   S.treePanel.appendChild(body);
 }
@@ -200,8 +176,6 @@ export function toggleTree() {
   }
   var treeBtn = S.toolbar.querySelector('[data-stadiaref-toggle-tree]');
   if (treeBtn) {
-    var treeValue = treeBtn.querySelector('.stadiaref-toolbar__value');
-    if (treeValue) treeValue.textContent = S.treeOpen ? '\u229F Tree' : '\u229E Tree';
-    setClassState(treeBtn, 'stadiaref-toolbar__select--active', S.treeOpen);
+    treeBtn.setAttribute('aria-pressed', S.treeOpen ? 'true' : 'false');
   }
 }

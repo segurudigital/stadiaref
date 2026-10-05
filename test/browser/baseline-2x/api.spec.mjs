@@ -207,8 +207,9 @@ test('setDock / getDock move the toolbar', async ({ page }) => {
     expect(await page.evaluate(() => window.seguruDebugToolbar.getDock())).toBe(d);
     const box = await shadow(page, '.stadiaref-toolbar').boundingBox();
     const vp = page.viewportSize();
-    if (d.startsWith('top')) expect(box.y).toBeLessThan(vp.height / 2); else expect(box.y).toBeGreaterThan(vp.height / 2);
-    if (d.endsWith('left')) expect(box.x).toBeLessThan(vp.width / 2); else expect(box.x).toBeGreaterThan(vp.width / 2);
+    // 20px from the docked edges.
+    if (d.startsWith('top')) expect(Math.round(box.y)).toBe(20); else expect(Math.round(vp.height - box.y - box.height)).toBe(20);
+    if (d.endsWith('left')) expect(Math.round(box.x)).toBe(20); else expect(Math.round(vp.width - box.x - box.width)).toBe(20);
   }
   await page.evaluate(() => window.seguruDebugToolbar.setDock('middle'));
   expect(await page.evaluate(() => window.seguruDebugToolbar.getDock())).toBe('bottom-right');

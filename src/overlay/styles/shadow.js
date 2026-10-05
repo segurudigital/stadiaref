@@ -1,885 +1,452 @@
-import { S } from '../state.js';
-import { ACCENT, ACCENT_HEX, ACCENT_ON_DARK, ACCENT_WASH, FONT_MONO, FONT_UI } from '../constants.js';
-import { posMap, toastPosMap, treePanelPosMap } from '../dock.js';
-
-// Built at boot: the toolbar, toast and Tree positions are baked in from the
-// dock resolved at load (setDock() later overrides them with inline styles).
-export function buildShadowCss() {
-  var shadowCss = [
-    // --- Highlights over page elements (highlight.js) ---
-    '.stadiaref-highlight {',
-    '  all: initial;',
-    '  position: fixed;',
-    '  box-sizing: border-box;',
-    '  pointer-events: none;',
-    '  z-index: 1;',
-    '  border-radius: 2px;',
-    '}',
-    '.stadiaref-highlight[hidden] { display: none; }',
-    '.stadiaref-highlight--hover { outline: 2px solid #EA580C; outline-offset: 3px; }',
-    '.stadiaref-highlight--jump { outline: 3px solid rgba(234, 88, 12, 0.92); outline-offset: 4px; box-shadow: 0 0 0 6px rgba(234, 88, 12, 0.16); }',
-
-    // --- Toolbar chrome ---
-    '.stadiaref-toolbar {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  position: fixed;',
-    '  ' + (posMap[S.position] || posMap['bottom-right']),
-    '  z-index: 99999;',
-    '  display: flex;',
-    '  align-items: center;',
-    '  flex-wrap: wrap;',
-    '  gap: 6px;',
-    '  padding: 4px;',
-    '  max-width: calc(100vw - 40px);',
-    '  background: #fff;',
-    '  border: 1px solid #E5E7EB;',
-    '  border-radius: 6px;',
-    '  box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.75rem;',
-    '  line-height: 1.5;',
-    '  overflow: visible;',
-    '  user-select: none;',
-    '  pointer-events: auto;',
-    '}',
-
-    '.stadiaref-toolbar__cluster {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: flex;',
-    '  align-items: center;',
-    '  flex-wrap: wrap;',
-    '  gap: 4px;',
-    '}',
-
-    '.stadiaref-toolbar__cluster--primary {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: flex;',
-    '  align-items: center;',
-    '  flex-wrap: wrap;',
-    '  gap: 4px;',
-    '  padding-right: 6px;',
-    '  margin-right: 2px;',
-    '  border-right: 1px solid #E5E7EB;',
-    '}',
-
-    '.stadiaref-toolbar__group {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: flex;',
-    '  align-items: center;',
-    '  position: relative;',
-    '}',
-
-    '.stadiaref-toolbar__select {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: flex;',
-    '  align-items: center;',
-    '  gap: 6px;',
-    '  padding: 6px 10px;',
-    '  background: #F9FAFB;',
-    '  border: 1px solid transparent;',
-    '  border-radius: 999px;',
-    '  cursor: pointer;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.75rem;',
-    '  font-weight: 500;',
-    '  color: #111827;',
-    '  white-space: nowrap;',
-    '  line-height: 1.5;',
-    '  transition: background 0.1s, border-color 0.1s, color 0.1s;',
-    '}',
-
-    '.stadiaref-toolbar__select:hover { background: #F3F4F6; border-color: #E5E7EB; }',
-
-    '.stadiaref-toolbar__select--utility { background: transparent; color: #6B7280; }',
-
-    '.stadiaref-toolbar__select--active {',
-    '  background: ' + ACCENT_WASH + ';',
-    '  border-color: rgba(' + ACCENT + ', 0.18);',
-    '  color: ' + ACCENT_HEX + ';',
-    '}',
-
-    '.stadiaref-toolbar__select--diagnostic.stadiaref-toolbar__select--active {',
-    '  background: rgba(17, 24, 39, 0.05);',
-    '  border-color: rgba(' + ACCENT + ', 0.26);',
-    '  color: #111827;',
-    '  box-shadow: inset 0 0 0 1px rgba(' + ACCENT + ', 0.08);',
-    '}',
-
-    '.stadiaref-toolbar__select--open {',
-    '  background: #fff;',
-    '  border-color: rgba(' + ACCENT + ', 0.24);',
-    '  box-shadow: 0 0 0 3px rgba(' + ACCENT + ', 0.10);',
-    '}',
-
-    '.stadiaref-toolbar__select:focus-visible,',
-    '.stadiaref-toolbar__option:focus-visible,',
-    '.stadiaref-tree-row:focus-visible,',
-    '.stadiaref-tree-copy:focus-visible,',
-    '.stadiaref-tree-panel__close:focus-visible,',
-    '.stadiaref-toolbar__badge:focus-visible {',
-    '  outline: 2px solid rgba(' + ACCENT + ', 0.58);',
-    '  outline-offset: 2px;',
-    '}',
-
-    '.stadiaref-toolbar__key {',
-    '  all: initial;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.625rem;',
-    '  font-weight: 600;',
-    '  letter-spacing: 0.3px;',
-    '  text-transform: uppercase;',
-    '  color: #9CA3AF;',
-    '  white-space: nowrap;',
-    '}',
-
-    '.stadiaref-toolbar__value {',
-    '  all: initial;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.75rem;',
-    '  font-weight: 600;',
-    '  color: inherit;',
-    '  white-space: nowrap;',
-    '}',
-
-    '.stadiaref-toolbar__select--active .stadiaref-toolbar__key { color: currentColor; opacity: 0.72; }',
-
-    '.stadiaref-toolbar__select--diagnostic .stadiaref-toolbar__key::before {',
-    '  content: "";',
-    '  display: inline-block;',
-    '  width: 6px;',
-    '  height: 6px;',
-    '  margin-right: 6px;',
-    '  border-radius: 50%;',
-    '  background: currentColor;',
-    '  opacity: 0.22;',
-    '  vertical-align: middle;',
-    '}',
-
-    '.stadiaref-toolbar__select--diagnostic.stadiaref-toolbar__select--active .stadiaref-toolbar__key::before {',
-    '  opacity: 0.95;',
-    '}',
-
-    '.stadiaref-toolbar__caret {',
-    '  all: initial;',
-    '  font-size: 8px;',
-    '  color: #9CA3AF;',
-    '  margin-left: 2px;',
-    '  transition: transform 0.12s ease, color 0.12s ease;',
-    '}',
-
-    '.stadiaref-toolbar__select--open .stadiaref-toolbar__caret {',
-    '  transform: rotate(180deg);',
-    '  color: currentColor;',
-    '}',
-
-    '.stadiaref-toolbar__dropdown {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: none;',
-    '  position: absolute;',
-    '  background: #fff;',
-    '  border: 1px solid #E5E7EB;',
-    '  border-radius: 6px;',
-    '  box-shadow: 0 4px 12px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08);',
-    '  overflow: hidden;',
-    '  min-width: 140px;',
-    '  z-index: 100002;',
-    '  font-family: ' + FONT_UI + ';',
-    '}',
-
-    '.stadiaref-toolbar__dropdown--open { display: block; }',
-
-    '.stadiaref-toolbar__option {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: flex;',
-    '  align-items: center;',
-    '  gap: 6px;',
-    '  width: 100%;',
-    '  padding: 7px 12px;',
-    '  background: transparent;',
-    '  border: none;',
-    '  cursor: pointer;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.75rem;',
-    '  font-weight: 400;',
-    '  color: #374151;',
-    '  white-space: nowrap;',
-    '  line-height: 1.5;',
-    '  transition: background 0.1s;',
-    '}',
-
-    '.stadiaref-toolbar__option:hover { background: #F9FAFB; }',
-
-    '.stadiaref-toolbar__option--active {',
-    '  color: ' + ACCENT_HEX + ';',
-    '  font-weight: 600;',
-    '  background: ' + ACCENT_WASH + ';',
-    '}',
-
-    '.stadiaref-toolbar__option-dot {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: block;',
-    '  width: 6px;',
-    '  height: 6px;',
-    '  border-radius: 50%;',
-    '  background: currentColor;',
-    '  flex-shrink: 0;',
-    '}',
-
-    // Show menu rows: a tick box per tier. The checked state lives in
-    // aria-checked; the wash is reserved for the button, not the rows.
-    '.stadiaref-toolbar__check.stadiaref-toolbar__option--active {',
-    '  color: #111827;',
-    '  background: transparent;',
-    '}',
-    '.stadiaref-toolbar__check:hover { background: #F9FAFB; }',
-    '.stadiaref-toolbar__tick {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: flex;',
-    '  align-items: center;',
-    '  justify-content: center;',
-    '  width: 14px;',
-    '  height: 14px;',
-    '  border: 1px solid #6B7280;',
-    '  border-radius: 3px;',
-    '  background: #FFFFFF;',
-    '  color: transparent;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 10px;',
-    '  font-weight: 700;',
-    '  line-height: 1;',
-    '  flex-shrink: 0;',
-    '}',
-    '.stadiaref-toolbar__check[aria-checked="true"] .stadiaref-toolbar__tick {',
-    '  border-color: #C2410C;',
-    '  background: #C2410C;',
-    '  color: #FFFFFF;',
-    '}',
-    '.stadiaref-toolbar__note {',
-    '  all: initial;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.75rem;',
-    '  color: #6B7280;',
-    '  white-space: nowrap;',
-    '}',
-    ':host-context(html.dark) .stadiaref-toolbar__check.stadiaref-toolbar__option--active { color: #F4F4F5; }',
-    ':host-context(html.dark) .stadiaref-toolbar__tick { border-color: #A1A1AA; background: transparent; }',
-    ':host-context(html.dark) .stadiaref-toolbar__check[aria-checked="true"] .stadiaref-toolbar__tick { border-color: #F97316; background: #F97316; color: #111827; }',
-    ':host-context(html.dark) .stadiaref-toolbar__note { color: #A1A1AA; }',
-
-    // AUTO chip: present only while auto-address is on.
-    '.stadiaref-toolbar__auto {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: inline-flex;',
-    '  align-items: center;',
-    '  padding: 3px 7px;',
-    '  border: 1px dashed #6B7280;',
-    '  border-radius: 3px;',
-    '  color: #374151;',
-    '  font-family: ' + FONT_MONO + ';',
-    '  font-size: 10px;',
-    '  font-weight: 700;',
-    '  letter-spacing: 0.3px;',
-    '  white-space: nowrap;',
-    '}',
-    '.stadiaref-toolbar__auto[hidden] { display: none; }',
-    ':host-context(html.dark) .stadiaref-toolbar__auto { border-color: #A1A1AA; color: #E4E4E7; }',
-
-    '.stadiaref-toolbar__hint {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: block;',
-    '  padding: 5px 12px;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.625rem;',
-    '  color: #D1D5DB;',
-    '  border-bottom: 1px solid #F3F4F6;',
-    '}',
-
-    '.stadiaref-toolbar__badge {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: flex;',
-    '  align-items: center;',
-    '  justify-content: center;',
-    '  padding: 0 6px;',
-    '  cursor: pointer;',
-    '  position: relative;',
-    '  border-radius: 999px;',
-    '  text-decoration: none;',
-    '  transition: background 0.1s;',
-    '  align-self: stretch;',
-    '}',
-
-    '.stadiaref-toolbar__badge:hover { background: #F9FAFB; }',
-
-    '.stadiaref-toolbar__badge-tip {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  position: absolute;',
-    '  bottom: calc(100% + 8px);',
-    '  left: 50%;',
-    '  transform: translateX(-50%) translateY(4px);',
-    '  font-family: "Open Sans", ' + FONT_UI + ';',
-    '  font-size: 11px;',
-    '  font-weight: 400;',
-    '  color: #FFF7ED;',
-    '  background: rgba(17, 24, 39, 0.88);',
-    '  padding: 5px 10px;',
-    '  border-radius: 4px;',
-    '  white-space: nowrap;',
-    '  pointer-events: none;',
-    '  opacity: 0;',
-    '  transition: opacity 0.15s, transform 0.15s;',
-    '  z-index: 100001;',
-    '}',
-
-    '.stadiaref-toolbar__badge:hover .stadiaref-toolbar__badge-tip {',
-    '  opacity: 1;',
-    '  transform: translateX(-50%) translateY(0);',
-    '}',
-
-    // --- User pill (host-supplied identity) ---
-    // Sits between the badge and the primary cluster. Avatar uses Seguru blue
-    // so it pairs with the badge instead of competing with the orange UI accent
-    // on active controls. A subtle left divider separates the pill from the
-    // badge when both are present.
-    '.stadiaref-toolbar__user {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: none;',
-    '  align-items: center;',
-    '  gap: 6px;',
-    '  padding: 4px 9px 4px 8px;',
-    '  margin-left: 2px;',
-    '  margin-right: 2px;',
-    '  border-left: 1px solid #E5E7EB;',
-    '  background: #F9FAFB;',
-    '  border-top: 1px solid #E5E7EB;',
-    '  border-right: 1px solid #E5E7EB;',
-    '  border-bottom: 1px solid #E5E7EB;',
-    '  border-radius: 999px;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.6875rem;',
-    '  font-weight: 500;',
-    '  color: #374151;',
-    '  white-space: nowrap;',
-    '  line-height: 1.4;',
-    '  max-width: 200px;',
-    '  overflow: hidden;',
-    '  text-overflow: ellipsis;',
-    '}',
-
-    '.stadiaref-toolbar__user--visible { display: inline-flex; }',
-
-    // Avatar uses a neutral dark slate so it reads as identity, not brand —
-    // Seguru blue (`#00C0F3`) is reserved for the S mark badge to keep the
-    // brand anchor unique. Pure orange (`#EA580C`) is reserved for active
-    // controls. Slate sits cleanly outside both.
-    '.stadiaref-toolbar__user-avatar {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: inline-flex;',
-    '  align-items: center;',
-    '  justify-content: center;',
-    '  width: 18px;',
-    '  height: 18px;',
-    '  border-radius: 50%;',
-    '  background: #111827;',
-    '  color: #fff;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.625rem;',
-    '  font-weight: 700;',
-    '  flex-shrink: 0;',
-    '  line-height: 1;',
-    '}',
-
-    '.stadiaref-toolbar__user-name {',
-    '  all: initial;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.6875rem;',
-    '  font-weight: 600;',
-    '  color: #111827;',
-    '  white-space: nowrap;',
-    '  overflow: hidden;',
-    '  text-overflow: ellipsis;',
-    '  max-width: 130px;',
-    '}',
-
-    '.stadiaref-toolbar__user-role {',
-    '  all: initial;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.625rem;',
-    '  font-weight: 500;',
-    '  color: #9CA3AF;',
-    '  margin-left: 2px;',
-    '}',
-
-    // --- Dark mode ---
-    ':host-context(html.dark) .stadiaref-toolbar { background: #27272A; border-color: #3F3F46; }',
-    ':host-context(html.dark) .stadiaref-toolbar__cluster--primary { border-right-color: #3F3F46; }',
-    ':host-context(html.dark) .stadiaref-toolbar__select { background: #313136; color: #F3F4F6; }',
-    ':host-context(html.dark) .stadiaref-toolbar__select:hover { background: #3F3F46; border-color: #52525B; }',
-    ':host-context(html.dark) .stadiaref-toolbar__select--utility { background: transparent; color: #D1D5DB; }',
-    ':host-context(html.dark) .stadiaref-toolbar__select--active { background: rgba(' + ACCENT + ', 0.14); border-color: rgba(' + ACCENT + ', 0.25); }',
-    ':host-context(html.dark) .stadiaref-toolbar__select--diagnostic.stadiaref-toolbar__select--active { background: rgba(255, 255, 255, 0.07); color: #FFF7ED; }',
-    ':host-context(html.dark) .stadiaref-toolbar__select--open { background: #3A3A42; border-color: rgba(' + ACCENT + ', 0.35); box-shadow: 0 0 0 3px rgba(' + ACCENT + ', 0.14); }',
-    ':host-context(html.dark) .stadiaref-toolbar__key { color: #A1A1AA; }',
-    ':host-context(html.dark) .stadiaref-toolbar__dropdown { background: #27272A; border-color: #3F3F46; }',
-    ':host-context(html.dark) .stadiaref-toolbar__option { color: #D1D5DB; }',
-    ':host-context(html.dark) .stadiaref-toolbar__option:hover { background: #3F3F46; }',
-    ':host-context(html.dark) .stadiaref-toolbar__option--active { background: rgba(' + ACCENT + ', 0.12); }',
-    ':host-context(html.dark) .stadiaref-toolbar__hint { border-bottom-color: #3F3F46; }',
-    ':host-context(html.dark) .stadiaref-toolbar__badge:hover { background: #3F3F46; }',
-    ':host-context(html.dark) .stadiaref-toolbar__badge-tip { color: #B1B3B6; }',
-    ':host-context(html.dark) .stadiaref-toolbar__user { background: #313136; border-top-color: #3F3F46; border-right-color: #3F3F46; border-bottom-color: #3F3F46; border-left-color: #3F3F46; color: #D1D5DB; }',
-    // In dark mode the pill background is already a deep slate (#313136), so a
-    // dark navy avatar would disappear into it. Bump to a mid-slate (#71717A,
-    // zinc-500) so the avatar still reads as an inset chip on the dark pill.
-    ':host-context(html.dark) .stadiaref-toolbar__user-avatar { background: #71717A; color: #fff; }',
-    ':host-context(html.dark) .stadiaref-toolbar__user-name { color: #F3F4F6; }',
-    ':host-context(html.dark) .stadiaref-toolbar__user-role { color: #A1A1AA; }',
-
-    // --- Toast ---
-    '.stadiaref-toast {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  position: fixed;',
-    '  ' + (toastPosMap[S.position] || toastPosMap['bottom-right']),
-    '  font-family: ' + FONT_MONO + ';',
-    '  font-size: 12px;',
-    '  line-height: 1.5;',
-    '  padding: 8px 14px;',
-    '  background: rgba(22, 163, 74, 0.9);',
-    '  color: #fff;',
-    '  border-radius: 4px;',
-    '  z-index: 100000;',
-    '  white-space: nowrap;',
-    '  pointer-events: none;',
-    '  opacity: 0;',
-    '  transform: translateY(8px);',
-    '  transition: opacity 0.2s, transform 0.2s;',
-    '}',
-
-    '.stadiaref-toast--visible {',
-    '  opacity: 1;',
-    '  transform: translateY(0);',
-    '}',
-
-    // --- Tree panel ---
-    '.stadiaref-tree-panel {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  position: fixed;',
-    '  ' + (treePanelPosMap[S.position] || treePanelPosMap['bottom-right']),
-    '  width: 340px;',
-    '  max-height: 58vh;',
-    '  display: none;',
-    '  flex-direction: column;',
-    '  background: #fff;',
-    '  border: 1px solid #E5E7EB;',
-    '  border-radius: 10px;',
-    '  box-shadow: 0 10px 28px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.08);',
-    '  z-index: 99998;',
-    '  overflow: hidden;',
-    '  font-family: ' + FONT_UI + ';',
-    '  pointer-events: auto;',
-    '}',
-
-    '.stadiaref-tree-panel--open { display: flex; }',
-
-    '.stadiaref-tree-panel__header {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: block;',
-    '  padding: 12px;',
-    '  border-bottom: 1px solid #E5E7EB;',
-    '  background: linear-gradient(180deg, rgba(249, 250, 251, 0.98) 0%, rgba(255, 255, 255, 0.98) 100%);',
-    '  font-family: ' + FONT_UI + ';',
-    '  flex-shrink: 0;',
-    '}',
-
-    '.stadiaref-tree-panel__header-main {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: flex;',
-    '  align-items: flex-start;',
-    '  justify-content: space-between;',
-    '  gap: 10px;',
-    '  font-family: ' + FONT_UI + ';',
-    '}',
-
-    '.stadiaref-tree-panel__title-wrap {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: flex;',
-    '  flex-direction: column;',
-    '  gap: 6px;',
-    '  min-width: 0;',
-    '  font-family: ' + FONT_UI + ';',
-    '}',
-
-    '.stadiaref-tree-panel__title {',
-    '  all: initial;',
-    '  display: block;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.8125rem;',
-    '  font-weight: 600;',
-    '  line-height: 1.2;',
-    '  color: #111827;',
-    '}',
-
-    '.stadiaref-tree-panel__meta {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: flex;',
-    '  flex-wrap: wrap;',
-    '  gap: 6px;',
-    '  font-family: ' + FONT_UI + ';',
-    '}',
-
-    '.stadiaref-tree-panel__meta-item {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: inline-flex;',
-    '  align-items: center;',
-    '  padding: 2px 7px;',
-    '  border: 1px solid #E5E7EB;',
-    '  border-radius: 999px;',
-    '  background: #F9FAFB;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.625rem;',
-    '  font-weight: 600;',
-    '  color: #6B7280;',
-    '}',
-
-    '.stadiaref-tree-panel__hint {',
-    '  all: initial;',
-    '  display: block;',
-    '  margin-top: 8px;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.6875rem;',
-    '  line-height: 1.4;',
-    '  color: #9CA3AF;',
-    '}',
-
-    '.stadiaref-tree-panel__close {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: inline-flex;',
-    '  align-items: center;',
-    '  justify-content: center;',
-    '  width: 26px;',
-    '  height: 26px;',
-    '  cursor: pointer;',
-    '  border: 1px solid #E5E7EB;',
-    '  background: #fff;',
-    '  color: #9CA3AF;',
-    '  font-size: 14px;',
-    '  line-height: 1;',
-    '  border-radius: 999px;',
-    '  transition: background 0.1s, color 0.1s, border-color 0.1s;',
-    '}',
-    '.stadiaref-tree-panel__close:hover { background: #FFF7ED; color: #EA580C; border-color: rgba(' + ACCENT + ', 0.24); }',
-
-    '.stadiaref-tree-panel__body {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: block;',
-    '  overflow-y: auto;',
-    '  flex: 1;',
-    '  padding: 6px;',
-    '  background: #FCFCFD;',
-    '}',
-
-    '.stadiaref-tree-row {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: flex;',
-    '  align-items: center;',
-    '  gap: 8px;',
-    '  width: 100%;',
-    '  padding: 8px 9px;',
-    '  border: 1px solid transparent;',
-    '  border-radius: 8px;',
-    '  cursor: pointer;',
-    '  transition: background 0.08s, border-color 0.08s, box-shadow 0.08s;',
-    '  font-family: ' + FONT_UI + ';',
-    '}',
-    '.stadiaref-tree-row:hover { background: #FFF7ED; border-color: rgba(' + ACCENT + ', 0.18); }',
-    '.stadiaref-tree-row:focus-within { background: #FFF7ED; border-color: rgba(' + ACCENT + ', 0.24); box-shadow: inset 3px 0 0 rgba(' + ACCENT + ', 0.58); }',
-    '.stadiaref-tree-row--active { background: rgba(' + ACCENT + ', 0.08); border-color: rgba(' + ACCENT + ', 0.24); box-shadow: inset 3px 0 0 rgba(' + ACCENT + ', 0.65); }',
-
-    '.stadiaref-tree-gutter {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: flex;',
-    '  align-items: center;',
-    '  gap: 0;',
-    '  flex-shrink: 0;',
-    '}',
-
-    '.stadiaref-tree-indent {',
-    '  all: initial;',
-    '  display: inline-block;',
-    '  box-sizing: border-box;',
-    '  width: 12px;',
-    '  height: 18px;',
-    '  border-left: 1px solid #E5E7EB;',
-    '  flex-shrink: 0;',
-    '}',
-    '.stadiaref-tree-row:hover .stadiaref-tree-indent,',
-    '.stadiaref-tree-row--active .stadiaref-tree-indent {',
-    '  border-left-color: rgba(' + ACCENT + ', 0.24);',
-    '}',
-
-    '.stadiaref-tree-content {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  min-width: 0;',
-    '  flex: 1;',
-    '  display: flex;',
-    '  align-items: baseline;',
-    '  gap: 8px;',
-    '  font-family: ' + FONT_UI + ';',
-    '}',
-
-    '.stadiaref-tree-tag {',
-    '  all: initial;',
-    '  display: inline-flex;',
-    '  align-items: center;',
-    '  padding: 2px 6px;',
-    '  border-radius: 999px;',
-    '  background: rgba(' + ACCENT + ', 0.10);',
-    '  font-family: ' + FONT_MONO + ';',
-    '  font-size: 0.625rem;',
-    '  font-weight: 600;',
-    '  color: #EA580C;',
-    '  white-space: nowrap;',
-    '  flex-shrink: 0;',
-    '}',
-
-    '.stadiaref-tree-ref {',
-    '  all: initial;',
-    '  font-family: ' + FONT_MONO + ';',
-    '  font-size: 0.688rem;',
-    '  line-height: 1.45;',
-    '  color: #374151;',
-    '  flex: 1;',
-    '  overflow: hidden;',
-    '  text-overflow: ellipsis;',
-    '  white-space: nowrap;',
-    '}',
-
-    '.stadiaref-tree-copy {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: inline-flex;',
-    '  align-items: center;',
-    '  justify-content: center;',
-    '  flex-shrink: 0;',
-    '  cursor: pointer;',
-    '  border: 1px solid transparent;',
-    '  background: transparent;',
-    '  color: #9CA3AF;',
-    '  font-size: 12px;',
-    '  width: 26px;',
-    '  height: 26px;',
-    '  border-radius: 999px;',
-    '  transition: background 0.1s, color 0.1s, border-color 0.1s;',
-    '  line-height: 1.5;',
-    '  font-family: ' + FONT_UI + ';',
-    '}',
-    '.stadiaref-tree-copy:hover { background: #fff; color: #EA580C; border-color: rgba(' + ACCENT + ', 0.20); }',
-
-    '.stadiaref-tree-empty {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: block;',
-    '  padding: 16px 12px;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.75rem;',
-    '  color: #9CA3AF;',
-    '  text-align: center;',
-    '}',
-
-    // Dark mode — tree panel
-    ':host-context(html.dark) .stadiaref-tree-panel { background: #27272A; border-color: #3F3F46; }',
-    ':host-context(html.dark) .stadiaref-tree-panel__header { border-bottom-color: #3F3F46; background: linear-gradient(180deg, rgba(39, 39, 42, 0.98) 0%, rgba(24, 24, 27, 0.98) 100%); }',
-    ':host-context(html.dark) .stadiaref-tree-panel__title { color: #F3F4F6; }',
-    ':host-context(html.dark) .stadiaref-tree-panel__meta-item { background: #18181B; border-color: #3F3F46; color: #A1A1AA; }',
-    ':host-context(html.dark) .stadiaref-tree-panel__hint { color: #A1A1AA; }',
-    ':host-context(html.dark) .stadiaref-tree-panel__close { background: #18181B; border-color: #3F3F46; color: #A1A1AA; }',
-    ':host-context(html.dark) .stadiaref-tree-panel__close:hover { background: rgba(' + ACCENT + ', 0.12); border-color: rgba(' + ACCENT_ON_DARK + ', 0.34); color: #FDBA74; }',
-    ':host-context(html.dark) .stadiaref-tree-panel__body { background: #111827; }',
-    ':host-context(html.dark) .stadiaref-tree-row:hover { background: rgba(' + ACCENT + ', 0.14); border-color: rgba(' + ACCENT_ON_DARK + ', 0.24); }',
-    ':host-context(html.dark) .stadiaref-tree-row:focus-within { background: rgba(' + ACCENT + ', 0.16); border-color: rgba(' + ACCENT_ON_DARK + ', 0.28); }',
-    ':host-context(html.dark) .stadiaref-tree-row--active { background: rgba(' + ACCENT + ', 0.18); border-color: rgba(' + ACCENT_ON_DARK + ', 0.28); }',
-    ':host-context(html.dark) .stadiaref-tree-indent { border-left-color: #3F3F46; }',
-    ':host-context(html.dark) .stadiaref-tree-row:hover .stadiaref-tree-indent,',
-    ':host-context(html.dark) .stadiaref-tree-row--active .stadiaref-tree-indent { border-left-color: rgba(' + ACCENT_ON_DARK + ', 0.32); }',
-    ':host-context(html.dark) .stadiaref-tree-tag { background: rgba(' + ACCENT + ', 0.16); color: #FDBA74; }',
-    ':host-context(html.dark) .stadiaref-tree-ref { color: #D1D5DB; }',
-    ':host-context(html.dark) .stadiaref-tree-copy:hover { background: #18181B; border-color: rgba(' + ACCENT_ON_DARK + ', 0.28); color: #FDBA74; }',
-    ':host-context(html.dark) .stadiaref-tree-empty { color: #A1A1AA; }',
-
-    // ── Active-ref tree ──
-    // Fixed-corner panel showing the data-ref breadcrumb chain (section →
-    // block → element) when hovering any labelled [data-ref] element.
-    // Positioned at the opposite vertical edge from the toolbar so it
-    // never overlaps it. Position is updated by applyDockPosition().
-    '.stadiaref-active-ref-tree {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  position: fixed;',
-    '  top: 20px;',
-    '  right: 20px;',
-    '  z-index: 99998;',
-    '  background: #fff;',
-    '  border: 1px solid #E5E7EB;',
-    '  border-radius: 6px;',
-    '  box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.75rem;',
-    '  min-width: 200px;',
-    '  max-width: 340px;',
-    '  display: none;',
-    '  pointer-events: auto;',
-    '  overflow: hidden;',
-    '}',
-
-    '.stadiaref-active-ref-tree--open { display: block; }',
-
-    '.stadiaref-active-ref-tree__header {',
-    '  display: flex;',
-    '  align-items: center;',
-    '  justify-content: space-between;',
-    '  padding: 6px 8px 6px 10px;',
-    '  border-bottom: 1px solid #E5E7EB;',
-    '}',
-
-    '.stadiaref-active-ref-tree__title {',
-    '  all: initial;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 0.625rem;',
-    '  font-weight: 600;',
-    '  text-transform: uppercase;',
-    '  letter-spacing: 0.4px;',
-    '  color: #9CA3AF;',
-    '}',
-
-    '.stadiaref-active-ref-tree__pin {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: flex;',
-    '  align-items: center;',
-    '  justify-content: center;',
-    '  width: 20px;',
-    '  height: 20px;',
-    '  border-radius: 4px;',
-    '  border: 1px solid transparent;',
-    '  background: transparent;',
-    '  color: #9CA3AF;',
-    '  font-size: 11px;',
-    '  cursor: pointer;',
-    '  font-family: ' + FONT_UI + ';',
-    '  transition: background 0.1s, color 0.1s, border-color 0.1s;',
-    '}',
-
-    '.stadiaref-active-ref-tree__pin:hover { background: #F3F4F6; border-color: #E5E7EB; color: #374151; }',
-
-    '.stadiaref-active-ref-tree__pin--active {',
-    '  background: ' + ACCENT_WASH + ';',
-    '  border-color: rgba(' + ACCENT + ', 0.22);',
-    '  color: ' + ACCENT_HEX + ';',
-    '}',
-
-    '.stadiaref-active-ref-tree__rows {',
-    '  padding: 4px 0;',
-    '}',
-
-    '.stadiaref-active-ref-tree__row {',
-    '  all: initial;',
-    '  box-sizing: border-box;',
-    '  display: flex;',
-    '  align-items: center;',
-    '  gap: 8px;',
-    '  padding: 5px 10px;',
-    '  cursor: pointer;',
-    '  font-family: ' + FONT_UI + ';',
-    '  transition: background 0.08s;',
-    '}',
-
-    '.stadiaref-active-ref-tree__row:hover { background: #F9FAFB; }',
-
-    '.stadiaref-active-ref-tree__row--current {',
-    '  background: ' + ACCENT_WASH + ';',
-    '}',
-
-    '.stadiaref-active-ref-tree__row--current:hover { background: rgba(' + ACCENT + ', 0.12); }',
-
-    '.stadiaref-active-ref-tree__row-class {',
-    '  all: initial;',
-    '  font-family: ' + FONT_UI + ';',
-    '  font-size: 9px;',
-    '  font-weight: 600;',
-    '  text-transform: uppercase;',
-    '  letter-spacing: 0.4px;',
-    '  color: #9CA3AF;',
-    '  white-space: nowrap;',
-    '  width: 46px;',
-    '  flex-shrink: 0;',
-    '}',
-
-    '.stadiaref-active-ref-tree__row--current .stadiaref-active-ref-tree__row-class { color: ' + ACCENT_HEX + '; }',
-
-    '.stadiaref-active-ref-tree__row-ref {',
-    '  all: initial;',
-    '  font-family: ' + FONT_MONO + ';',
-    '  font-size: 0.688rem;',
-    '  color: #374151;',
-    '  flex: 1;',
-    '  overflow: hidden;',
-    '  text-overflow: ellipsis;',
-    '  white-space: nowrap;',
-    '}',
-
-    '.stadiaref-active-ref-tree__row--current .stadiaref-active-ref-tree__row-ref { color: ' + ACCENT_HEX + '; font-weight: 600; }',
-
-    // Dark mode — active-ref tree
-    ':host-context(html.dark) .stadiaref-active-ref-tree { background: #27272A; border-color: #3F3F46; }',
-    ':host-context(html.dark) .stadiaref-active-ref-tree__header { border-bottom-color: #3F3F46; }',
-    ':host-context(html.dark) .stadiaref-active-ref-tree__title { color: #71717A; }',
-    ':host-context(html.dark) .stadiaref-active-ref-tree__pin { color: #71717A; }',
-    ':host-context(html.dark) .stadiaref-active-ref-tree__pin:hover { background: #18181B; border-color: #3F3F46; color: #A1A1AA; }',
-    ':host-context(html.dark) .stadiaref-active-ref-tree__pin--active { background: rgba(' + ACCENT + ', 0.12); border-color: rgba(' + ACCENT_ON_DARK + ', 0.34); color: #FDBA74; }',
-    ':host-context(html.dark) .stadiaref-active-ref-tree__row:hover { background: rgba(255,255,255,0.04); }',
-    ':host-context(html.dark) .stadiaref-active-ref-tree__row--current { background: rgba(' + ACCENT + ', 0.10); }',
-    ':host-context(html.dark) .stadiaref-active-ref-tree__row-ref { color: #D1D5DB; }',
-    ':host-context(html.dark) .stadiaref-active-ref-tree__row--current .stadiaref-active-ref-tree__row-ref { color: #FDBA74; }',
-    ':host-context(html.dark) .stadiaref-active-ref-tree__row--current .stadiaref-active-ref-tree__row-class { color: #FDBA74; }',
-
-  ].join('\n');
-
-  // Mirror every `:host-context(html.dark)` rule with a `:host(.stadiaref-theme-dark)`
-  // parallel so explicit setTheme('dark') / theme: 'dark' opt-in works without
-  // requiring the host page to add `html.dark`. The original rules are kept so
-  // legacy hosts that already toggle `html.dark` continue to work unchanged.
-  shadowCss = shadowCss.split('\n').map(function (line) {
-    if (line.indexOf(':host-context(html.dark)') !== -1) {
-      return line + '\n' + line.replace(':host-context(html.dark)', ':host(.stadiaref-theme-dark)');
-    }
-    return line;
+import { FONT_MONO, FONT_UI } from '../constants.js';
+import { TAGS, TOOLBAR } from './tokens.js';
+
+// ─── Shadow root CSS: toolbar, menus, panels, toast ──────────────
+// Everything here renders inside StadiaRef's shadow root, so page CSS can't
+// reach it. Colours are custom properties set from tokens.js: light on
+// :host, dark on :host(.stadiaref-theme-dark) (theme.js resolves 'auto',
+// including a `dark` class on <html>). Values follow the 3.0 wireframes.
+
+function vars(t) {
+  return Object.keys(t).map(function (k) { return '--sr-' + k + ': ' + t[k] + ';'; }).join(' ');
+}
+
+function tierTags() {
+  return Object.keys(TAGS).map(function (tier) {
+    var t = TAGS[tier];
+    return '.stadiaref-tag--' + tier + ' { background: ' + t.bg + '; color: ' + t.fg + '; border-color: ' + t.bd + '; }';
   }).join('\n');
+}
 
-  return shadowCss;
+export function buildShadowCss() {
+  return `
+:host { ${vars(TOOLBAR.light)} }
+:host(.stadiaref-theme-dark) { ${vars(TOOLBAR.dark)} }
+
+/* --- The toolbar --- */
+.stadiaref-toolbar {
+  all: initial;
+  box-sizing: border-box;
+  position: fixed;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: calc(100vw - 40px);
+  padding: 4px;
+  background: var(--sr-barBg);
+  border: 1px solid var(--sr-barBd);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+  font-family: ${FONT_UI};
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--sr-fg);
+  pointer-events: auto;
+  z-index: 3;
+}
+.stadiaref-toolbar *, .stadiaref-toolbar *::before, .stadiaref-toolbar *::after { box-sizing: border-box; }
+.stadiaref-toolbar button {
+  font-family: inherit;
+  margin: 0;
+}
+:is(.stadiaref-toolbar, .stadiaref-tree-panel, .stadiaref-active-ref-tree) :is(a, button, [tabindex]):focus { outline: none; }
+:is(.stadiaref-toolbar, .stadiaref-tree-panel, .stadiaref-active-ref-tree) :is(a, button, [tabindex]):focus-visible {
+  outline: 2px solid var(--sr-focus);
+  outline-offset: 2px;
+}
+
+/* Brand: icon and logotype, always present */
+.stadiaref-brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 30px;
+  padding: 0 8px 0 6px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--sr-fg);
+  text-decoration: none;
+}
+.stadiaref-brand:hover { background: var(--sr-pillBg); border-color: var(--sr-barBd); }
+.stadiaref-brand__icon { display: block; width: 20px; height: 20px; flex-shrink: 0; }
+.stadiaref-brand__disc { fill: var(--sr-dot); }
+.stadiaref-brand__logotype { display: block; width: 65px; height: 11px; flex-shrink: 0; }
+.stadiaref-brand__stadia { fill: var(--sr-fg); }
+.stadiaref-brand__ref { fill: var(--sr-refFg); }
+.stadiaref-brand__tip {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 10px);
+  padding: 5px 10px;
+  background: var(--sr-tipBg);
+  color: var(--sr-tipFg);
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s;
+}
+:host([data-stadiaref-dock^="top"]) .stadiaref-brand__tip { bottom: auto; top: calc(100% + 10px); }
+.stadiaref-brand:hover .stadiaref-brand__tip,
+.stadiaref-brand:focus-visible .stadiaref-brand__tip { opacity: 1; }
+
+/* Reviewer pill */
+.stadiaref-toolbar__user {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px 4px 5px;
+  background: var(--sr-pillBg);
+  border: 1px solid var(--sr-barBd);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.stadiaref-toolbar__user--visible { display: inline-flex; }
+.stadiaref-toolbar__user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--sr-avatarBg);
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+}
+.stadiaref-toolbar__user-name { font-weight: 600; }
+.stadiaref-toolbar__user-role { font-size: 10px; color: var(--sr-key); }
+
+/* Groups: the primary controls, a divider, then Outline and Tree */
+.stadiaref-toolbar__cluster { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.stadiaref-toolbar__cluster--primary { padding-right: 6px; margin-right: 2px; border-right: 1px solid var(--sr-barBd); }
+.stadiaref-toolbar__group { position: relative; display: flex; }
+
+/* Controls: pills with a 10px uppercase key and a 12px value */
+.stadiaref-toolbar__select {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 4px 10px;
+  background: var(--sr-pillBg);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--sr-fg);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.stadiaref-toolbar__select:hover { border-color: var(--sr-barBd); }
+.stadiaref-toolbar__key {
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--sr-key);
+}
+.stadiaref-toolbar__key--short { display: none; }
+.stadiaref-toolbar__caret { font-size: 8px; color: var(--sr-key); }
+.stadiaref-toolbar__select svg { display: block; flex-shrink: 0; }
+.stadiaref-toolbar__select--active,
+.stadiaref-toolbar__select[aria-pressed="true"] {
+  background: var(--sr-wash);
+  border-color: var(--sr-washBd);
+  color: var(--sr-accent);
+}
+.stadiaref-toolbar__select--active .stadiaref-toolbar__key,
+.stadiaref-toolbar__select--active .stadiaref-toolbar__caret { color: var(--sr-accent); }
+.stadiaref-toolbar__select--open {
+  background: var(--sr-barBg);
+  border-color: var(--sr-ring);
+  box-shadow: 0 0 0 3px var(--sr-ringGlow);
+  color: var(--sr-fg);
+}
+.stadiaref-toolbar__select--open .stadiaref-toolbar__key,
+.stadiaref-toolbar__select--open .stadiaref-toolbar__caret { color: var(--sr-key); }
+/* Utility controls (Outline, Tree): quieter, with a state dot */
+.stadiaref-toolbar__select--utility { background: transparent; color: var(--sr-util); }
+.stadiaref-toolbar__select--utility.stadiaref-toolbar__select--active,
+.stadiaref-toolbar__select--utility[aria-pressed="true"] { background: var(--sr-diagBg); border-color: var(--sr-washBd); color: var(--sr-fg); }
+.stadiaref-toolbar__select--utility .stadiaref-toolbar__key { color: var(--sr-key); }
+.stadiaref-toolbar__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sr-dotOff); flex-shrink: 0; }
+.stadiaref-toolbar__select--active .stadiaref-toolbar__dot,
+.stadiaref-toolbar__select[aria-pressed="true"] .stadiaref-toolbar__dot { background: var(--sr-dot); }
+
+/* AUTO chip: a status, not a button. Present only while auto-address is on */
+.stadiaref-toolbar__auto {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 7px;
+  border: 1px dashed var(--sr-autoBd);
+  border-radius: 3px;
+  color: var(--sr-autoFg);
+  font-family: ${FONT_MONO};
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+.stadiaref-toolbar__auto[hidden] { display: none; }
+
+/* Menus */
+.stadiaref-toolbar__dropdown {
+  display: none;
+  position: absolute;
+  min-width: 250px;
+  background: var(--sr-barBg);
+  border: 1px solid var(--sr-barBd);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  z-index: 2;
+}
+.stadiaref-toolbar__dropdown[data-stadiaref-menu="show"] { min-width: 290px; }
+.stadiaref-toolbar__dropdown--open { display: block; }
+.stadiaref-toolbar__hint {
+  display: block;
+  padding: 6px 12px;
+  font-size: 10px;
+  color: var(--sr-key);
+  border-bottom: 1px solid var(--sr-barBd);
+}
+.stadiaref-toolbar__hint[hidden] { display: none; }
+.stadiaref-toolbar__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--sr-fg);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.stadiaref-toolbar__option:hover { background: var(--sr-hover); }
+.stadiaref-toolbar__option-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.stadiaref-toolbar__note { font-weight: 400; color: var(--sr-desc); }
+.stadiaref-toolbar__option--active { background: var(--sr-wash); color: var(--sr-accent); font-weight: 600; }
+.stadiaref-toolbar__option--active .stadiaref-toolbar__note { color: var(--sr-accent); }
+.stadiaref-toolbar__option--active:hover { background: var(--sr-wash); }
+/* Show rows: a tick box per tier; the rows don't take the wash */
+.stadiaref-toolbar__check.stadiaref-toolbar__option--active { background: transparent; color: var(--sr-fg); }
+.stadiaref-toolbar__check.stadiaref-toolbar__option--active:hover { background: var(--sr-hover); }
+.stadiaref-toolbar__check.stadiaref-toolbar__option--active .stadiaref-toolbar__note { color: var(--sr-desc); }
+.stadiaref-toolbar__tick {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--sr-tickOffBd);
+  border-radius: 3px;
+  background: var(--sr-tickOffBg);
+  color: transparent;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.stadiaref-toolbar__check[aria-checked="true"] .stadiaref-toolbar__tick { border-color: var(--sr-tickOnBd); background: var(--sr-tickOnBg); color: var(--sr-tickOnFg); }
+
+/* --- Compact: under 480px, or a coarse pointer --- */
+@media (max-width: 479px), (pointer: coarse) {
+  .stadiaref-toolbar__select, .stadiaref-brand, .stadiaref-toolbar__option { min-height: 44px; }
+  .stadiaref-toolbar__select { padding-top: 12px; padding-bottom: 12px; }
+  .stadiaref-toolbar__key--long { display: none; }
+  .stadiaref-toolbar__key--short { display: inline; }
+}
+@media (max-width: 479px) {
+  .stadiaref-brand__logotype { display: none; }
+  .stadiaref-toolbar__dropdown { min-width: min(290px, calc(100vw - 40px)); }
+}
+
+/* --- Toast --- */
+.stadiaref-toast {
+  all: initial;
+  box-sizing: border-box;
+  position: fixed;
+  max-width: calc(100vw - 40px);
+  padding: 7px 11px;
+  background: var(--sr-toastBg);
+  color: var(--sr-toastFg);
+  border: 1px solid var(--sr-toastBd);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  font-family: ${FONT_MONO};
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s, transform 0.15s;
+  pointer-events: none;
+  z-index: 4;
+}
+.stadiaref-toast--visible { opacity: 1; transform: translateY(0); }
+
+/* --- Panels: the Tree and the address chain --- */
+.stadiaref-tree-panel, .stadiaref-active-ref-tree {
+  all: initial;
+  box-sizing: border-box;
+  position: fixed;
+  display: none;
+  flex-direction: column;
+  width: 380px;
+  max-width: calc(100vw - 40px);
+  background: var(--sr-barBg);
+  border: 1px solid var(--sr-barBd);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  font-family: ${FONT_UI};
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--sr-fg);
+  pointer-events: auto;
+  z-index: 2;
+}
+.stadiaref-tree-panel *, .stadiaref-active-ref-tree * { box-sizing: border-box; }
+.stadiaref-tree-panel button, .stadiaref-active-ref-tree button { font-family: inherit; margin: 0; }
+.stadiaref-tree-panel--open, .stadiaref-active-ref-tree--open { display: flex; }
+.stadiaref-tree-panel { max-height: min(560px, calc(100vh - 120px)); }
+.stadiaref-tree-panel__header { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--sr-barBd); }
+.stadiaref-tree-panel__header-main { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.stadiaref-tree-panel__title-wrap { display: flex; align-items: center; gap: 8px; }
+.stadiaref-tree-panel__title { font-size: 12px; font-weight: 700; }
+.stadiaref-tree-panel__count { padding: 1px 7px; border-radius: 999px; background: var(--sr-chipBg); color: var(--sr-chipFg); font-size: 11px; font-weight: 600; }
+.stadiaref-tree-panel__close, .stadiaref-tree-copy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--sr-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.stadiaref-tree-panel__close:hover { background: var(--sr-hover); }
+.stadiaref-tree-panel__meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.stadiaref-tree-panel__meta-item {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--sr-pillBg);
+  border: 1px solid var(--sr-barBd);
+  color: var(--sr-muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.stadiaref-tree-panel__hint { font-size: 11px; color: var(--sr-muted); }
+.stadiaref-tree-panel__body { display: flex; flex-direction: column; padding: 4px 0; overflow-y: auto; }
+.stadiaref-tree-empty { padding: 12px; color: var(--sr-muted); }
+.stadiaref-tree-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 29px;
+  padding: 0 8px 0 12px;
+  cursor: pointer;
+}
+.stadiaref-tree-row--active { background: var(--sr-rowHover); }
+.stadiaref-tree-row--active .stadiaref-tree-ref { font-weight: 700; color: var(--sr-rowHoverFg); }
+.stadiaref-tree-row--active .stadiaref-tree-copy { background: var(--sr-barBg); color: var(--sr-accent); }
+.stadiaref-tree-ref {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--sr-fg);
+  font-family: ${FONT_MONO};
+  font-size: 11px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+/* Tier tags in the Tree and the chain */
+.stadiaref-tag {
+  min-width: 28px;
+  padding: 1px 4px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  font-family: ${FONT_MONO};
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  flex-shrink: 0;
+}
+${tierTags()}
+.stadiaref-tag--auto { border-style: dashed; }
+
+.stadiaref-active-ref-tree { width: 340px; }
+.stadiaref-active-ref-tree__header { display: flex; align-items: center; justify-content: space-between; padding: 8px 8px 8px 12px; border-bottom: 1px solid var(--sr-barBd); }
+.stadiaref-active-ref-tree__title { font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; color: var(--sr-muted); }
+.stadiaref-active-ref-tree__pin {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border: 1px solid var(--sr-barBd);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--sr-muted);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.stadiaref-active-ref-tree__pin[aria-pressed="true"] { border-color: var(--sr-pinOnBd); background: var(--sr-pinOnBg); color: var(--sr-pinOnFg); }
+.stadiaref-active-ref-tree__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--sr-fg);
+  font-family: ${FONT_MONO};
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+.stadiaref-active-ref-tree__row:hover { background: var(--sr-hover); }
+.stadiaref-active-ref-tree__row--current { background: var(--sr-rowHover); color: var(--sr-rowHoverFg); font-weight: 700; }
+.stadiaref-active-ref-tree__row-ref { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* --- Highlights over page elements (highlight.js) --- */
+.stadiaref-highlight {
+  all: initial;
+  position: fixed;
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 2px;
+}
+.stadiaref-highlight[hidden] { display: none; }
+.stadiaref-highlight--hover { outline: 2px solid #EA580C; outline-offset: 3px; }
+.stadiaref-highlight--jump { outline: 3px solid rgba(234, 88, 12, 0.92); outline-offset: 4px; box-shadow: 0 0 0 6px rgba(234, 88, 12, 0.16); }
+`;
 }

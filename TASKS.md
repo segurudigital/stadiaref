@@ -51,10 +51,10 @@ StadiaRef 3.0.0, built in stages. A new session starts at the first unticked sta
   - [x] Automatic addresses stay valid, unique and unchanged across ten forced surveys
   - [x] Alias tests pass, including the five Target values and three Level values against 2.5.0 (titan profile): `legacy-vs-2.5.0.spec.mjs` runs the frozen 2.5.0 bundle and the current build on the demo page and the four fixtures and compares which elements show a label. The only differences are the two intended ones it lists: void-element labels now follow the filter, and `bad--ref` is unclassified
   - [x] Keys rebind, disable, and work with Shift held
-- [ ] **Stage 5 — Brand, toolbar and labels.**
-  - [ ] Screenshots of the toolbar (light, dark, desktop, 390px) and the sample page in each label mode, compared against the wireframe values
-  - [ ] Every text and background pair at least 4.5:1 by calculation
-  - [ ] Toolbar fully usable by keyboard, visible focus, accessible names and pressed/expanded state
+- [x] **Stage 5 — Brand, toolbar and labels.**
+  - [x] Screenshots of the toolbar (light, dark, desktop, 390px) and the sample page in each label mode, compared against the wireframe values (`toolbar.spec.mjs` attaches the screenshots to the report and checks the computed values)
+  - [x] Every text and background pair at least 4.5:1 by calculation (`test/unit/contrast.test.mjs`, from `src/overlay/styles/tokens.js`; translucent backgrounds over the worst backdrop of their surface). Changes from the wireframes: menu hover is `#F9FAFB` (light) and a 6% white wash (dark) so grey notes stay at 4.5:1 or more; the active option's note uses the accent (the wireframe's grey would be 4.40:1); the cluster and block-group badges are opaque (`#FCE8DD` light, `#27272A` dark) instead of a translucent wash; the brand tip is opaque `#111827`
+  - [x] Toolbar fully usable by keyboard, visible focus, accessible names and pressed/expanded state
   - [x] A hidden StadiaRef leaves the page DOM byte-identical (class converter off) — `host-page.spec.mjs`, five pages, including setters called while hidden
 - [ ] **Stage 6 — Pick and Find.**
   - [ ] Pick: pointer, arrow keys, Esc, an element with no address, clicks don't reach the host

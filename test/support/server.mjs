@@ -74,7 +74,7 @@ function harness(query) {
   }
   if (query.get('defer') === '1') attrs += ' defer';
   const script = query.get('noscript') === '1' ? '' : '<script src="/overlay.js"' + attrs + '></script>';
-  return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<title>harness</title>\n' +
+  return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>harness</title>\n' +
     '<script>' + parts.join('\n') + '</script>\n</head>\n<body>\n' + body + '\n' + script + '\n</body>\n</html>\n';
 }
 
