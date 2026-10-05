@@ -14,3 +14,6 @@ docs/_internal/
 # Playwright output
 test-results/
 playwright-report/
+
+# Built plugin zips. Releases attach them; the historical ones stay tracked.
+dist/*.zip

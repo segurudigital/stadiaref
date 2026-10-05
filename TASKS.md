@@ -72,10 +72,10 @@ StadiaRef 3.0.0, built in stages. A new session starts at the first unticked sta
   - [x] `import('stadiaref')` in Node resolves and does nothing
   - [x] `npm pack --dry-run` lists only what should ship
   - [x] Types check under `strict` with `moduleResolution` `bundler` and `node16`
-- [ ] **Stage 9 — WordPress.**
-  - [ ] Both PHP files and the bridge pass `php -l`
-  - [ ] Both zips build and unpack to the right folder names; bridge zip name matches `^seguru-debug-toolbar-wp-v[\d.]+\.zip$`
-  - [ ] With a local WordPress: option copy, admin-only loading, page config wins, bridge installs over 2.5.0. Without one: reported as untested
+- [x] **Stage 9 — WordPress.**
+  - [x] Both PHP files and the bridge pass `php -l`
+  - [x] Both zips build and unpack to the right folder names; bridge zip name matches `^seguru-debug-toolbar-wp-v[\d.]+\.zip$`
+  - [x] With a local WordPress: option copy, admin-only loading, page config wins, bridge installs over 2.5.0. Run on WordPress Playground (`npm run test:wordpress`): WordPress 7.1.2, 6.2 and 5.8, PHP 8.3 and 8.1
 - [ ] **Stage 10 — Docs, release pack, release candidate.**
   - [ ] Every doc statement true of the built code; bundle size filled in
   - [ ] Scrub, community files, CI, release and Pages workflows
@@ -99,6 +99,17 @@ The baseline tests pin what the 2.5.0 code does, not what the README says. Where
 | Tree copy button | Copies, emits no event | n/a (stage 6 adds `source: 'tree'`) | `baseline-events` › Tree row |
 
 For stage 3: `bad--ref` broke the core rule against doubled hyphens, so under 3.0 it was `unclassified` in every profile. Resolved 2026-10-05 by removing it from the fixture.
+
+Notes from stage 9:
+
+- **Tested on a real WordPress** with WordPress Playground (WordPress and PHP running in Node; pinned to `@wp-playground/cli` 3.1.40, the last release that runs on Node 22). `npm run test:wordpress` drives wp-admin in a browser: 2.5.0 from its release zip, the 2.5.1 bridge uploaded over it, StadiaRef installed next to it, then the old plugin deactivated. Passed on WordPress 7.1.2, 6.2 and 5.8 (PHP 8.3) and 7.1.2 on PHP 8.1. It needs the network the first time, so it isn't part of `npm test`.
+- **Not tested:** the 2.5.0 self-updater actually offering the bridge. That needs a published GitHub release with the bridge zip attached. The bridge was installed by uploading it over 2.5.0, which replaces the files the same way.
+- `test/unit/wordpress.test.mjs` runs the plugin, the mu-plugin and the bridge against a small stand-in for WordPress (`test/unit/wp/harness.php`): the option copy (each mapping, once only, never over a 3.0 value), the config handover (real booleans, the page wins), role checks, no second copy next to 2.x, the bridge notice, and the zips.
+- The 2.x page config `window.seguruDebugConfig` outranked the WordPress settings in 2.x. The inline handover keeps that: a key the page sets there (in its 2.x name) is left to the page. `window.stadiarefConfig` wins as the brief asks.
+- The mu-plugin also runs the settings copy on the front end, as an mu-plugin site may have no admin visits.
+- With the 2.x plugin (or the bridge) active, StadiaRef shows a notice and doesn't load on the front end, so the old toolbar keeps running until it is deactivated.
+- The self-updater looks at `segurudigital/stadiaref`. Renaming the GitHub repo from `seguru-debug-toolbar` is the maintainer's job (GitHub redirects the old name).
+- The plugin says "Tested up to: 7.1".
 
 Core Spec (2026-10-05): written at `docs/spec/stadia-address-core.md` from the core as built (Samuel asked for it rather than supplying it). `test/unit/spec.test.mjs` checks its example table, the titan word lists, the app surfaces, the length limit and the parse shapes against `src/core`. The 3.0 docs already link to that path; stage 10 only needs to check the links resolve once the docs are copied in.
 

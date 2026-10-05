@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Builds a ready-to-install WordPress plugin .zip
-# Output: dist/seguru-debug-toolbar-wp-vX.Y.Z.zip
+# Builds the ready-to-install WordPress plugin.
+# Output: dist/stadiaref-wp-vX.Y.Z.zip, which unpacks to stadiaref/.
+# (For the Seguru Debug Toolbar 2.x bridge see build-wp-bridge.sh.)
 
 set -euo pipefail
 
@@ -9,185 +10,96 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 DIST_DIR="$ROOT_DIR/dist"
 TMP_DIR=$(mktemp -d)
 VERSION=$(node -p "require('$ROOT_DIR/package.json').version")
-ZIP_NAME="seguru-debug-toolbar-wp-v${VERSION}.zip"
+ZIP_NAME="stadiaref-wp-v${VERSION}.zip"
+PLUGIN_DIR="$TMP_DIR/stadiaref"
 
-# Set up temp directory
-mkdir -p "$TMP_DIR/seguru-debug-toolbar/assets"
+mkdir -p "$PLUGIN_DIR/assets"
 
-# Build the minified JS first
+# Build the overlay first
 cd "$ROOT_DIR"
 npm run build --silent
 
 # Assemble plugin contents
-cp "$ROOT_DIR/wordpress/seguru-debug-toolbar/seguru-debug-toolbar.php" "$TMP_DIR/seguru-debug-toolbar/"
-cp "$DIST_DIR/stadiaref.min.js" "$TMP_DIR/seguru-debug-toolbar/assets/"
-cp "$ROOT_DIR/LICENSE" "$TMP_DIR/seguru-debug-toolbar/"
+cp "$ROOT_DIR/wordpress/stadiaref/stadiaref.php" "$PLUGIN_DIR/"
+cp "$ROOT_DIR/wordpress/stadiaref/assets/icon.svg" "$PLUGIN_DIR/assets/"
+cp "$DIST_DIR/stadiaref.min.js" "$PLUGIN_DIR/assets/"
+cp "$ROOT_DIR/LICENSE" "$PLUGIN_DIR/"
 
-# Copy WordPress.org assets (banner, icon, screenshots) if present
-if [ -d "$ROOT_DIR/assets" ]; then
-  cp "$ROOT_DIR/assets"/wp-banner-*.png  "$TMP_DIR/seguru-debug-toolbar/assets/" 2>/dev/null || true
-  cp "$ROOT_DIR/assets"/wp-icon-*.png    "$TMP_DIR/seguru-debug-toolbar/assets/" 2>/dev/null || true
-  cp "$ROOT_DIR/assets"/screenshot-*.png "$TMP_DIR/seguru-debug-toolbar/assets/" 2>/dev/null || true
-fi
-
-# Create readme.txt for WordPress plugin directory conventions
-cat > "$TMP_DIR/seguru-debug-toolbar/readme.txt" << 'EOF'
-=== Seguru Debug Toolbar ===
+# readme.txt, in the WordPress plugin directory format
+cat > "$PLUGIN_DIR/readme.txt" << 'EOF'
+=== StadiaRef ===
 Contributors: segurudigital
-Tags: debug, data-ref, overlay, qa, wireframe, developer tools
+Tags: data-ref, overlay, qa, design review, developer tools
 Requires at least: 5.8
-Tested up to: 6.7
+Tested up to: 7.1
 Requires PHP: 8.1
 Stable tag: __VERSION__
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
-Visual overlay that makes data-ref section labels visible on your site. Built for QA, revision feedback, and bug reporting.
+An address for every part of the screen. Shows each data-ref address as a label you can point at and copy.
 
 == Description ==
 
-Seguru Debug Toolbar is a lightweight developer tool that turns `data-ref` attributes on your HTML elements into a clickable visual overlay. It helps designers, developers, and clients identify page sections by their reference codes — making QA, revision rounds, and bug reporting faster and more precise.
+StadiaRef turns the `data-ref` attributes on your pages into labels. Each label is an address, such as `home-hero` or `home-plans-card-02`. Click a label and its address is on your clipboard, ready to paste into a note, an email or a ticket. A developer searches the code for that address and finds the exact element.
 
-**How it works:** Add `data-ref` attributes to your page sections (e.g. `data-ref="home-01-hero"`). The toolbar displays these codes as visual labels you can see, hover, and click to copy.
+* **Labels by tier.** Sections, blocks and elements each have their own style. **Show** picks which tiers you see.
+* **Pick.** Point at anything and see its section, block and element. Click to copy.
+* **Find.** Type or paste an address and jump to it.
+* **Tree.** Every address on the page, in order.
+* **Address profiles.** Generic (tiers from nesting), Titan and App.
+* **Page builders.** A class-to-ref converter for builders that only let you add a class, and temporary automatic addresses for pages that have none yet.
+* **Only for your team.** It loads for signed-in users with the role you choose. Visitors never see it.
+* One self-contained script. No external requests.
 
-**Three viewing modes:**
-
-* **Icons** — Small dot on each section. Hover to see the full code.
-* **Off** — Clean view for screenshots and presentations.
-* **Full** — Always-visible labels on every section.
-
-**Key features:**
-
-* Press **L** to cycle label modes
-* Press **T** to cycle auto-ref Target depth between Sections, Blocks, and Elements
-* Press **O** to cycle Outline guides
-* Press **D** to show / hide the toolbar (visibility hotkey is configurable)
-* Press **Esc** to dismiss everything in one keystroke
-* Toggle the **Tree** panel to browse all labeled elements in document order
-* Click any label to copy the section code to your clipboard
-* Configurable position (any corner of the screen, plus auto-pick)
-* Role-based access control (Administrator, Editor, or Author)
-* Light / Dark / Auto theme system (follows OS or pin explicitly)
-* Adaptive label contrast on dark backgrounds
-* Public events bus (`sdt:show`, `sdt:hide`, `sdt:dataref-click`, etc.) for integrating with custom review or feedback panels
-* Optional identity pill in the toolbar chrome (`setUser()`) so reviewers see their context
-* Zero external dependencies — one self-contained JavaScript file
-* Built-in help docs on the settings page
-
-**For agencies and freelancers:** Give clients the plugin so they can identify exactly which section has an issue. They click the label, copy the code, and paste it in their email. You search your codebase for that code and find the block in seconds. No more "the thing at the top needs to change."
+Keys: D shows or hides the toolbar. L cycles labels. 1, 2 and 3 switch sections, blocks and elements. P starts Pick. / opens Find. O cycles Outline. Esc leaves Pick or Find, then hides everything.
 
 == Installation ==
 
-1. Upload the plugin via Plugins → Add New → Upload Plugin
-2. Activate the plugin
-3. Go to Settings → Debug Toolbar
-4. Enable the toolbar and configure your preferences
-5. Visit the front end while logged in to see the toolbar
+1. Upload the plugin via Plugins → Add New → Upload Plugin.
+2. Activate it.
+3. Go to Settings → StadiaRef, enable it and choose who sees it.
+4. Visit the front end while signed in and press D.
+
+Coming from Seguru Debug Toolbar? Your settings carry over when you activate StadiaRef. Then deactivate and remove the old plugin.
 
 == Frequently Asked Questions ==
 
 = Will visitors see the toolbar? =
 
-No. The toolbar only loads for logged-in users who meet the minimum role requirement you set in the settings. Anonymous visitors and lower-role users never see it.
+No. It only loads for signed-in users who meet the minimum role you set.
 
 = What are data-ref attributes? =
 
-They're custom HTML attributes you add to page sections (like `data-ref="home-01-hero"`). They're invisible to visitors and have zero performance impact. The toolbar makes them visible as clickable labels for your team.
+Ordinary HTML attributes, such as `data-ref="home-hero"`. Visitors don't see them and they cost nothing.
 
-= Does it work with Elementor, Bricks, and Oxygen? =
+= Does it work with page builders? =
 
-Yes. All three builders support custom HTML attributes, so you can add `data-ref` to any section element:
+Yes. Add a `data-ref` attribute where your builder allows custom attributes (Elementor Pro, Bricks, Oxygen, Breakdance), or turn on the class-to-ref converter and add a class starting with `dataref-`, which every builder allows.
 
-* **Elementor Pro** — Advanced tab → Custom Attributes → `data-ref|home-01-hero`
-* **Bricks Builder** — Style → Attributes → Name: `data-ref`, Value: `home-01-hero`
-* **Oxygen Builder** (3.5+) — Advanced tab → Attributes → Add Attribute
+= Can a page override the settings? =
 
-The toolbar scans the rendered HTML after page load, so it works with any builder that outputs the attributes. A snippet-based workaround is included for Elementor Free users.
-
-= Can I use it with Gutenberg blocks? =
-
-Yes. Add `data-ref` attributes to Group block wrappers via custom block attributes or the Advanced panel. The toolbar reads them from the rendered HTML.
-
-= Does it affect site performance? =
-
-No. The entire plugin is a single ~52 KB minified JavaScript file that only loads for authorized logged-in users. It does one DOM scan, injects lightweight label elements, and uses CSS class toggles for mode switching.
-
-== Screenshots ==
-
-1. The toolbar in Icons mode — small dots on each section, hover to reveal
-2. Full mode — all labels visible for QA passes
-3. Tree panel — browse labeled elements in document order with copy buttons
-4. Settings page in wp-admin — configure mode, position, and access
-5. Dark-background page with adaptive label contrast
+Yes. Keys set in `window.stadiarefConfig` on the page win over the settings.
 
 == Changelog ==
 
-= 2.3.0 =
-* Public-API surface for SDT: `hide()` / `show()` / `toggle()`, configurable visibility hotkey, three-mode theme system (`auto` / `light` / `dark`), public `sdt:*` event bus, identity hook (`setUser()`), and configurable dock corner with `auto` heuristic.
-* **Breaking — keymap:** default visibility hotkey changed from H to **D**. **T** now cycles Target depth (was D). **O** is a new fixed binding that cycles Outline. **Esc** is a global one-shot hide.
-* **Breaking — Depth → Target:** the on-page dropdown is now labelled "Target". The public API methods `setDepth()` / `getDepth()` keep their names so existing scripts don't break.
-* Auto-ref defaults to ON for non-WordPress consumers. **The WordPress plugin keeps `Enable auto-ref` off by default** — admins opt in via Settings → Debug Toolbar to avoid surprising perf cost on large pages.
-* User-pill avatar uses neutral slate so the Seguru S badge stays the only blue mark in the chrome. S badge bumped 16 → 20px and centered symmetrically in its click target.
-* WP self-update keeps working — installs on 2.2.x will see the 2.3.0 update notice automatically.
-
-= 2.2.3 =
-* Fixed: manual `workflow_dispatch` retries now resolve the requested tag in the npm publish job, so re-running `release-assets.yml` checks out the correct ref before publish.
-* Fixed: README npm install docs no longer point bundled-app users at a nonexistent `/seguru-debug-toolbar.min.js` path right after `npm install`.
-* Fixed: WordPress setup docs now reference the real `seguru-debug-toolbar-wp-vX.Y.Z.zip` build artifact.
-* Changed: AI-agent rollout prompt now includes the scoped npm install path, the canonical npm-backed jsDelivr URL, and the corrected React/Next bundled-app example.
-
-= 2.2.2 =
-* Changed: npm package renamed to `@segurudigital/seguru-debug-toolbar` (scoped to the segurudigital org). The canonical install command is now `npm install @segurudigital/seguru-debug-toolbar`.
-* Changed: mu-plugin drop-in auto-detects the JS file at the scoped `node_modules/@segurudigital/...` path, falling back to the unscoped path for local installs that predate the rename.
-* Fixed: release workflow now picks the current version's WP zip correctly instead of an alphabetically-earlier historical zip.
-* Added: first live npm publish on release (gated on NPM_TOKEN repo secret, signed with provenance).
-
-= 2.2.1 =
-* Fixed: WordPress self-update and jsDelivr URLs pointed at the wrong GitHub org slug (hyphen vs no-hyphen). Install 2.2.1 manually to replace a 2.2.0 install — self-update works correctly from 2.2.1 onward.
-* Fixed: WordPress zip build on Linux CI (portable sed).
-* Added: npm publish automation on release (ships `seguru-debug-toolbar` to npm).
-
-= 2.2.0 =
-* New default behaviour: toolbar loads hidden — press H to reveal. Keeps screenshots, Chrome debug captures, and client demos clean.
-* New defaults: Labels = Full, Depth = Elements (densest auto-ref scan by default)
-* Added GitHub-based self-update — wp-admin shows "Update available" notices when new releases ship, one-click install via normal WP upgrader
-* Added "Start hidden" admin toggle under Settings → Debug Toolbar → Display
-* Added `startHidden` per-page override via `window.seguruDebugConfig`
-* Added jsDelivr install path for non-WordPress consumers (CDN-served, pin by major version)
-* Added pasteable AI-agent rollout prompt for Claude Code / ChatGPT / Codex / Cursor
-* Automated GitHub Actions workflow attaches plugin zip to every release
-
-= 2.1.0 =
-* Added Outline guides for sections and blocks
-* Added leader lines and depth-aware label staggering for dense layouts
-* Refreshed the toolbar hierarchy and interaction states
-* Improved outline contrast on dark sections and nested layouts
-* Upgraded the Tree panel with context chips and click-to-jump navigation
-
-= 2.0.0 =
-* Added presentation mode toggle with the H key
-* Added auto-ref depth cycling with the D key
-* Added Tree panel for browsing and copying labeled elements
-* Improved tooltip hover behavior so it only opens from the icon
-* Improved Full mode label contrast and dark-background label visibility
-* Added dual-source config support for WordPress and per-page overrides
-* Updated Seguru product branding and badge colour alignment
-
-= 1.3.0 =
-* Added auto-ref generation for supported builders and standard HTML sections
-* Added class-to-ref conversion for builder workflows
-* Added front-end depth controls for Sections, Blocks, and Elements
-* Expanded WordPress settings-page documentation
+= 3.0.0 =
+* Seguru Debug Toolbar is now StadiaRef. Settings from 2.x are copied over once when StadiaRef is activated.
+* New toolbar with Labels, Show, Pick, Find, Outline and Tree. Labels coded by tier.
+* Address profiles: Generic, Titan and App.
+* Nothing is added to the page until the toolbar is first shown.
+* Works with dialogs, single-page apps and touch screens.
 EOF
 
 # Inject version into readme.txt.
-# perl -i is portable across BSD (macOS) and GNU (Linux CI) sed, which diverge
-# on the -i flag syntax — BSD requires a backup suffix argument, GNU doesn't.
-perl -i -pe "s/__VERSION__/${VERSION}/" "$TMP_DIR/seguru-debug-toolbar/readme.txt"
+# perl -i is portable across BSD (macOS) and GNU (Linux CI) sed.
+perl -i -pe "s/__VERSION__/${VERSION}/" "$PLUGIN_DIR/readme.txt"
 
 # Create the zip
+mkdir -p "$DIST_DIR"
+rm -f "$DIST_DIR/$ZIP_NAME"
 cd "$TMP_DIR"
-zip -rq "$DIST_DIR/$ZIP_NAME" seguru-debug-toolbar/
+zip -rq "$DIST_DIR/$ZIP_NAME" stadiaref/
 
 # Clean up
 rm -rf "$TMP_DIR"

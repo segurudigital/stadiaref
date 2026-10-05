@@ -3,7 +3,7 @@
  * Plugin Name:  Seguru Debug Toolbar
  * Plugin URI:   https://github.com/segurudigital/seguru-debug-toolbar
  * Description:  Visual overlay for data-ref element labels. Shows section references on the front end for admins — useful for QA, revision feedback, and bug reporting.
- * Version:      2.5.0
+ * Version:      2.5.1
  * Author:       Seguru Digital
  * Author URI:   https://seguru.digital
  * License:      MIT
@@ -14,12 +14,16 @@
  *
  * Install: Upload via wp-admin → Plugins → Add New → Upload.
  * Then configure under Settings → Debug Toolbar.
+ *
+ * 2.5.1 is the last release of Seguru Debug Toolbar, which is now StadiaRef.
+ * It is 2.5.0 with its self-updater removed and a notice that points to
+ * StadiaRef. It still loads the 2.5.0 script and keeps its settings.
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 // ── Constants ─────────────────────────────────────────────────
-define( 'SDT_VERSION', '2.5.0' );
+define( 'SDT_VERSION', '2.5.1' );
 define( 'SDT_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SDT_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'SDT_OPTION_GROUP', 'sdt_settings' );
@@ -138,127 +142,30 @@ add_action( 'admin_notices', function () {
     echo '</div>';
 } );
 
-// ── GitHub-based self-update ──────────────────────────────────
-// Checks the GitHub releases API for newer versions and feeds the zip asset
-// into WordPress's native update flow. Admins see a standard "Update available"
-// notice on Plugins and Dashboard → Updates, same as any wp.org plugin.
-//
-// Release zip asset name must match /seguru-debug-toolbar-wp-v[\d.]+\.zip/
-// (the output of scripts/build-wp-zip.sh).
-define( 'SDT_GITHUB_REPO', 'segurudigital/seguru-debug-toolbar' );
-define( 'SDT_UPDATE_CACHE_KEY', 'sdt_github_release' );
-define( 'SDT_UPDATE_CACHE_TTL', 6 * HOUR_IN_SECONDS );
+// ── Now StadiaRef ─────────────────────────────────────────────
+// Seguru Debug Toolbar is now StadiaRef, and this plugin no longer updates
+// itself. One notice says so, until the user dismisses it.
+define( 'SDT_STADIAREF_RELEASES', 'https://github.com/segurudigital/stadiaref/releases/latest' );
 
-function sdt_fetch_latest_release() {
-    $cached = get_transient( SDT_UPDATE_CACHE_KEY );
-    if ( false !== $cached ) return $cached;
-
-    $response = wp_remote_get( 'https://api.github.com/repos/' . SDT_GITHUB_REPO . '/releases/latest', [
-        'timeout' => 10,
-        'headers' => [
-            'Accept'     => 'application/vnd.github+json',
-            'User-Agent' => 'seguru-debug-toolbar WordPress updater',
-        ],
-    ] );
-
-    if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
-        // Cache the failure for a shorter window so we don't hammer GitHub on outages.
-        set_transient( SDT_UPDATE_CACHE_KEY, [ 'error' => true ], 30 * MINUTE_IN_SECONDS );
-        return [ 'error' => true ];
-    }
-
-    $data = json_decode( wp_remote_retrieve_body( $response ), true );
-    if ( ! is_array( $data ) ) {
-        set_transient( SDT_UPDATE_CACHE_KEY, [ 'error' => true ], 30 * MINUTE_IN_SECONDS );
-        return [ 'error' => true ];
-    }
-
-    set_transient( SDT_UPDATE_CACHE_KEY, $data, SDT_UPDATE_CACHE_TTL );
-    return $data;
-}
-
-function sdt_release_zip_url( $release ) {
-    if ( empty( $release['assets'] ) || ! is_array( $release['assets'] ) ) return '';
-    foreach ( $release['assets'] as $asset ) {
-        if ( ! empty( $asset['name'] ) && preg_match( '/^seguru-debug-toolbar-wp-v[\d.]+\.zip$/', $asset['name'] ) ) {
-            return $asset['browser_download_url'] ?? '';
-        }
-    }
-    return '';
-}
-
-add_filter( 'pre_set_site_transient_update_plugins', function ( $transient ) {
-    if ( empty( $transient ) || ! is_object( $transient ) ) return $transient;
-
-    $release = sdt_fetch_latest_release();
-    if ( empty( $release ) || ! empty( $release['error'] ) ) return $transient;
-
-    $latest = isset( $release['tag_name'] ) ? ltrim( $release['tag_name'], 'vV' ) : '';
-    if ( ! $latest || version_compare( $latest, SDT_VERSION, '<=' ) ) return $transient;
-
-    $zip_url = sdt_release_zip_url( $release );
-    if ( ! $zip_url ) return $transient;
-
-    $plugin_file = plugin_basename( __FILE__ );
-    $transient->response[ $plugin_file ] = (object) [
-        'id'            => 'github.com/' . SDT_GITHUB_REPO,
-        'slug'          => 'seguru-debug-toolbar',
-        'plugin'        => $plugin_file,
-        'new_version'   => $latest,
-        'url'           => 'https://github.com/' . SDT_GITHUB_REPO,
-        'package'       => $zip_url,
-        'tested'        => '6.7',
-        'requires'      => '5.8',
-        'requires_php'  => '8.1',
-        'icons'         => [],
-        'banners'       => [],
-        'compatibility' => new stdClass(),
-    ];
-    return $transient;
+add_action( 'admin_init', function () {
+    if ( empty( $_GET['sdt_dismiss_stadiaref'] ) ) return;
+    if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'sdt_dismiss_stadiaref' ) ) return;
+    update_user_meta( get_current_user_id(), 'sdt_dismissed_stadiaref', '1' );
+    wp_safe_redirect( remove_query_arg( [ 'sdt_dismiss_stadiaref', '_wpnonce' ] ) );
+    exit;
 } );
 
-add_filter( 'plugins_api', function ( $result, $action, $args ) {
-    if ( $action !== 'plugin_information' ) return $result;
-    if ( empty( $args->slug ) || $args->slug !== 'seguru-debug-toolbar' ) return $result;
-
-    $release = sdt_fetch_latest_release();
-    if ( empty( $release ) || ! empty( $release['error'] ) ) return $result;
-
-    $latest  = isset( $release['tag_name'] ) ? ltrim( $release['tag_name'], 'vV' ) : '';
-    $zip_url = sdt_release_zip_url( $release );
-
-    // GitHub markdown → minimal HTML for the "View details" modal.
-    $changelog_md   = $release['body'] ?? '';
-    $changelog_html = $changelog_md
-        ? wpautop( wp_kses_post( $changelog_md ) )
-        : '<p>See the <a href="https://github.com/' . esc_attr( SDT_GITHUB_REPO ) . '/releases" target="_blank" rel="noopener">GitHub releases page</a> for notes.</p>';
-
-    return (object) [
-        'name'          => 'Seguru Debug Toolbar',
-        'slug'          => 'seguru-debug-toolbar',
-        'version'       => $latest ?: SDT_VERSION,
-        'author'        => '<a href="https://seguru.digital">Seguru Digital</a>',
-        'homepage'      => 'https://github.com/' . SDT_GITHUB_REPO,
-        'requires'      => '5.8',
-        'tested'        => '6.7',
-        'requires_php'  => '8.1',
-        'download_link' => $zip_url,
-        'trunk'         => $zip_url,
-        'last_updated'  => $release['published_at'] ?? '',
-        'sections'      => [
-            'description' => 'Visual overlay for <code>data-ref</code> element labels. Used for QA, revision feedback, bug reporting, and AI-assisted design review.',
-            'changelog'   => $changelog_html,
-        ],
-    ];
-}, 10, 3 );
-
-// Clear the cached release after any plugin upgrade so post-update the next
-// update check sees the current installed version, not a stale cached reply.
-add_action( 'upgrader_process_complete', function ( $_upgrader, $data ) {
-    if ( isset( $data['type'] ) && $data['type'] === 'plugin' ) {
-        delete_transient( SDT_UPDATE_CACHE_KEY );
-    }
-}, 10, 2 );
+add_action( 'admin_notices', function () {
+    if ( ! current_user_can( 'activate_plugins' ) ) return;
+    if ( get_user_meta( get_current_user_id(), 'sdt_dismissed_stadiaref', true ) === '1' ) return;
+    $dismiss = wp_nonce_url( add_query_arg( 'sdt_dismiss_stadiaref', '1' ), 'sdt_dismiss_stadiaref' );
+    echo '<div class="notice notice-warning">';
+    echo '<p><strong>Seguru Debug Toolbar is now StadiaRef.</strong></p>';
+    echo '<p>This plugin has stopped receiving updates. Install StadiaRef and your settings carry over when you activate it. Then remove this one.</p>';
+    echo '<p><a class="button button-primary" href="' . esc_url( SDT_STADIAREF_RELEASES ) . '" target="_blank" rel="noopener">Get StadiaRef</a> ';
+    echo '<a class="button" href="' . esc_url( $dismiss ) . '">Dismiss</a></p>';
+    echo '</div>';
+} );
 
 // ── Front-end enqueue ─────────────────────────────────────────
 add_action( 'wp_enqueue_scripts', function () {
@@ -269,12 +176,12 @@ add_action( 'wp_enqueue_scripts', function () {
     $cap      = sdt_role_capability( $min_role );
     if ( ! current_user_can( $cap ) ) return;
 
-    $file = SDT_PLUGIN_DIR . 'assets/stadiaref.min.js';
+    $file = SDT_PLUGIN_DIR . 'assets/seguru-debug-toolbar.min.js';
     if ( ! file_exists( $file ) ) return;
 
     wp_enqueue_script(
         'seguru-debug-toolbar',
-        SDT_PLUGIN_URL . 'assets/stadiaref.min.js',
+        SDT_PLUGIN_URL . 'assets/seguru-debug-toolbar.min.js',
         [],
         SDT_VERSION,
         true

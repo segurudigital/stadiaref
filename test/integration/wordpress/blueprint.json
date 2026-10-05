@@ -1,0 +1,14 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "steps": [
+    {
+      "step": "writeFile",
+      "path": "/wordpress/wp-content/mu-plugins/stadiaref-test-page-config.php",
+      "data": "<?php\n// Test only: with ?pagecfg=1 the page sets its own StadiaRef config.\nadd_action( 'wp_head', function () {\n    if ( empty( $_GET['pagecfg'] ) ) return;\n    echo '<script>window.stadiarefConfig = { labels: \"off\", dock: \"bottom-left\" };</script>';\n} );\n"
+    },
+    {
+      "step": "runPHP",
+      "code": "<?php require '/wordpress/wp-load.php'; wp_insert_post( [ 'post_type' => 'page', 'post_status' => 'publish', 'post_name' => 'stadiaref-test', 'post_title' => 'StadiaRef test', 'post_content' => '<section data-ref=\"home-hero\"><h2 data-ref=\"home-hero-heading-01-01-primary\">Hello</h2><div data-ref=\"home-hero-card-01\"><p>Card</p></div></section>' ] );"
+    }
+  ]
+}

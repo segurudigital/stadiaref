@@ -61,6 +61,8 @@ Seguru Debug Toolbar becomes **StadiaRef**. Every 2.x name keeps working through
 - **`stadiaref/astro`**: an Astro integration (Astro 7 and later) that loads StadiaRef during `astro dev` only, as an app in Astro's Dev Toolbar. Its panel has the brand, the AUTO chip, Labels, Show, Outline, the address count, Pick, Find and Tree; the floating toolbar steps aside while the Dev Toolbar is there and comes back when it is turned off.
 - Both take any config key, plus `setup`: a module in your project whose default export receives the API before the options are applied and before the first survey.
 - TypeScript types for `stadiaref`, `stadiaref/core`, `stadiaref/vite` and `stadiaref/astro`, including the `stadiaref:*` events on `window`.
+- **WordPress plugin renamed to StadiaRef** (`stadiaref/`, Settings → StadiaRef). Settings from Seguru Debug Toolbar 2.x are copied over once when it is activated (and by the mu-plugin); the 2.x options are left in place. New setting: Address profile (Generic, Titan, App). The settings reach the script as `window.stadiarefConfig`, with real booleans, and a page's own config still wins. While Seguru Debug Toolbar is still active, StadiaRef asks for it to be deactivated and doesn't load a second copy. Updates come from `segurudigital/stadiaref` releases (`stadiaref-wp-v<version>.zip`).
+- **Seguru Debug Toolbar 2.5.1**, the last release under the old name, for sites still on 2.x: the 2.5.0 plugin with its self-updater removed and one dismissible notice that points to StadiaRef. Built by `npm run build:wp-bridge`.
 - StadiaRef never starts twice. If a copy of StadiaRef, or a 2.x Seguru Debug Toolbar, is already running on the page, a second copy logs one warning and doesn't start.
 
 ### Fixed

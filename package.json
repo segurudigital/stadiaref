@@ -38,12 +38,14 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "build:wp": "bash scripts/build-wp-zip.sh",
+    "build:wp-bridge": "bash scripts/build-wp-bridge.sh",
     "dev": "node scripts/build.mjs --watch",
     "test": "npm run build && npm run test:unit && npm run test:browser",
     "test:unit": "node --test 'test/unit/**/*.test.mjs'",
     "test:browser": "playwright test",
     "prepublishOnly": "npm run build",
-    "test:integration": "npm run build && node test/integration/run.mjs"
+    "test:integration": "npm run build && node test/integration/run.mjs",
+    "test:wordpress": "npm run build:wp && npm run build:wp-bridge && npm install --prefix test/integration/wordpress --no-package-lock --no-audit --no-fund && node test/integration/wordpress/run.mjs"
   },
   "keywords": [
     "data-ref",
