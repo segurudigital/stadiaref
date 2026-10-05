@@ -1,0 +1,50 @@
+name: Bug report
+description: Something in StadiaRef doesn't work as it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: A page, a small reproduction (a CodePen, a repository) or steps. Use neutral example addresses rather than a client's page.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: StadiaRef version
+      description: "`stadiaref.version` in the browser console."
+      placeholder: 3.0.0
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How you load it
+      options:
+        - Script tag
+        - npm import
+        - Vite plugin
+        - Astro integration
+        - WordPress plugin
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and operating system
+      placeholder: Chrome 140 on macOS
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output
+      description: Any errors or warnings from the browser console.
+      render: text

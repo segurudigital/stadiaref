@@ -109,7 +109,8 @@ export const api = {
   show: queueable(show),
   hide: queueable(hide),
   toggle: queueable(toggleVisibility),
-  isVisible: function () { return !S.presentationMode; },
+  // Before start StadiaRef isn't shown yet, whatever it is about to do.
+  isVisible: function () { return S.presentationMode === false; },
   refresh: queueable(refresh),
   setLabels: queueable(setLabels),
   getLabels: getLabels,

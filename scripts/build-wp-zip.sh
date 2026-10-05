@@ -24,6 +24,7 @@ cp "$ROOT_DIR/wordpress/stadiaref/stadiaref.php" "$PLUGIN_DIR/"
 cp "$ROOT_DIR/wordpress/stadiaref/assets/icon.svg" "$PLUGIN_DIR/assets/"
 cp "$DIST_DIR/stadiaref.min.js" "$PLUGIN_DIR/assets/"
 cp "$ROOT_DIR/LICENSE" "$PLUGIN_DIR/"
+cp "$ROOT_DIR/NOTICE" "$PLUGIN_DIR/"
 
 # readme.txt, in the WordPress plugin directory format
 cat > "$PLUGIN_DIR/readme.txt" << 'EOF'

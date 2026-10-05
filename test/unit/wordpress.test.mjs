@@ -190,7 +190,7 @@ describe('files', () => {
     execFileSync('bash', [path.join(ROOT, 'scripts/build-wp-bridge.sh')], { cwd: ROOT, stdio: 'ignore' });
     const list = (zip) => execFileSync('unzip', ['-Z1', path.join(ROOT, 'dist', zip)], { encoding: 'utf8' }).trim().split('\n').sort();
     assert.deepEqual(list('stadiaref-wp-v' + pkg.version + '.zip'), [
-      'stadiaref/', 'stadiaref/LICENSE', 'stadiaref/assets/', 'stadiaref/assets/icon.svg', 'stadiaref/assets/stadiaref.min.js', 'stadiaref/readme.txt', 'stadiaref/stadiaref.php',
+      'stadiaref/', 'stadiaref/LICENSE', 'stadiaref/NOTICE', 'stadiaref/assets/', 'stadiaref/assets/icon.svg', 'stadiaref/assets/stadiaref.min.js', 'stadiaref/readme.txt', 'stadiaref/stadiaref.php',
     ]);
     const bridge = 'seguru-debug-toolbar-wp-v2.5.1.zip';
     assert.match(bridge, /^seguru-debug-toolbar-wp-v[\d.]+\.zip$/);

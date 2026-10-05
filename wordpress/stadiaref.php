@@ -2,7 +2,7 @@
 /**
  * Plugin Name: StadiaRef (mu-plugin)
  * Description: An address for every part of the screen. Shows each data-ref address as a label you can point at and copy. Lightweight mu-plugin drop-in.
- * Version:     3.0.0-dev
+ * Version:     3.0.0
  * Author:      Seguru Digital
  * Author URI:  https://seguru.digital
  * Text Domain: stadiaref
@@ -55,7 +55,7 @@ if ( ! function_exists( 'stadiaref_migrate_2x' ) ) {
             }
             add_option( $new, $value );
         }
-        update_option( 'stadiaref_migrated_2x', '3.0.0-dev' );
+        update_option( 'stadiaref_migrated_2x', '3.0.0' );
     }
 }
 add_action( 'admin_init', 'stadiaref_migrate_2x' );

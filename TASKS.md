@@ -1,7 +1,7 @@
 # Tasks
 
-**Project:** Seguru Debug Toolbar
-**Current version:** 2.5.0 (3.0.0 in progress)
+**Project:** StadiaRef (was Seguru Debug Toolbar)
+**Current version:** 3.0.0 (release candidate, not yet released)
 
 > **How this file works**
 > TASKS.md is the canonical list of all open and recently-completed work, organised as **Sprints → Phases → subtasks**. Items are ticked off as they ship. At session end, completed items move from this file to **CHANGELOG.md** (the user-facing record) — only the most recent handoff note stays here as a starting point for the next session. **ROADMAP.md** is the forward view. Agent todo trackers (`TodoWrite`) mirror this file for the active session — they're never the source of truth on their own. All three docs (TASKS, CHANGELOG, ROADMAP) must be in sync at the start and end of every session.
@@ -10,17 +10,24 @@
 
 ## Handoff notes
 
-**Last session:** 2026-10-05 (3.0.0 build, stage 0)
+**Last session:** 2026-10-05 (3.0.0 build, stages 0 to 10)
 
-**State before this session:** v2.5.0 released (tag `v2.5.0` on `5805bc5`, GitHub release with both assets).
+**State:** all ten stages done; 3.0.0 is a release candidate on `main`, not pushed, tagged or published. The release notes for the GitHub release are in `RELEASE_NOTES.md`.
 
-See the "3.0.0 build" section below for what was done and where to start.
+**Next, for the maintainer** (none of this is done by an agent):
+- Review, then push `main`.
+- Rename the GitHub repo to `stadiaref` if not done yet (the 3.0 plugin's updater and the docs point at `segurudigital/stadiaref`).
+- Fill in the date on the `[3.0.0]` heading in `CHANGELOG.md`.
+- Publish the GitHub release `v3.0.0` with `RELEASE_NOTES.md`. The release workflow attaches `stadiaref.min.js`, `stadiaref-wp-v3.0.0.zip` and `seguru-debug-toolbar-wp-v2.5.1.zip`, then publishes `stadiaref` to npm (needs the `NPM_TOKEN` secret).
+- Deprecate `@segurudigital/seguru-debug-toolbar` on npm, pointing at `stadiaref`.
+- Turn on GitHub Pages with GitHub Actions as the source (the demo page workflow), branch protection, and npm trusted publishing once the package exists.
+- Move the notes in this file to GitHub Issues.
 
 ---
 
 ## Currently in flight
 
-*3.0.0 build. Package version stays at the current number until stage 2 sets `3.0.0-dev`, and `3.0.0` only at stage 10.*
+*Nothing. 3.0.0 is waiting for review and release.*
 
 ---
 
@@ -76,11 +83,11 @@ StadiaRef 3.0.0, built in stages. A new session starts at the first unticked sta
   - [x] Both PHP files and the bridge pass `php -l`
   - [x] Both zips build and unpack to the right folder names; bridge zip name matches `^seguru-debug-toolbar-wp-v[\d.]+\.zip$`
   - [x] With a local WordPress: option copy, admin-only loading, page config wins, bridge installs over 2.5.0. Run on WordPress Playground (`npm run test:wordpress`): WordPress 7.1.2, 6.2 and 5.8, PHP 8.3 and 8.1
-- [ ] **Stage 10 — Docs, release pack, release candidate.**
-  - [ ] Every doc statement true of the built code; bundle size filled in
-  - [ ] Scrub, community files, CI, release and Pages workflows
-  - [ ] Version `3.0.0` everywhere (bridge stays `2.5.1`); full CHANGELOG entry
-  - [ ] Clean build, full test run, release notes written
+- [x] **Stage 10 — Docs, release pack, release candidate.**
+  - [x] Every doc statement true of the built code (audited against the source; fixes listed in the stage 10 notes). No doc states a bundle size; the size budget is in `scripts/check-size.mjs`
+  - [x] Scrub, community files, CI, release and Pages workflows
+  - [x] Version `3.0.0` everywhere (bridge stays `2.5.1`); full CHANGELOG entry
+  - [x] Clean build, full test run, release notes written
 
 ### Baseline notes (stage 0)
 
@@ -99,6 +106,17 @@ The baseline tests pin what the 2.5.0 code does, not what the README says. Where
 | Tree copy button | Copies, emits no event | n/a (stage 6 adds `source: 'tree'`) | `baseline-events` › Tree row |
 
 For stage 3: `bad--ref` broke the core rule against doubled hyphens, so under 3.0 it was `unclassified` in every profile. Resolved 2026-10-05 by removing it from the fixture.
+
+Notes from stage 10:
+
+- Docs copied from the 3.0 pack; `usage-guide.md`, `naming-conventions.md`, `wordpress.md`, `agent-rollout-prompt.md` and `v3-data-ref-update-prompt.md` removed. `page-builders.md`, `design.md` and `wp-settings-page.md` rewritten from what was built. `test/unit/docs.test.mjs` checks every relative link and anchor.
+- Doc fixes from checking every statement against the code: Find jumps on Enter (pasting alone lists matches); Outline frames section and block *wrappers* by selector, not addressed tiers (as in 2.5.0); the chain panel opens at the opposite edge on the toolbar's side; an auto-address example (`about-us-03-h2`); the class converter turned on by `init()` while hidden converts on first show; the integrations examples call their sync function directly as well as on `stadiaref:ready` (which has already fired in module setups); the `theme` default notes the saved choice; WordPress covers only some keys; the mu-plugin is turned on with WP-CLI; the WordPress role is configurable; Astro 7; the Vite plugin is ESM only; the Next.js Pages Router path.
+- Code fix from the audit: `isVisible()` returned `true` before start; it now returns `false` until StadiaRef is shown.
+- The demo page is rewritten for 3.0 and shows the toolbar on load (`?hidden` starts it hidden, for tests). The fixtures use `stadiarefConfig` with the titan profile; the QA pages keep the 2.x names on purpose. The 2.5.0 comparison test maps the 3.0 config for the frozen bundle.
+- `NOTICE` holds the trademark note and the Barlow (SIL OFL 1.1) credit; it ships in the npm package and the WordPress zip.
+- CI (`.github/workflows/ci.yml`): build, unit and browser tests with PHP 8.1, the size budget, the integration projects, and the WordPress Playground run. The release workflow attaches the three assets and fails loudly on a missing `NPM_TOKEN` or a failed publish. `pages.yml` publishes the demo. None of the workflows have run on GitHub yet.
+- Size budget: `dist/stadiaref.min.js` measured 133,027 bytes (36,964 gzipped) for 3.0.0; the budget is that plus 10%.
+- "Titan" and "Seguru Titan Foundations" stay in the docs as the name of the `titan` profile's grammar, a public Seguru product.
 
 Notes from stage 9:
 
@@ -140,12 +158,10 @@ Left for later stages on purpose (stage 4):
 
 Left for later stages on purpose (stage 2):
 
-- `.github/workflows/release-assets.yml` still attaches `dist/seguru-debug-toolbar.min.js`, which no longer exists. Stage 10 rewrites the release workflow with the new asset names.
-- `README.md` and `docs/` still describe 2.x. Stage 10 replaces them.
-- `test/demo.html`, the QA pages and the v5 fixtures still use 2.x names (`seguruDebugConfig`, `sdt:*`, `../src/seguru-debug-toolbar.js`). The test server serves the current build for that path, so they double as 2.x pages until stage 10 moves them to the new names.
+- (Done in stage 10.) The release workflow, the README and docs, the demo page and the fixtures were moved to the 3.0 names.
 - The 2.x copy of the baseline differs from the stage 0 originals only where 3.0 has no alias (CSS classes, internal attributes, ids, storage key) and in two intended fixes: the global now exists when a deferred script fires `ready`, and `init()` applies every config key.
 
-For stage 10: the v5 fixtures use page codes (`hf-`, `mpt-v2-`) that look like they came from a real project. Rename them, and `expected-2.5.0.json` with them.
+For stage 10: the v5 fixtures' page codes looked like they came from a real project. Done in stage 10: they are now `home-` and `team-v2-`, in `expected-2.5.0.json` too.
 
 ---
 
@@ -154,7 +170,7 @@ For stage 10: the v5 fixtures use page codes (`hf-`, `mpt-v2-`) that look like t
 | Date | Decision | Reason |
 |------|----------|--------|
 | 2026-04-10 | Per-page override key is `seguruDebugConfig`, not a second `sdtConfig` | Avoids collision with the WP-injected `sdtConfig` |
-| 2026-04-10 | Orange `#EA580C` for UI accent; Seguru blue `#00C0F3` reserved for the S mark badge | Brand handbook §10 — orange = functional, blue = brand mark only |
+| 2026-04-10 | Orange `#EA580C` for UI accent; Seguru blue `#00C0F3` reserved for the S mark badge | Brand guidelines: orange is functional, blue is the brand mark only (3.0: the mark is the orange StadiaRef icon) |
 | 2026-04-10 | Tree panel position shares toastPosMap offset (64px above toolbar) | Keeps Tree adjacent to toolbar without overlapping toast |
 | 2026-04-10 | Luminance threshold `0.40` for `sdt-on-dark` | Validated visually — anything below 40% relative luminance reads as dark enough to warrant white labels |
 | 2026-04-11 | Tree panel search/filter deferred after Phase 5 | Header context, click-to-jump, and improved row rhythm solved the readability problem without adding UI weight |

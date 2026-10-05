@@ -74,18 +74,18 @@ test('package.json: entry points, exports and published files', () => {
     './dist/stadiaref.min.js': './dist/stadiaref.min.js',
     './package.json': './package.json',
   });
-  assert.deepEqual(pkg.files, ['dist/*.mjs', 'dist/stadiaref.min.js', 'types', 'README.md', 'LICENSE', 'CHANGELOG.md']);
+  assert.deepEqual(pkg.files, ['dist/*.mjs', 'dist/stadiaref.min.js', 'types', 'README.md', 'LICENSE', 'NOTICE', 'CHANGELOG.md']);
   assert.deepEqual(pkg.peerDependencies, { astro: '>=7', vite: '>=5' });
   for (const target of Object.values(pkg.exports).flatMap((e) => (typeof e === 'string' ? [e] : Object.values(e)))) {
     assert.ok(fs.existsSync(path.join(ROOT, target)), target + ' exists');
   }
 });
 
-test('npm pack ships only the built files, types and the three documents', () => {
+test('npm pack ships only the built files, types and the four documents', () => {
   const out = execFileSync('npm', ['pack', '--dry-run', '--json'], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
   const files = JSON.parse(out)[0].files.map((f) => f.path).sort();
   assert.deepEqual(files, [
-    'CHANGELOG.md', 'LICENSE', 'README.md',
+    'CHANGELOG.md', 'LICENSE', 'NOTICE', 'README.md',
     'dist/astro-app.mjs', 'dist/astro.mjs', 'dist/core.mjs', 'dist/index.mjs', 'dist/stadiaref.min.js', 'dist/vite.mjs',
     'package.json',
     'types/astro.d.ts', 'types/core.d.ts', 'types/index.d.ts', 'types/vite.d.ts',

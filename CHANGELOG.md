@@ -8,85 +8,98 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 
 ## [Unreleased]
 
-Seguru Debug Toolbar becomes **StadiaRef**. Every 2.x name keeps working through 3.x; see `docs/migrating-from-2.x.md` once the 3.0 docs land.
+## [3.0.0] — YYYY-MM-DD
+
+**Seguru Debug Toolbar is now StadiaRef**: an address for every part of the screen. 3.0 is a rename and a feature release. It adds address profiles, the Show control, labels coded by tier, Pick and Find, support for single-page apps, dialogs and touch, a Vite plugin and an Astro integration. Every 2.x name keeps working through 3.x: see [Migrating from 2.x](docs/migrating-from-2.x.md).
 
 ### Breaking
 
-- **Renamed to StadiaRef.** npm package `stadiaref`, bundle `dist/stadiaref.min.js`, global `window.stadiaref`, config object `window.stadiarefConfig`, events `stadiaref:*`. The 2.x global, config objects, keys, methods and `sdt:*` events still work (see Deprecated).
-- **CSS classes and internal attributes renamed, with no alias.** Classes starting `sdt-` now start `stadiaref-`. `data-sdt-auto` and `data-sdt-auto-level` are `data-stadiaref-auto` and `data-stadiaref-auto-tier`. The shadow host is `#stadiaref-host`, the label stylesheet `#stadiaref-styles`. Update your own CSS or scripts if they touched these. `data-ref` and the `dataref-` class prefix are unchanged.
-- **`init()` takes every config key.** In 2.x it only read `hotkey`, `theme`, `dock` and `user`. `init({ startHidden: false })` after start now shows the toolbar; 2.x key names are accepted and mapped.
-- **The default address profile is `generic`.** 2.x sorted every address with the Titan grammar. 3.0 reads the tier from nesting by default: no addressed ancestor is a section; inside one, with addressed elements inside it, a block; otherwise an element. Labels may land in a different tier, which affects the Level filter (and Show, later). Pages written to the Titan grammar keep their old tiers with `profile: 'titan'`.
-- **Invalid addresses are unclassified in every profile.** The core rules: lower-case letters, digits and hyphens; no leading, trailing or doubled hyphen; at most 160 characters. Under the titan profile, an address with a doubled hyphen, which 2.x could read as a section, is now unclassified. `classifyDataRef()` still returns its 2.x answer.
-- **Show replaces Target and Level.** The toolbar's Target and Level menus are gone. **Show** is one button with a tick box per tier (sections, blocks, elements) in any mix, on keys **1**, **2**, **3**. **Auto-address** is one on/off setting (`autoAddress`, `setAutoAddress()`), not a toolbar control; an **AUTO** chip shows on the toolbar while it is on. `setDepth()`, `setLevelFilter()` and the `autoRef`, `autoRefDepth` and `levelFilter` keys keep their 2.x behaviour.
-- **Keys T and F are no longer bound.** Every key is now in one keymap (`keys`, `setKeys()`, `getKeys()`): toggle D, labels L, section 1, block 2, element 3, pick P, find /, outline O, hide Escape. Any key can be rebound or set to `false`.
-- **Keys work with Shift held**, so a digit or `/` that needs Shift on some layouts still works. Cmd, Ctrl and Alt still turn keys off.
-- **Esc leaves Pick or Find first**, and stops there; it no longer reaches a host dialog underneath. With neither open, Esc is left to an open modal dialog of the host page.
-- **`stadiaref:address-click` fires after the copy has been tried**, a moment after the click, not synchronously within it.
-- **Esc is left to an open modal dialog of the host page.** With none open, Esc hides everything as before.
-- **Automatic addresses changed form.** The slug and the element part are sanitised so every automatic address passes the core rules (`/test/demo.html` gives `test-demo-html-…`, not `test-demo.html-…`), and they are numbered from a counter instead of by position.
-- **Nothing is written to the page while StadiaRef is hidden.** 2.x injected its stylesheet, host and labels at start even when hidden. 3.0 adds nothing (no host, stylesheet, labels, classes, attributes or automatic addresses) until the toolbar is first shown, so a server-rendered app hydrates against untouched markup. The class converter, when on, still runs at start.
-- **No classes on the page's own elements or on `<body>`.** The tier classes (`sdt-ref-class-*`), the Level filter and presentation classes on `<body>`, the outline classes and the Tree highlight classes are gone. Global state is on `<html>` as `data-stadiaref-visible`, `data-stadiaref-labels` and `data-stadiaref-hidden-tiers`; outlines and highlights are StadiaRef's own nodes; per-element state is kept in a `WeakMap`.
-- **Labels show a tier tag and the address** (`SEC home-hero`), not the element's tag (`section · home-hero`). Icons-mode dots carry the tier's letter.
-- **Address events have a new detail.** `stadiaref:address-click`, `-hover` and `-leave` carry `{ address, tier, element }`, and the click adds `source`. `sdt:dataref-*` keep `{ dataRef, element, current }`.
+- **The default address profile is `generic`.** 2.x sorted every address with the Titan grammar. 3.0 reads the tier from nesting: an address with no addressed ancestor is a section; inside one, with addressed elements inside it, a block; otherwise an element. Pages written to the Titan grammar keep their tiers with `profile: 'titan'` (in WordPress: Settings → StadiaRef → Address profile).
+- **Target and Level are gone from the toolbar.** **Show** replaces both: one button with a tick box per tier (sections, blocks, elements), in any mix, on keys **1**, **2** and **3**. **Auto-address** is one on/off setting (`autoAddress`, `setAutoAddress()`), with an **AUTO** chip on the toolbar while it is on. `setDepth()`, `setLevelFilter()` and the `autoRef`, `autoRefDepth` and `levelFilter` keys keep their 2.x behaviour.
+- **Keys T and F are no longer bound.** Every key is in one keymap (`keys`, `setKeys()`, `getKeys()`): toggle D, labels L, section 1, block 2, element 3, pick P, find /, outline O, hide Esc. Any key can be rebound or set to `false`. Keys now work with Shift held, so a digit or `/` that needs Shift on some layouts still works; Cmd, Ctrl and Alt still turn them off.
+- **CSS classes and internal attributes are renamed, with no alias.** Classes starting `sdt-` now start `stadiaref-`. `data-sdt-auto` and `data-sdt-auto-level` are `data-stadiaref-auto` and `data-stadiaref-auto-tier`. The shadow host is `#stadiaref-host` and the label stylesheet `#stadiaref-styles`. Update your own CSS or scripts if they touched these. `data-ref` and the `dataref-` class prefix are unchanged.
+- **The WordPress plugin moved.** It is now `stadiaref/` (Settings → StadiaRef), with `stadiaref_*` options and updates from `segurudigital/stadiaref`. Install it next to the old plugin: your settings are copied over when you activate it, and it asks you to deactivate Seguru Debug Toolbar. Sites still on 2.x are offered Seguru Debug Toolbar 2.5.1, which points them to StadiaRef.
+- **Esc leaves Pick or Find first**, and stops there, so a host dialog underneath stays open. With neither open, Esc is left to an open modal dialog of the host page; with no dialog, it hides everything as before.
+- **Renamed to StadiaRef.** npm package `stadiaref`, script `dist/stadiaref.min.js`, global `window.stadiaref`, config `window.stadiarefConfig`, events `stadiaref:*`. The 2.x global, config objects, keys, methods and `sdt:*` events still work (see Deprecated).
+- **Nothing is written to the page while StadiaRef is hidden.** 2.x added its stylesheet, host and labels at start even when hidden. 3.0 adds nothing (no host, stylesheet, labels, classes, attributes or automatic addresses) until it is first shown, so a server-rendered app hydrates against untouched markup. The class converter, when on, still runs at start.
+- **No classes on the page's own elements or on `<body>`.** The tier classes (`sdt-ref-class-*`), the Level filter and presentation classes on `<body>`, and the outline and Tree highlight classes are gone. Global state is on `<html>` as `data-stadiaref-visible`, `data-stadiaref-labels`, `data-stadiaref-hidden-tiers` and `data-stadiaref-mode`; outlines and highlights are StadiaRef's own nodes.
+- **Invalid addresses are unclassified in every profile.** The core rules: lower-case letters, digits and hyphens; no leading, trailing or doubled hyphen; at most 160 characters. An address with a doubled hyphen, which 2.x could read as a section, is unclassified even under `titan`. `classifyDataRef()` still returns its 2.x answer.
+- **Labels show a tier tag and the address** (`SEC home-hero`), not the element's tag. Icons-mode dots carry the tier's letter.
+- **Address events have a new detail.** `stadiaref:address-click`, `-hover` and `-leave` carry `{ address, tier, element }`; the click adds `source` and `copied`, and fires once the copy has been tried, a moment after the click. `sdt:dataref-*` keep `{ dataRef, element, current }`.
+- **Automatic addresses changed form.** They pass the core rules (`/test/demo.html` gives `test-demo-html-…`) and are numbered from a counter, so an element keeps its address for the page view.
+- **`init()` takes every config key**, at any time. In 2.x it only read `hotkey`, `theme`, `dock` and `user`. `init({ startHidden: false })` after start shows StadiaRef.
+- **The package is ES modules only**, with an `exports` map; `main` is `dist/index.mjs`. The script-tag build is still `dist/stadiaref.min.js` (also `unpkg` and `jsdelivr`).
 
-### Added
+### New
 
-- `setLabels('full' | 'icons' | 'off')` / `getLabels()`, the `labels` config key, the `data-labels` script attribute, and `stadiaref:labels-change` `{ labels }`.
+**Addresses**
+
+- **Profiles:** `generic` (the default, tiers from nesting), `app` (`[product]-[surface]-[screen]-[part]` for web apps and PWAs) and `titan`. Choose one with the `profile` config key, the `data-profile` script attribute, `setProfile()` or `init({ profile })`; `getProfile()` returns it. A name that isn't registered warns once and uses `generic` until it is.
+- `registerProfile({ name, classify, validate?, parse? })` adds your own profile. Taken names throw, so built-ins can't be replaced. `classify(address)` and `validate(address)` on the API use the active profile.
+- **`stadiaref/core`**: `validate`, `classify`, `parse`, `registerProfile` and `profiles`, with no DOM, so a CI check in Node uses the same rules as the toolbar. The overlay and the core share one profile registry.
+- **The [Stadia Address core spec](docs/spec/stadia-address-core.md):** what a valid address is, the tiers, nesting, what a profile must do and the three built-in profiles, with examples.
+- Tiers are worked out again on every survey, so they follow the page as content is added. A duplicated address logs one console warning per survey.
+
+**The toolbar**
+
+- **Labels coded by tier:** sections solid orange (`SEC`), blocks dark (`BLK`), elements light with a border (`EL`), unclassified dashed amber (`?`), automatic addresses dashed (`AUTO`), each with a version for dark surfaces. Every text colour passes 4.5:1.
+- **Show** (`setTiers()`, `getTiers()`, the `tiers` key, `stadiaref:tiers-change`). `setTiers([])` shows no labels.
+- **Labels** by name: `setLabels('full' | 'icons' | 'off')`, `getLabels()`, the `labels` key, the `data-labels` attribute and `stadiaref:labels-change`.
+- **Auto-address:** `setAutoAddress()`, `getAutoAddress()`, the `autoAddress` key and `stadiaref:auto-address-change`.
+- **Pick** (P, `pick()`): point at something to see its section, block and element; the up and down arrows move between them, and a click copies. Clicks while picking never reach the page. On touch, a tap opens a sheet with Copy address, Parent and Close.
+- **Find** (/, `find(query)`): type or paste an address, or part of one, and jump to it. Matches every address on the screen, including tiers Show hides; lists matches in closed containers as hidden; with an exact address, lists what is inside it. `find()` returns the matching addresses.
+- **The new toolbar and brand:** the StadiaRef icon and logotype (nothing removes them), Labels, Show, the AUTO chip, Pick, Find, Outline and Tree, in light and dark. ARIA menus with keyboard support, pressed states and focus rings.
+- **Compact layout:** under 480px wide, or with a coarse pointer, the toolbar wraps, captions shrink to their key letter and every control is at least 44px tall.
+- The Tree, the address chain and the toast carry tier tags. The toast is announced to assistive technology and says "Could not copy" when the clipboard refuses. The Tree's copy button fires `stadiaref:address-click` too.
 - `stadiaref.ready`, a promise that resolves with the API once StadiaRef has started.
-- `setTiers()` / `getTiers()`, the `tiers` config key and `stadiaref:tiers-change` `{ tiers }`. `setTiers([])` shows no labels. Unclassified labels show only while every tier is shown.
-- `setAutoAddress()` / `getAutoAddress()`, the `autoAddress` config key and `stadiaref:auto-address-change` `{ autoAddress }`.
-- `setKeys()` / `getKeys()` and the `keys` config key.
-- **Labels coded by tier**: sections solid orange (`SEC`), blocks dark (`BLK`), elements light with a border (`EL`), unclassified dashed amber (`?`), automatic addresses dashed (`AUTO`), each with a version for dark surfaces.
-- **New toolbar and brand.** The StadiaRef icon and logotype (always present; nothing removes them), Labels, Show, the AUTO chip, Pick, Find, Outline and Tree, restyled to the 3.0 design in light and dark. Menus are proper ARIA menus with keyboard support; Pick, Find and Tree report their pressed state; every control shows a focus ring.
-- **Compact layout.** Under 480px wide, or with a coarse pointer, the toolbar wraps onto extra rows, captions shrink to their key letter and every control is at least 44px tall. Under 480px the logotype drops and the icon stays.
-- The Tree, the address chain and the toast carry tier tags (SEC, BLK, EL, ?, AUTO) and the new styles. The toast is announced to assistive technology.
-- **Pick** (P, `pick()` / `pick(false)`): point at something to get its address. Labels step aside, a chip shows the section, block and element under the pointer, the up and down arrows move between them, and a click copies. Clicks while picking never reach the page.
-- **Find** (/, `find(query)` / `find(false)`): type or paste an address, or part of one. Matches every address on the screen, including tiers Show hides; lists matches inside closed containers as hidden; with an exact address, lists what is inside it too. Enter jumps: the page scrolls to the match, frames it and dims the rest. `find()` returns the matching addresses.
-- `stadiaref:address-click` carries `source` (`'label'`, `'tree'`, `'pick'`, `'find'`) and `copied`. It fires after the copy has been tried, so `copied` says whether the address reached the clipboard; the toast says "Could not copy" when it didn't. The Tree's copy button now fires it too.
-- The shadow host carries `data-stadiaref-root`, the marker to search a production build for.
-- **Profiles.** `generic` (default, tiers from nesting), `app` (`[product]-[surface]-[screen]-[part]` for web apps and PWAs, tiers from nesting) and `titan` (the Titan Foundation grammar). Choose one with the `profile` config key, the `data-profile` script attribute, `setProfile()` or `init({ profile })`; `getProfile()` returns it. A name that isn't registered warns once and uses generic until it is.
-- `registerProfile({ name, classify, validate?, parse? })` adds your own profile. Taken names throw, so built-ins can't be replaced.
-- `classify(address)` and `validate(address)` on the API, using the active profile.
-- **The Stadia Address core spec** (`docs/spec/stadia-address-core.md`): what a valid address is, the three tiers, nesting context, what a profile must do, and the three built-in profiles, with examples. A unit test keeps it in step with `stadiaref/core`.
-- **`stadiaref/core`** (`dist/core.mjs`): `validate`, `classify`, `parse`, `registerProfile` and `profiles`, with no DOM. It runs in Node, so a CI check uses the same rules as the toolbar. The overlay and the core share one profile registry.
-- Tiers are recomputed on every survey, so an element's tier follows the page as content is added. A duplicated address logs one console warning per survey.
-- **Watching the page** (`watch`, default on). StadiaRef re-surveys when the page changes: a route change in a single-page app, content mounted after a fetch, an address changed on a reused element, a late `dataref-` class. Labels for content that has gone go with it. Changes are batched to at most one survey per frame. `refresh()` still works; `watch: false` turns the watching off.
-- **Labels put back.** A label that a framework re-render deletes is put back on the next frame.
-- **Self-repair.** If a client router swaps `<body>`, or the label stylesheet or StadiaRef's `<html>` attributes are removed, StadiaRef puts them back and re-surveys. It also listens for Astro's `astro:after-swap` and `astro:page-load`, and its host is marked `data-astro-transition-persist`.
-- **Dialogs.** While a host modal is open (a `<dialog>` opened with `showModal()`, or `role="dialog"` / `alertdialog` with `aria-modal="true"`), only the labels inside it show, a status line says how many there are, and the toolbar moves into the modal so it can still be clicked and typed into. Esc is left to the dialog. Find searches inside the dialog only.
-- **Pick on touch.** Tap an element and a sheet rises with its chain, the full address, and Copy address, Parent and Close buttons at least 44px tall.
-- **Safe areas and fixed bars.** The toolbar and its panels keep clear of the device's safe-area insets and of a full-width bar fixed to the edge they dock on. `dockOffset: { top, right, bottom, left }` sets the distance yourself; a side it sets replaces the detected bar.
-- **`import 'stadiaref'`** (`dist/index.mjs`): the overlay as an ES module. Importing it starts StadiaRef in a browser and does nothing on a server; the default export is the API, the same object as `window.stadiaref`. It shares one profile registry with `stadiaref/core`.
-- **`stadiaref/vite`**: a Vite plugin that loads StadiaRef on the dev server only. `vite build` adds nothing.
-- **`stadiaref/astro`**: an Astro integration (Astro 7 and later) that loads StadiaRef during `astro dev` only, as an app in Astro's Dev Toolbar. Its panel has the brand, the AUTO chip, Labels, Show, Outline, the address count, Pick, Find and Tree; the floating toolbar steps aside while the Dev Toolbar is there and comes back when it is turned off.
+- `setKeys()`, `getKeys()` and the `keys` config key.
+
+**Apps and PWAs**
+
+- **Watching the page** (`watch`, default on): StadiaRef re-surveys when a single-page app changes route, content mounts after a fetch, an address changes on a reused element or a `dataref-` class arrives late. Labels for content that has gone go with it. At most one survey per frame.
+- **Labels put back:** a label that a framework re-render deletes comes back on the next frame.
+- **Self-repair:** if a client router swaps `<body>`, or the label stylesheet or StadiaRef's `<html>` attributes are removed, StadiaRef puts them back. It follows Astro's view transitions too.
+- **Dialogs:** while a modal is open (a `<dialog>` opened with `showModal()`, or `role="dialog"` / `alertdialog` with `aria-modal="true"`), only the labels inside it show, a status line counts them, and the toolbar moves into the dialog so it can still be used. Find searches inside the dialog only.
+- **Safe areas and tab bars:** the toolbar keeps clear of the device's safe-area insets and of a full-width bar fixed to its edge. `dockOffset: { top, right, bottom, left }` sets the distance yourself.
+- StadiaRef never starts twice: a second copy, or one next to Seguru Debug Toolbar 2.x, logs one warning and doesn't start.
+
+**Installing**
+
+- **`import 'stadiaref'`:** the overlay as an ES module. It starts StadiaRef in a browser and does nothing on a server; the default export is the API, the same object as `window.stadiaref`.
+- **`stadiaref/vite`:** a Vite plugin that loads StadiaRef on the dev server only.
+- **`stadiaref/astro`:** an Astro integration (Astro 7 and later) that loads StadiaRef during `astro dev` only, as an app in Astro's Dev Toolbar. If the Dev Toolbar is turned off, the floating toolbar comes back.
 - Both take any config key, plus `setup`: a module in your project whose default export receives the API before the options are applied and before the first survey.
 - TypeScript types for `stadiaref`, `stadiaref/core`, `stadiaref/vite` and `stadiaref/astro`, including the `stadiaref:*` events on `window`.
-- **WordPress plugin renamed to StadiaRef** (`stadiaref/`, Settings → StadiaRef). Settings from Seguru Debug Toolbar 2.x are copied over once when it is activated (and by the mu-plugin); the 2.x options are left in place. New setting: Address profile (Generic, Titan, App). The settings reach the script as `window.stadiarefConfig`, with real booleans, and a page's own config still wins. While Seguru Debug Toolbar is still active, StadiaRef asks for it to be deactivated and doesn't load a second copy. Updates come from `segurudigital/stadiaref` releases (`stadiaref-wp-v<version>.zip`).
-- **Seguru Debug Toolbar 2.5.1**, the last release under the old name, for sites still on 2.x: the 2.5.0 plugin with its self-updater removed and one dismissible notice that points to StadiaRef. Built by `npm run build:wp-bridge`.
-- StadiaRef never starts twice. If a copy of StadiaRef, or a 2.x Seguru Debug Toolbar, is already running on the page, a second copy logs one warning and doesn't start.
+- The shadow host carries `data-stadiaref-root`, the marker to search a production build for. [Keeping StadiaRef out of production](docs/keep-it-out-of-production.md) shows how.
 
-### Fixed
+**WordPress**
 
-- In `sdt:dataref-click` from the address chain, `current` was always the chain's last row; it is now the row that was clicked.
-- Labels no longer wrap onto several lines inside narrow elements such as buttons.
-- Labels of `<img>`, `<input>` and other void elements escaped the Level filter, because they mount in a host beside the element. Every label node now carries its own tier, so Show hides them like any other.
-- Automatic addresses could repeat or change from one survey to the next. An element now keeps its automatic address for as long as it is in the page, and a new element never reuses a number.
-- Start-up order. The global is assigned before start, calls made before start are queued and applied once it has, then `ready` resolves, then `stadiaref:ready` fires. In 2.5.0 a deferred script fired `sdt:ready` before `window.seguruDebugToolbar` existed, and a setter called before `DOMContentLoaded` from a script in `<head>` could throw.
+- **The StadiaRef plugin** (Settings → StadiaRef), with a new Address profile setting. Settings reach the script as `window.stadiarefConfig`, with real booleans, and a page's own config still wins. Until Seguru Debug Toolbar is deactivated, StadiaRef doesn't load a second copy.
+- **Seguru Debug Toolbar 2.5.1**, the last release under the old name: 2.5.0 with its self-updater removed and one dismissible notice that points to StadiaRef.
 
 ### Deprecated
 
 These work as they did in 2.5.0 and are removed in 4.0:
 
-- `window.seguruDebugToolbar` (same object as `window.stadiaref`; logs one console notice on first use).
-- `window.seguruDebugConfig` and `window.sdtConfig`, read for any key `window.stadiarefConfig` doesn't set. Config keys `defaultMode`, `outlineMode` and `position` map to `labels`, `outline` and `dock`.
-- `setState()` / `getState()`, `setDepth()` / `getDepth()`, `setLevelFilter()` / `getLevelFilter()`, `classifyDataRef()`, `setHotkey()` / `getHotkey()`.
+- `window.seguruDebugToolbar` (the same object as `window.stadiaref`; logs one console notice on first use).
+- `window.seguruDebugConfig` and `window.sdtConfig`, read for any key `window.stadiarefConfig` doesn't set. The keys `defaultMode`, `outlineMode`, `position`, `levelFilter`, `autoRef` and `hotkey` are mapped to their 3.0 names; `autoRefDepth` keeps its 2.x meaning.
+- `setState()` / `getState()`, `setDepth()` / `getDepth()`, `setLevelFilter()` / `getLevelFilter()`, `classifyDataRef()` (always the Titan grammar), `setHotkey()` / `getHotkey()`.
 - `sdt:*` events, fired after their `stadiaref:*` twins.
 - The theme saved under `seguru-debug-toolbar:theme` is moved to `stadiaref:theme` once.
 
-### Changed
+### Fixed
 
-- `package.json` has an `exports` map; `main` is now `dist/index.mjs`. The script-tag build is still `dist/stadiaref.min.js` (also `unpkg` and `jsdelivr`). ESM only.
-- The source is now ES modules under `src/overlay/`, bundled by esbuild into the same single file. No behaviour change: the built overlay produces the same page and toolbar DOM as 2.5.0 on the demo page and the v5 fixtures.
+- In `sdt:dataref-click` from the address chain, `current` was always the chain's last row; it is now the row that was clicked.
+- Labels no longer wrap onto several lines inside narrow elements such as buttons.
+- Labels of `<img>`, `<input>` and other void elements escaped the Level filter; Show hides them like any other.
+- Automatic addresses could repeat or change from one survey to the next.
+- Start-up order: the global is assigned before start, calls made before start are queued, then `ready` resolves, then `stadiaref:ready` fires. In 2.5.0 a deferred script fired `sdt:ready` before `window.seguruDebugToolbar` existed, and a setter called from a script in `<head>` could throw.
+
+### Under the hood
+
+- The source is ES modules (`src/core/`, `src/overlay/`, `src/compat/`, `src/integrations/`), bundled by esbuild into one file for the script tag.
+- Tests: a baseline suite pinned to 2.5.0 before the refactor, every 2.x name tested, browser tests against the source and the build, the Vite, Astro and WordPress integrations, and a bundle-size budget in CI.
+- `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, issue and pull request templates, and `NOTICE` (trademarks and the Barlow credit for the logotype).
 
 ---
 
@@ -156,9 +169,9 @@ v4.0 pages continue to work unchanged. Their refs match the element classifier p
 
 ## [2.3.1] — 2026-05-21
 
-Two related fixes for ref-label crowding on dense pages, both surfaced from an EC cowork session against `https://expeditioncentre.local/Pages/mulgo/mulgo-screen.html` and `home-screen.html`:
+Two related fixes for ref-label crowding on dense pages, both found while testing two dense screens on a client site:
 
-1. **Click-intercept hotfix** for labels overlaying mega menus, dropdowns, and any other container hidden with `opacity:0` / `visibility:hidden` / `display:none`. Reproduced in a 200ms opacity ease-out close transition on `.ec-mega-menu` panels. Two-layer defence — a structural belt that defaults labels to `pointer-events: none` (opt-in via the new `.sdt-visible-host` class) and a timing brace that eager-hides descendant labels the moment an ancestor's class/style mutates, before the next rAF tick can read a mid-transition opacity value.
+1. **Click-intercept hotfix** for labels overlaying mega menus, dropdowns, and any other container hidden with `opacity:0` / `visibility:hidden` / `display:none`. Reproduced with a 200ms opacity ease-out close transition on mega-menu panels. Two-layer defence — a structural belt that defaults labels to `pointer-events: none` (opt-in via the new `.sdt-visible-host` class) and a timing brace that eager-hides descendant labels the moment an ancestor's class/style mutates, before the next rAF tick can read a mid-transition opacity value.
 2. **Cluster collapse** for the residual case where N labels would still pile at the same anchor after the overlap solver exhausts its lift attempts (typically tightly nested refs — e.g. an article with `h3 + summary + p` all data-ref'd). The unplaceable labels are hidden and surfaced via a single orange "+N" badge next to the placed label; hovering the badge expands a popover listing each clustered ref, click-to-copy with the same semantics as a normal label.
 
 ### Fixed
@@ -186,7 +199,7 @@ Two related fixes for ref-label crowding on dense pages, both surfaced from an E
 
 ### Verification
 
-Click-intercept probe — `home-screen.html`, 345 refs, `elementsFromPoint` at a 60×60 grid (168 sample points) across the nav-panel area. Numbers are v2.3.0 → v2.3.1:
+Click-intercept probe — a dense home screen, 345 refs, `elementsFromPoint` at a 60×60 grid (168 sample points) across the nav-panel area. Numbers are v2.3.0 → v2.3.1:
 
 - Steady state, panel closed: 17 → 1 intercepts (all from real visible nav content)
 - Opened state: 26 → varies (real visible content)
@@ -194,7 +207,7 @@ Click-intercept probe — `home-screen.html`, 345 refs, `elementsFromPoint` at a
 - Close t=150ms (opacity ≈ 0.01): 20 → 1
 - Close t=250ms (opacity = 0, settled): 17 → 1
 
-Cluster-collapse probe — `mulgo-screen.html`, 411 labels, depth=element, label-mode=Full:
+Cluster-collapse probe — a dense listing screen, 411 labels, depth=element, label-mode=Full:
 
 - v2.3.0: 314 visible labels, **45 overlapping pairs**, worst refs participate in 4 overlaps each
 - v2.3.1: 273 visible labels + 41 clustered into 21 `+N` badges, **0 overlapping pairs**

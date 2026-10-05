@@ -1,0 +1,65 @@
+name: CI
+
+# Every push and pull request: build, unit tests (including php -l and the
+# WordPress plugin against a stand-in), browser tests against the source and
+# the build, the bundle-size budget, the Vite and Astro integration projects
+# with the type checks, and the WordPress plugin on WordPress Playground.
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build, unit and browser tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+          tools: none
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - name: Bundle-size budget
+        run: npm run size
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 7
+
+  integration:
+    name: Vite, Astro and types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:integration
+
+  wordpress:
+    name: WordPress plugin on WordPress Playground
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:wordpress

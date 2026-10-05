@@ -1,6 +1,6 @@
 {
   "name": "stadiaref",
-  "version": "3.0.0-dev",
+  "version": "3.0.0",
   "description": "An address for every part of the screen. StadiaRef shows data-ref attributes as labels you can point at and copy. For websites, web apps and PWAs.",
   "type": "module",
   "main": "./dist/index.mjs",
@@ -33,6 +33,7 @@
     "types",
     "README.md",
     "LICENSE",
+    "NOTICE",
     "CHANGELOG.md"
   ],
   "scripts": {
@@ -43,6 +44,7 @@
     "test": "npm run build && npm run test:unit && npm run test:browser",
     "test:unit": "node --test 'test/unit/**/*.test.mjs'",
     "test:browser": "playwright test",
+    "size": "node scripts/check-size.mjs",
     "prepublishOnly": "npm run build",
     "test:integration": "npm run build && node test/integration/run.mjs",
     "test:wordpress": "npm run build:wp && npm run build:wp-bridge && npm install --prefix test/integration/wordpress --no-package-lock --no-audit --no-fund && node test/integration/wordpress/run.mjs"

@@ -1,17 +1,17 @@
-name: Attach release assets
+name: Release
 
-# Builds the minified JS and the WordPress plugin zip on every published release,
-# then attaches both as assets on that release. The WordPress self-update hook
-# in wordpress/seguru-debug-toolbar/seguru-debug-toolbar.php requires the zip
-# asset to exist on the release and match the name pattern
-# /seguru-debug-toolbar-wp-v[\d.]+\.zip/ — this workflow is what guarantees that.
+# On every published release: build, then attach the release assets, then
+# publish the package to npm.
 #
-# Trigger: publishing a release via the GitHub UI, `gh release create`, or the
-# "Publish release" button on a previously-drafted release.
+#   stadiaref.min.js                       the script-tag build
+#   stadiaref-wp-v<version>.zip            the WordPress plugin. Its updater
+#                                          looks for this name
+#   seguru-debug-toolbar-wp-v2.5.1.zip     the bridge for sites still on
+#                                          Seguru Debug Toolbar 2.x. Their
+#                                          updater only accepts this name
 #
-# Manual re-run: use the "workflow_dispatch" trigger below with the tag name
-# (e.g. v2.2.0) — useful if the first run failed and you need to retry without
-# deleting and re-creating the release.
+# Manual re-run: the workflow_dispatch trigger takes the tag (e.g. v3.0.0),
+# for when a run failed and the release already exists.
 
 on:
   release:
@@ -19,16 +19,18 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing release tag to attach assets to (e.g. v2.2.0)"
+        description: "Existing release tag to attach assets to (e.g. v3.0.0)"
         required: true
 
 permissions:
-  contents: write   # required to upload release assets via gh release upload
-  id-token: write   # required for npm publish --provenance (signed package attestation)
+  contents: write   # gh release upload
+  id-token: write   # npm publish --provenance
 
 jobs:
   build-and-attach:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.name }}
     steps:
       - name: Resolve release tag
         id: tag
@@ -43,115 +45,76 @@ jobs:
             echo "name=$INPUT_TAG" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Checkout at release tag
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: ${{ steps.tag.outputs.name }}
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
-      - name: Verify package.json version matches release tag
+      - name: Check the tag matches package.json
         env:
           TAG_NAME: ${{ steps.tag.outputs.name }}
         run: |
-          pkg_version=$(node -p "require('./package.json').version")
-          expected="v${pkg_version}"
+          expected="v$(node -p "require('./package.json').version")"
           if [ "$TAG_NAME" != "$expected" ]; then
             echo "::error::Release tag ($TAG_NAME) does not match package.json version ($expected)."
-            echo "::error::Bump package.json to ${TAG_NAME#v} before tagging, or retag with the correct version."
             exit 1
           fi
 
-      - name: Build minified JS
-        run: npm run build
-
-      - name: Build WordPress plugin zip
-        run: npm run build:wp
-
-      - name: Locate built zip
-        id: zip
+      - name: Build
         run: |
-          # Derive the expected zip path from package.json directly — do NOT
-          # glob dist/ because historical zips for prior versions are
-          # committed there and an alphabetical ls would pick v1.3.0 first.
-          version=$(node -p "require('./package.json').version")
-          zip_path="dist/seguru-debug-toolbar-wp-v${version}.zip"
-          if [ ! -f "$zip_path" ]; then
-            echo "::error::Expected $zip_path, build:wp did not produce it."
-            ls -la dist/
-            exit 1
-          fi
-          echo "path=$zip_path" >> "$GITHUB_OUTPUT"
-          echo "name=$(basename "$zip_path")" >> "$GITHUB_OUTPUT"
+          npm run build
+          npm run size
+          npm run build:wp
+          npm run build:wp-bridge
 
-      - name: Upload assets to release
+      - name: Upload assets to the release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG_NAME: ${{ steps.tag.outputs.name }}
-          ZIP_PATH: ${{ steps.zip.outputs.path }}
         run: |
+          version=$(node -p "require('./package.json').version")
+          for f in dist/stadiaref.min.js "dist/stadiaref-wp-v${version}.zip" dist/seguru-debug-toolbar-wp-v2.5.1.zip; do
+            if [ ! -f "$f" ]; then echo "::error::$f was not built."; ls -la dist/; exit 1; fi
+          done
           gh release upload "$TAG_NAME" \
-            "$ZIP_PATH" \
-            "dist/seguru-debug-toolbar.min.js" \
+            dist/stadiaref.min.js \
+            "dist/stadiaref-wp-v${version}.zip" \
+            dist/seguru-debug-toolbar-wp-v2.5.1.zip \
             --clobber
 
-  # Publishes the package to npm on every release. Gated on NPM_TOKEN being
-  # present so forks and preview environments don't fail the workflow.
-  #
-  # continue-on-error: true for now — npm token issues shouldn't block the
-  # GitHub release. Remove once we've seen a clean publish in production.
+  # Publishes `stadiaref` to npm with provenance. Authenticated with the
+  # NPM_TOKEN repository secret. A missing token or a failed publish fails
+  # the job, so it can't go unnoticed. npm refuses to publish a version that
+  # already exists, so a manual re-run can't publish twice.
   publish-npm:
     needs: build-and-attach
     runs-on: ubuntu-latest
-    continue-on-error: true
-    # Runs on both `release: published` (normal flow) and `workflow_dispatch`
-    # (manual retries — e.g. after rotating a broken NPM_TOKEN). The
-    # downstream `npm publish` is idempotent: if the version already exists
-    # on the registry, npm rejects it with a loud error, so manual re-runs
-    # can't silently re-publish the same version.
     steps:
-      - name: Resolve release tag
-        id: tag
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-          INPUT_TAG: ${{ github.event.inputs.tag }}
-        run: |
-          if [ "$EVENT_NAME" = "release" ]; then
-            echo "name=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
-          else
-            echo "name=$INPUT_TAG" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Checkout at release tag
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          ref: ${{ steps.tag.outputs.name }}
+          ref: ${{ needs.build-and-attach.outputs.tag }}
 
-      - name: Setup Node with npm registry auth
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           registry-url: "https://registry.npmjs.org"
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
       - name: Publish to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           if [ -z "${NODE_AUTH_TOKEN}" ]; then
-            echo "::warning::NPM_TOKEN secret not set — skipping publish. Add it under Settings → Secrets and variables → Actions to enable npm releases."
-            exit 0
+            echo "::error::The NPM_TOKEN secret isn't set. Add it under Settings → Secrets and variables → Actions, then re-run this workflow with the tag."
+            exit 1
           fi
-          # prepublishOnly in package.json will run `npm run build` before publish.
+          # prepublishOnly runs `npm run build` first.
           npm publish --provenance --access public

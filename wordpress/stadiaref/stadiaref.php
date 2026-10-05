@@ -3,7 +3,7 @@
  * Plugin Name:       StadiaRef
  * Plugin URI:        https://github.com/segurudigital/stadiaref
  * Description:       An address for every part of the screen. Shows each data-ref address as a label you can point at and copy.
- * Version:           3.0.0-dev
+ * Version:           3.0.0
  * Author:            Seguru Digital
  * Author URI:        https://seguru.digital
  * License:           MIT
@@ -20,7 +20,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 // ── Constants ─────────────────────────────────────────────────
-define( 'STADIAREF_VERSION', '3.0.0-dev' );
+define( 'STADIAREF_VERSION', '3.0.0' );
 define( 'STADIAREF_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'STADIAREF_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'STADIAREF_OPTION_GROUP', 'stadiaref_settings' );
