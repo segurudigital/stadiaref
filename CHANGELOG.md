@@ -8,7 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 
 ## [Unreleased]
 
-## [3.0.0] — YYYY-MM-DD
+## [3.0.0] — 2026-10-06
 
 **Seguru Debug Toolbar is now StadiaRef**: an address for every part of the screen. 3.0 is a rename and a feature release. It adds address profiles, the Show control, labels coded by tier, Pick and Find, support for single-page apps, dialogs and touch, a Vite plugin and an Astro integration. Every 2.x name keeps working through 3.x: see [Migrating from 2.x](docs/migrating-from-2.x.md).
 

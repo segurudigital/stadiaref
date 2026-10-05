@@ -17,7 +17,6 @@
 **Next, for the maintainer** (none of this is done by an agent):
 - Review, then push `main`.
 - Rename the GitHub repo to `stadiaref` if not done yet (the 3.0 plugin's updater and the docs point at `segurudigital/stadiaref`).
-- Fill in the date on the `[3.0.0]` heading in `CHANGELOG.md`.
 - Publish the GitHub release `v3.0.0` with `RELEASE_NOTES.md`. The release workflow attaches `stadiaref.min.js`, `stadiaref-wp-v3.0.0.zip` and `seguru-debug-toolbar-wp-v2.5.1.zip`, then publishes `stadiaref` to npm (needs the `NPM_TOKEN` secret).
 - Deprecate `@segurudigital/seguru-debug-toolbar` on npm, pointing at `stadiaref`.
 - Turn on GitHub Pages with GitHub Actions as the source (the demo page workflow), branch protection, and npm trusted publishing once the package exists.
