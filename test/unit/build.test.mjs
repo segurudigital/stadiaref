@@ -29,3 +29,8 @@ test('the bundle makes no network requests', () => {
 test('the package has no runtime dependencies', () => {
   assert.equal(Object.keys(pkg.dependencies || {}).length, 0);
 });
+
+test('the data-stadiaref-root marker is in the overlay bundle and not in core', () => {
+  assert.ok(fs.readFileSync(BUNDLE, 'utf8').includes('data-stadiaref-root'));
+  assert.ok(!fs.readFileSync(path.join(ROOT, 'dist/core.mjs'), 'utf8').includes('data-stadiaref-root'));
+});

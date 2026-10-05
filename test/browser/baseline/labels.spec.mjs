@@ -60,6 +60,7 @@ test.describe('demo page label counts', () => {
 
   test('auto-ref section depth numbers by position in the section list', async ({ page }) => {
     await open(page, '/test/demo.html?ar=1');
+    await page.evaluate(() => window.stadiaref.show());
     // Target: Sections has no 3.0 control; this is the 2.x call on the new global.
     await page.evaluate(() => window.stadiaref.setDepth('section'));
     const autos = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-ref')));
@@ -130,7 +131,11 @@ test.describe('label structure', () => {
     const kinds = await page.evaluate(() => Array.from(document.querySelector('[data-ref="home-hero"]').children)
       .map((c) => c.className.split(' ')[0]).filter((c) => c.startsWith('stadiaref-')));
     expect(kinds).toEqual(['stadiaref-ref-link', 'stadiaref-ref-icon', 'stadiaref-ref-tooltip', 'stadiaref-ref-full-label']);
-    expect(await page.locator('[data-ref="home-hero"] > .stadiaref-ref-full-label').textContent()).toBe('section · home-hero');
+    // 3.0: a tier tag and the address (2.5.0: "section · home-hero").
+    const label = page.locator('[data-ref="home-hero"] > .stadiaref-ref-full-label');
+    await expect(label.locator('.stadiaref-ref-tag')).toHaveText('SEC');
+    await expect(label.locator('.stadiaref-ref-address')).toHaveText('home-hero');
+    await expect(page.locator('[data-ref="home-hero"] > .stadiaref-ref-icon')).toHaveText('S');
   });
 
   test('luminance check marks labels on dark backgrounds', async ({ page }) => {
@@ -140,12 +145,12 @@ test.describe('label structure', () => {
   });
 
   test('static hosts get position: relative', async ({ page }) => {
-    await open(page, harness());
+    await open(page, harness({ page: { startHidden: false } }));
     expect(await page.evaluate(() => document.querySelector('[data-ref="home-hero"]').style.position)).toBe('relative');
   });
 
   test('labels mount in the page DOM; toolbar and toast in the shadow root', async ({ page }) => {
-    await open(page, harness());
+    await open(page, harness({ page: { startHidden: false } }));
     expect(await page.evaluate(() => !!document.getElementById('stadiaref-styles'))).toBe(true);
     expect(await page.evaluate(() => !!document.querySelector('.stadiaref-toolbar'))).toBe(false);
     expect(await shadow(page, '.stadiaref-toolbar').count()).toBe(1);
@@ -157,7 +162,7 @@ test.describe('label structure', () => {
     const host = page.locator('#wrap > .stadiaref-ref-void-host');
     await expect(host).toHaveCount(1);
     await expect(host).toHaveAttribute('data-stadiaref-host-for', 'home-photo');
-    expect(await host.locator('.stadiaref-ref-full-label').textContent()).toBe('img · home-photo');
+    await expect(host.locator('.stadiaref-ref-full-label .stadiaref-ref-address')).toHaveText('home-photo');
     expect(await visibleFullLabelRefs(page)).toContain('home-photo');
   });
 
@@ -174,6 +179,7 @@ test.describe('label structure', () => {
 // 3.0 numbers them 01–31 from a counter; 2.5.0 used positions in the full
 // candidate list.
 const AUTO_COUNT_DEMO = 31;
-// Two of the demo-control buttons sit close enough at 1280×900 that the
-// overlap solver collapses their labels into "+N" cluster badges.
-const AUTO_HIDDEN_DEMO = 2;
+// One demo-control button sits close enough to another at 1280×900 that
+// the overlap solver folds its label into a "+N" cluster badge. (2.5.0's
+// smaller labels folded two.)
+const AUTO_HIDDEN_DEMO = 1;

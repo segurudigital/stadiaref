@@ -38,19 +38,28 @@ async function load(page, url, which) {
     await page.addInitScript(() => { window.stadiarefConfig = { profile: 'titan' }; });
   }
   await page.goto(url);
-  await page.waitForFunction(() => window.seguruDebugToolbar && document.querySelector('#seguru-debug-toolbar-host, #stadiaref-host'));
+  // 2.5.0 mounts its host at start; 3.0 resolves `ready` and mounts on show.
+  await page.waitForFunction(() => window.seguruDebugToolbar && (document.querySelector('#seguru-debug-toolbar-host') || window.seguruDebugToolbar.ready));
   await page.evaluate(() => { window.seguruDebugToolbar.show(); window.seguruDebugToolbar.setState(2); });
 }
 
-// Elements whose full label is rendered, with their tag and address.
+// Elements whose full label is on screen, with their tag and address. A
+// label folded into a "+N" badge by the overlap solver counts: it is on
+// screen through the badge, and which labels fold depends on label size,
+// which 3.0 changed. A folded label only counts if it would show without
+// the fold (2.5.0 also folded labels its Level filter had hidden).
 function onScreen(page) {
   return page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => {
     const out = {};
     document.querySelectorAll('.sdt-ref-full-label, .stadiaref-ref-full-label').forEach((label) => {
-      const cs = getComputedStyle(label);
-      if (cs.display === 'none' || label.getClientRects().length === 0) return;
+      const folded = ['sdt-ref-clustered', 'stadiaref-ref-clustered'].filter((c) => label.classList.contains(c));
+      folded.forEach((c) => label.classList.remove(c));
+      const shown = getComputedStyle(label).display !== 'none' && label.getClientRects().length > 0;
+      folded.forEach((c) => label.classList.add(c));
+      if (!shown) return;
       const host = label.parentElement;
-      const owner = host._sdtOwner || host._stadiarefOwner || host;
+      const isVoidHost = host.classList.contains('sdt-ref-void-host') || host.classList.contains('stadiaref-ref-void-host');
+      const owner = host._sdtOwner || (isVoidHost ? host.previousElementSibling : host);
       out[owner.getAttribute('data-tid')] = { tag: owner.tagName.toLowerCase(), address: owner.getAttribute('data-ref') };
     });
     resolve(out);

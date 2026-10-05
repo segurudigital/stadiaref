@@ -22,6 +22,9 @@ Seguru Debug Toolbar becomes **StadiaRef**. Every 2.x name keeps working through
 - **Keys work with Shift held**, so a digit or `/` that needs Shift on some layouts still works. Cmd, Ctrl and Alt still turn keys off.
 - **Esc is left to an open modal dialog of the host page.** With none open, Esc hides everything as before.
 - **Automatic addresses changed form.** The slug and the element part are sanitised so every automatic address passes the core rules (`/test/demo.html` gives `test-demo-html-…`, not `test-demo.html-…`), and they are numbered from a counter instead of by position.
+- **Nothing is written to the page while StadiaRef is hidden.** 2.x injected its stylesheet, host and labels at start even when hidden. 3.0 adds nothing (no host, stylesheet, labels, classes, attributes or automatic addresses) until the toolbar is first shown, so a server-rendered app hydrates against untouched markup. The class converter, when on, still runs at start.
+- **No classes on the page's own elements or on `<body>`.** The tier classes (`sdt-ref-class-*`), the Level filter and presentation classes on `<body>`, the outline classes and the Tree highlight classes are gone. Global state is on `<html>` as `data-stadiaref-visible`, `data-stadiaref-labels` and `data-stadiaref-hidden-tiers`; outlines and highlights are StadiaRef's own nodes; per-element state is kept in a `WeakMap`.
+- **Labels show a tier tag and the address** (`SEC home-hero`), not the element's tag (`section · home-hero`). Icons-mode dots carry the tier's letter.
 - **Address events have a new detail.** `stadiaref:address-click`, `-hover` and `-leave` carry `{ address, tier, element }`, and the click adds `source`. `sdt:dataref-*` keep `{ dataRef, element, current }`.
 
 ### Added
@@ -31,6 +34,8 @@ Seguru Debug Toolbar becomes **StadiaRef**. Every 2.x name keeps working through
 - `setTiers()` / `getTiers()`, the `tiers` config key and `stadiaref:tiers-change` `{ tiers }`. `setTiers([])` shows no labels. Unclassified labels show only while every tier is shown.
 - `setAutoAddress()` / `getAutoAddress()`, the `autoAddress` config key and `stadiaref:auto-address-change` `{ autoAddress }`.
 - `setKeys()` / `getKeys()` and the `keys` config key.
+- **Labels coded by tier**: sections solid orange (`SEC`), blocks dark (`BLK`), elements light with a border (`EL`), unclassified dashed amber (`?`), automatic addresses dashed (`AUTO`), each with a version for dark surfaces.
+- The shadow host carries `data-stadiaref-root`, the marker to search a production build for.
 - **Profiles.** `generic` (default, tiers from nesting), `app` (`[product]-[surface]-[screen]-[part]` for web apps and PWAs, tiers from nesting) and `titan` (the Titan Foundation grammar). Choose one with the `profile` config key, the `data-profile` script attribute, `setProfile()` or `init({ profile })`; `getProfile()` returns it. A name that isn't registered warns once and uses generic until it is.
 - `registerProfile({ name, classify, validate?, parse? })` adds your own profile. Taken names throw, so built-ins can't be replaced.
 - `classify(address)` and `validate(address)` on the API, using the active profile.

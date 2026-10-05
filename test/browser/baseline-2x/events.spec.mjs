@@ -104,7 +104,11 @@ test('Tree row copy button copies but emits no event in 2.5.0; row click only ju
   expect(await events(page, 'dataref-click')).toHaveLength(0);
   await rows.nth(0).click();
   expect(await events(page, 'dataref-click')).toHaveLength(0);
-  await expect(page.locator('[data-ref="home-hero"]')).toHaveClass(/stadiaref-tree-jump-highlight/);
+  // The jump frame is drawn in StadiaRef's shadow root over the element.
+  await expect(shadow(page, '.stadiaref-highlight--jump')).toBeVisible();
+  const [frame, target] = [await shadow(page, '.stadiaref-highlight--jump').boundingBox(), await page.locator('[data-ref="home-hero"]').boundingBox()];
+  expect(Math.abs(frame.y - target.y)).toBeLessThan(2);
+  expect(await page.evaluate(() => document.querySelector('[data-ref="home-hero"]').className)).toBe('');
 });
 
 test('dataref-click from a block-group popover row', async ({ page, context }) => {

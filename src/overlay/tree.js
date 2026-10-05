@@ -4,23 +4,18 @@ import { showText } from './tiers.js';
 import { copyRef } from './copy.js';
 import { forEachNode, setClassState, toArray } from './dom.js';
 import { getElementContext } from './survey.js';
+import { highlight, placeHighlights, unhighlight } from './highlight.js';
 
 export function clearTreeJumpHighlight() {
   if (S.treeJumpTimer) {
     clearTimeout(S.treeJumpTimer);
     S.treeJumpTimer = null;
   }
-  if (S.treeJumpTarget) {
-    S.treeJumpTarget.classList.remove('stadiaref-tree-jump-highlight');
-    S.treeJumpTarget = null;
-  }
+  unhighlight('jump');
 }
 
 export function clearTreeHoverHighlights() {
-  var highlighted = document.querySelectorAll('.stadiaref-tree-highlight');
-  forEachNode(highlighted, function (el) {
-    el.classList.remove('stadiaref-tree-highlight');
-  });
+  unhighlight('hover');
   if (S.treePanel) {
     forEachNode(S.treePanel.querySelectorAll('.stadiaref-tree-row--active'), function (row) {
       row.classList.remove('stadiaref-tree-row--active');
@@ -35,11 +30,15 @@ export function jumpToTreeTarget(target) {
   } catch (err) {
     target.scrollIntoView();
   }
-  target.classList.add('stadiaref-tree-jump-highlight');
-  S.treeJumpTarget = target;
+  highlight('jump', target);
+  // Smooth scrolling moves the element; keep the frame on it.
+  var started = Date.now();
+  (function follow() {
+    placeHighlights();
+    if (Date.now() - started < 600) requestAnimationFrame(follow);
+  })();
   S.treeJumpTimer = setTimeout(function () {
-    if (S.treeJumpTarget) S.treeJumpTarget.classList.remove('stadiaref-tree-jump-highlight');
-    S.treeJumpTarget = null;
+    unhighlight('jump');
     S.treeJumpTimer = null;
   }, 1400);
 }
@@ -152,19 +151,19 @@ export function buildTreePanel() {
 
       (function (target) {
         row.addEventListener('mouseenter', function () {
-          target.classList.add('stadiaref-tree-highlight');
+          highlight('hover', target);
           row.classList.add('stadiaref-tree-row--active');
         });
         row.addEventListener('mouseleave', function () {
-          target.classList.remove('stadiaref-tree-highlight');
+          unhighlight('hover');
           row.classList.remove('stadiaref-tree-row--active');
         });
         row.addEventListener('focus', function () {
-          target.classList.add('stadiaref-tree-highlight');
+          highlight('hover', target);
           row.classList.add('stadiaref-tree-row--active');
         });
         row.addEventListener('blur', function () {
-          target.classList.remove('stadiaref-tree-highlight');
+          unhighlight('hover');
           row.classList.remove('stadiaref-tree-row--active');
         });
         row.addEventListener('click', function () {

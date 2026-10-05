@@ -1,6 +1,6 @@
 import { S } from './state.js';
 import { dismissActiveRefTree } from './chain.js';
-import { setClassState } from './dom.js';
+import { goHidden, goLive } from './mount.js';
 import { emitEvent } from './events.js';
 import { closeAllDropdowns } from './toolbar.js';
 import { toggleTree } from './tree.js';
@@ -10,9 +10,8 @@ import { toggleTree } from './tree.js';
 // queued when called before start (see queueable() in api.js), and they
 // fire stadiaref:show / stadiaref:hide.
 export function applyVisibility() {
-  if (!document.body) return; // init() will re-apply once body exists
-  S.shadowHost.style.display = S.presentationMode ? 'none' : '';
-  setClassState(document.body, 'stadiaref-presentation', S.presentationMode);
+  if (S.presentationMode) goHidden();
+  else goLive();
 }
 
 export function hide() {

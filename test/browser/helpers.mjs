@@ -76,12 +76,12 @@ export function makeHelpers(names) {
     await page.evaluate(() => { window.__ev = []; });
   }
 
-  // Loads a page and waits until the overlay has started (host mounted, API set).
+  // Loads a page and waits until the overlay has started (the `ready`
+  // promise has resolved). StadiaRef mounts its host only on first show.
   async function open(page, url) {
     await page.goto(url);
-    await page.waitForFunction(({ globalName, hostId }) =>
-      !!window[globalName] && !!document.getElementById(hostId) && document.getElementById(hostId).shadowRoot,
-    { globalName: names.global, hostId: HOST_ID });
+    await page.waitForFunction((globalName) => !!window[globalName] && !!window[globalName].ready, names.global);
+    await page.evaluate((globalName) => window[globalName].ready.then(() => true), names.global);
   }
 
   async function expectVisible(page, visible) {
@@ -105,7 +105,9 @@ export async function countVisible(page, selector) {
   }).length, selector);
 }
 
-// Addresses whose full label is rendered.
+// Addresses whose full label is rendered. A label's owner is its parent,
+// or, for a void element (an <img> and so on), the element just before
+// the label host StadiaRef puts beside it.
 export async function visibleFullLabelRefs(page) {
   await settle(page);
   return page.evaluate(() => Array.from(document.querySelectorAll('.stadiaref-ref-full-label')).filter((el) => {
@@ -113,9 +115,23 @@ export async function visibleFullLabelRefs(page) {
     return cs.display !== 'none' && el.getClientRects().length > 0;
   }).map((el) => {
     const host = el.parentElement;
-    const owner = host && host.classList.contains('stadiaref-ref-void-host') ? host._stadiarefOwner : host;
-    return owner && owner.getAttribute('data-ref');
+    const owner = host.classList.contains('stadiaref-ref-void-host') ? host.previousElementSibling : host;
+    return owner.getAttribute('data-ref');
   }).sort());
+}
+
+// { address: tier } for every labelled element, read from its full label.
+export function labelTiers(page) {
+  return page.evaluate(() => {
+    const out = {};
+    document.querySelectorAll('.stadiaref-ref-full-label').forEach((el) => {
+      const host = el.parentElement;
+      const owner = host.classList.contains('stadiaref-ref-void-host') ? host.previousElementSibling : host;
+      const m = el.className.match(/stadiaref-tier-(\w+)/);
+      out[owner.getAttribute('data-ref')] = m ? m[1] : null;
+    });
+    return out;
+  });
 }
 
 // Query inside the toolbar's shadow root.

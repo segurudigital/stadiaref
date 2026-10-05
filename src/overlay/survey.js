@@ -1,8 +1,8 @@
 import { S } from './state.js';
 import { MAX_LENGTH } from '../core/index.js';
-import { clearDataRefClass } from './classify.js';
 import { arrayContainsNode, forEachNode, matchesSelector } from './dom.js';
-import { MARKER, removeVoidHost } from './labels.js';
+import { unlabel } from './labels.js';
+import { isLive } from './mount.js';
 
 // ─── Class-to-Ref Converter ─────────────────────────────────
 export function convertClassRefs() {
@@ -192,7 +192,7 @@ function mintAutoAddress(el) {
 // the address it was first given for as long as it is in the DOM, through
 // every survey and every switch of auto-address.
 export function autoRefSections() {
-  if (!S.autoRefEnabled) return;
+  if (!S.autoRefEnabled || !isLive()) return;
   var targets = collectTargetsByDepth(S.autoRefDepth);
 
   for (var i = 0; i < targets.length; i++) {
@@ -211,38 +211,17 @@ export function autoRefSections() {
 }
 
 
-// ─── Clear auto-ref'd labels (for depth switching) ─────────
+// ─── Clear automatic addresses ─────────────────────────────
+// Removes every automatic address and its labels. The addresses stay
+// remembered (S.autoAddresses), so switching auto-address back on restores
+// the same ones.
 export function clearAutoRefs() {
+  if (!isLive()) return;
   var autoEls = document.querySelectorAll('[data-stadiaref-auto]');
   forEachNode(autoEls, function (el) {
+    unlabel(el);
     el.removeAttribute('data-ref');
     el.removeAttribute('data-stadiaref-auto');
     el.removeAttribute('data-stadiaref-auto-tier');
-    clearDataRefClass(el);
-    // Remove only DIRECT CHILD label nodes. A subtree querySelectorAll would
-    // also reach labels belonging to nested [data-ref] elements, removing them
-    // while leaving their _stadiarefLabelled MARKER intact — so injectLabels() would
-    // skip re-creating them, leaving those refs permanently unlabelled after
-    // any T-key depth cycle that passes through a depth with auto-refs.
-    var i, child;
-    for (i = el.childNodes.length - 1; i >= 0; i--) {
-      child = el.childNodes[i];
-      if (child.nodeType !== 1) continue;
-      if (
-        child.classList.contains('stadiaref-ref-link') ||
-        child.classList.contains('stadiaref-ref-icon') ||
-        child.classList.contains('stadiaref-ref-tooltip') ||
-        child.classList.contains('stadiaref-ref-full-label')
-      ) {
-        el.removeChild(child);
-      }
-    }
-    removeVoidHost(el);
-    delete el[MARKER];
-    delete el._stadiarefIcon;
-    delete el._stadiarefLink;
-    delete el._stadiarefTooltip;
-    delete el._stadiarefFullLabel;
-    delete el._stadiarefDepth;
   });
 }

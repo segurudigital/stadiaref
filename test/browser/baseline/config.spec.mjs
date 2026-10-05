@@ -51,23 +51,23 @@ test.describe('per-page config (stadiarefConfig)', () => {
   });
 
   test('autoAddress, and the 2.x autoRefDepth', async ({ page }) => {
-    await open(page, harness({ page: { autoAddress: true } }));
+    await open(page, harness({ page: { startHidden: false, autoAddress: true } }));
     expect(await get(page, 'getAutoAddress')).toBe(true);
     expect(await page.evaluate(() => document.querySelectorAll('[data-stadiaref-auto]').length)).toBeGreaterThan(0);
 
-    await open(page, harness({ page: { autoAddress: true, autoRefDepth: 'section' } }));
+    await open(page, harness({ page: { startHidden: false, autoAddress: true, autoRefDepth: 'section' } }));
     expect(await get(page, 'getAutoAddress')).toBe(true);
     const levels = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-stadiaref-auto-tier')));
     expect(levels.length).toBeGreaterThan(0);
     for (const l of levels) expect(l).toBe('section');
 
-    await open(page, harness({ page: { autoAddress: false, autoRefDepth: 'section' } }));
+    await open(page, harness({ page: { startHidden: false, autoAddress: false, autoRefDepth: 'section' } }));
     expect(await get(page, 'getAutoAddress')).toBe(false);
     expect(await page.evaluate(() => document.querySelectorAll('[data-stadiaref-auto]').length)).toBe(0);
   });
 
   test('automatic addresses use pageSlug, position and context', async ({ page }) => {
-    await open(page, harness({ page: { autoAddress: true, autoRefDepth: 'section', pageSlug: 'demo' } }));
+    await open(page, harness({ page: { startHidden: false, autoAddress: true, autoRefDepth: 'section', pageSlug: 'demo' } }));
     const refs = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-ref')));
     // 3.0 numbers automatic addresses from a counter (2.5.0 gave demo-03-section,
     // the position in the section list).
@@ -78,7 +78,7 @@ test.describe('per-page config (stadiarefConfig)', () => {
     // With no pageSlug, the slug comes from location.pathname: "/__harness".
     // 2.5.0 used it as is ("__harness-03-section"); 3.0 sanitises it so every
     // automatic address passes the core rules.
-    await open(page, harness({ page: { autoAddress: true, autoRefDepth: 'section' } }));
+    await open(page, harness({ page: { startHidden: false, autoAddress: true, autoRefDepth: 'section' } }));
     const refs = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-ref')));
     expect(refs).toEqual(['harness-01-section']);
   });
@@ -86,11 +86,12 @@ test.describe('per-page config (stadiarefConfig)', () => {
   test('outlineMode', async ({ page }) => {
     await open(page, harness({ page: { startHidden: false, outline: 'section' } }));
     expect(await get(page, 'getOutline')).toBe('section');
-    expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-outline-section').length)).toBeGreaterThan(0);
+    // Outline frames are StadiaRef's own nodes inside each section.
+    expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-outline--section').length)).toBeGreaterThan(0);
   });
 
   test('tiers', async ({ page }) => {
-    await open(page, harness({ page: { tiers: ['section'] } }));
+    await open(page, harness({ page: { startHidden: false, tiers: ['section'] } }));
     expect(await get(page, 'getTiers')).toEqual(['section']);
     // Show state is on <html>, not a body class.
     expect(await page.evaluate(() => document.documentElement.getAttribute('data-stadiaref-hidden-tiers'))).toBe('block element');
@@ -105,7 +106,7 @@ test.describe('per-page config (stadiarefConfig)', () => {
 
   test('theme', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
-    await open(page, harness({ page: { theme: 'dark' } }));
+    await open(page, harness({ page: { startHidden: false, theme: 'dark' } }));
     expect(await get(page, 'getTheme')).toBe('dark');
     expect(await page.evaluate((id) => document.getElementById(id).classList.contains('stadiaref-theme-dark'), HOST_ID)).toBe(true);
   });
@@ -193,9 +194,21 @@ test('existing QA page: hotkey disabled', async ({ page }) => {
   expect(await page.evaluate(() => window.stadiaref.getKeys().toggle)).toBe(false);
 });
 
-test('labels are injected at boot even while hidden (2.5.0 behaviour)', async ({ page }) => {
-  await open(page, harness());
+// 2.5.0 injected labels at start even while hidden. 3.0 writes nothing to
+// the page until it is first shown (brief 5.7, rule 1).
+test('nothing is written to the page while hidden; the first show mounts and labels', async ({ page }) => {
+  await open(page, harness({ page: { autoAddress: true, outline: 'section' } }));
   expect(await get(page, 'isVisible')).toBe(false);
-  expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-ref-full-label').length)).toBe(2);
-  expect(await countVisible(page, '.stadiaref-ref-full-label')).toBe(0);
+  expect(await page.evaluate(() => ({
+    labels: document.querySelectorAll('.stadiaref-ref-full-label, .stadiaref-outline').length,
+    host: !!document.querySelector('[data-stadiaref-root]'),
+    style: !!document.getElementById('stadiaref-styles'),
+    auto: document.querySelectorAll('[data-stadiaref-auto]').length,
+    attrs: Array.from(document.documentElement.attributes).map((a) => a.name).filter((n) => n.startsWith('data-stadiaref')),
+  }))).toEqual({ labels: 0, host: false, style: false, auto: 0, attrs: [] });
+  await page.evaluate(() => window.stadiaref.show());
+  expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-ref-full-label').length)).toBeGreaterThan(2);
+  expect(await page.evaluate(() => !!document.querySelector('[data-stadiaref-root]'))).toBe(true);
+  await page.evaluate(() => window.stadiaref.hide());
+  expect(await countVisible(page, '.stadiaref-ref-full-label, .stadiaref-outline')).toBe(0);
 });

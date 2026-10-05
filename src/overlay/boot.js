@@ -7,16 +7,17 @@ import { applyDockPosition, normalizeDock, pickAutoDock } from './dock.js';
 import { closestMatch, forEachNode } from './dom.js';
 import { emitEvent } from './events.js';
 import { attachKeys, defaultKeys, mergeKeys } from './keys.js';
+import { isLive } from './mount.js';
 import { selectProfile } from './profile.js';
-import { MARKER, injectLabels, resolveLabelOverlaps, syncAllVoidHosts, syncVoidHost } from './labels.js';
+import { injectLabels, isLabelled, resolveLabelOverlaps, syncAllVoidHosts, syncVoidHost } from './labels.js';
 import { applyVisibility } from './lifecycle.js';
 import { LABEL_MODES, applyState, setState } from './mode.js';
-import { applyOutlineMode, setOutline } from './outline.js';
+import { setOutline } from './outline.js';
 import { LABEL_CSS } from './styles/labels.js';
 import { buildShadowCss } from './styles/shadow.js';
 import { autoRefSections, convertClassRefs } from './survey.js';
 import { applyTheme, setupHtmlClassObserver, setupThemeMediaListener } from './theme.js';
-import { applyTiers, getTiers, parseTiers, toggleTier } from './tiers.js';
+import { parseTiers, toggleTier } from './tiers.js';
 import { closeAllDropdowns, toggleDropdown, toolbarHtml, updateAutoChip, updateKeyHints, updateShowControl } from './toolbar.js';
 import { buildTreePanel, toggleTree } from './tree.js';
 import { renderUser, snapshotUser } from './user.js';
@@ -76,22 +77,22 @@ export function boot() {
     : normalizeDock(S.config.dock);
   S.position = S._initialDock === 'auto' ? 'bottom-right' : (S._initialDock || 'bottom-right');
 
-  // ─── Label CSS (injected into main document) ───────────────
-  // Labels live inside data-ref elements, so they share the page DOM.
-  // `all:initial` resets inherited page/builder styles (Elementor, Bricks, etc.)
-  // before re-declaring our own properties.
+  // ─── Label CSS ──────────────────────────────────────────────
+  // Built now, added to the page's <head> on first show (see mount.js).
   S.labelCss = document.createElement('style');
   S.labelCss.id = 'stadiaref-styles';
   S.labelCss.textContent = LABEL_CSS;
 
-  document.head.appendChild(S.labelCss);
-
 
   // ─── Shadow DOM for toolbar + toast (isolated from page CSS) ─
+  // The host carries data-stadiaref-root: the marker to search a production
+  // build for. It is built in memory now and added to the page on first show.
   S.shadowHost = document.createElement('div');
   S.shadowHost.id = 'stadiaref-host';
+  S.shadowHost.setAttribute('data-stadiaref-root', '');
   S.shadowHost.style.cssText = 'all:initial;position:fixed;top:0;left:0;width:0;height:0;overflow:visible;z-index:99999;pointer-events:none;';
   S.shadowCss = buildShadowCss();
+  S.shadowRoot = S.shadowHost.attachShadow({ mode: 'open' });
 
 
   // ─── Build toolbar DOM ──────────────────────────────────────
@@ -113,7 +114,6 @@ export function boot() {
   // ─── Tree panel ─────────────────────────────────────────────
   S.treeOpen = false;
   S.treeJumpTimer = null;
-  S.treeJumpTarget = null;
   S.treePanel = document.createElement('div');
   S.treePanel.className = 'stadiaref-tree-panel';
 
@@ -125,6 +125,14 @@ export function boot() {
   S.activeRefTreeHideTimer = null;
   S.activeRefTree = document.createElement('div');
   S.activeRefTree.className = 'stadiaref-active-ref-tree';
+
+  var shadowStyle = document.createElement('style');
+  shadowStyle.textContent = S.shadowCss;
+  S.shadowRoot.appendChild(shadowStyle);
+  S.shadowRoot.appendChild(S.toolbar);
+  S.shadowRoot.appendChild(S.toast);
+  S.shadowRoot.appendChild(S.treePanel);
+  S.shadowRoot.appendChild(S.activeRefTree);
 
   // Watch <html class> mutations so `theme: 'auto'` reacts when the host
   // toggles `html.dark` post-init. Without this, the legacy `:host-context`
@@ -143,15 +151,7 @@ export function boot() {
 
 // ─── Init ───────────────────────────────────────────────────
 function init() {
-  document.body.appendChild(S.shadowHost);
-  var shadow = S.shadowHost.attachShadow({ mode: 'open' });
-  var style = document.createElement('style');
-  style.textContent = S.shadowCss;
-  shadow.appendChild(style);
-  shadow.appendChild(S.toolbar);
-  shadow.appendChild(S.toast);
-  shadow.appendChild(S.treePanel);
-  shadow.appendChild(S.activeRefTree);
+  var shadow = S.shadowRoot;
 
   // Resolve `dock: 'auto'` once the DOM exists, then apply dock position via
   // inline styles so setDock() can update at runtime.
@@ -172,20 +172,15 @@ function init() {
   updateKeyHints();
   updateAutoChip();
 
+  // The class converter, when on, runs at start even while hidden, as in 2.x.
   convertClassRefs();
-  autoRefSections();
-  injectLabels();
-  resolveLabelOverlaps();
-  applyOutlineMode();
 
-  if (S.state !== 0) applyState(S.state);
+  applyState(S.state);
   if (S.outlineMode !== 'off') setOutline(S.outlineMode);
-  if (getTiers().length !== 3) applyTiers();
   updateShowControl();
 
-  // Apply initial visibility (hidden by default — press the visibility
-  // hotkey to reveal). hide()/show() called pre-boot have already updated
-  // `presentationMode`, so this just reflects whatever state was queued.
+  // Hidden by default: nothing more is written until the first show. With
+  // startHidden: false this mounts StadiaRef and runs the first survey.
   applyVisibility();
 
   // Dropdown toggle clicks
@@ -263,7 +258,7 @@ function init() {
   // Images settle their box after load; keep the void hosts on them.
   window.addEventListener('load', syncAllVoidHosts);
   forEachNode(document.querySelectorAll('img'), function (img) {
-    if (!img.complete) img.addEventListener('load', function () { syncVoidHost(img); }, { once: true });
+    if (!img.complete) img.addEventListener('load', function () { if (isLive()) syncVoidHost(img); }, { once: true });
   });
 
   // Live visibility re-check. Mega menus, dropdowns, modals, and tabs flip
@@ -274,6 +269,7 @@ function init() {
   // exactly when their container does.
   if (typeof window.MutationObserver === 'function') {
     var visibilityObserver = new window.MutationObserver(function (mutations) {
+      if (!isLive()) return;
       var sawHostMutation = false;
       for (var i = 0; i < mutations.length; i++) {
         var t = mutations[i].target;
@@ -311,17 +307,18 @@ function init() {
   // inline scripts) inject or stamp `data-ref` attributes after
   // DOMContentLoaded, so the initial injectLabels() call misses them.
   // A second pass on window.load is idempotent: injectLabels() skips
-  // elements that already have the MARKER, so only genuinely new refs
+  // elements that are already labelled, so only genuinely new refs
   // are processed. The early-return check avoids the layout work entirely
   // when nothing new was added.
   // When the script is loaded after window.load has already fired
   // (e.g. dynamically injected), fall back to a rAF so at least
   // synchronous post-init stamps are caught.
   function lateRescan() {
+    if (!isLive()) return;
     var refs = document.querySelectorAll('[data-ref]');
     var hasNew = false;
     forEachNode(refs, function (el) {
-      if (!el[MARKER]) hasNew = true;
+      if (!isLabelled(el)) hasNew = true;
     });
     if (!hasNew) return;
     convertClassRefs();

@@ -3,6 +3,7 @@ import { MODE_LABELS } from './constants.js';
 import { emitEvent } from './events.js';
 import { resolveLabelOverlaps } from './labels.js';
 import { updateDropdown } from './toolbar.js';
+import { applyRootState, isLive } from './mount.js';
 
 // Label modes. Internally a number, as in 2.x: 0 icons, 1 off, 2 full.
 export const LABEL_MODES = { icons: 0, off: 1, full: 2 };
@@ -18,15 +19,9 @@ export function setState(newState) {
 
 export function applyState(newState) {
   S.state = newState;
-  document.body.classList.remove('stadiaref-hide', 'stadiaref-full');
-
-  if (S.state === 1) {
-    document.body.classList.add('stadiaref-hide');
-  } else if (S.state === 2) {
-    document.body.classList.add('stadiaref-full');
-  }
-
   updateDropdown('mode', 'data-stadiaref-state', S.state, MODE_LABELS[S.state]);
+  if (!isLive()) return;
+  applyRootState();
   resolveLabelOverlaps();
 }
 

@@ -2,14 +2,13 @@ import { S } from './state.js';
 import { VERSION } from './constants.js';
 import { setDock } from './dock.js';
 import { getKeys, setKeys } from './keys.js';
-import { injectLabels, resolveLabelOverlaps } from './labels.js';
 import { hide, show, toggleVisibility } from './lifecycle.js';
 import { getLabels, setLabels } from './mode.js';
-import { applyOutlineMode, setOutline } from './outline.js';
-import { autoRefSections, convertClassRefs } from './survey.js';
+import { setOutline } from './outline.js';
+import { survey } from './mount.js';
 import { getTheme, setTheme } from './theme.js';
 import { applyAutoAddress, getAutoAddress, getTiers, setAutoAddress, setTiers } from './tiers.js';
-import { buildTreePanel, toggleTree } from './tree.js';
+import { toggleTree } from './tree.js';
 import { getUser, setUser } from './user.js';
 import { activeProfile, classifyAddress } from './classify.js';
 import { registerSelected, selectProfile } from './profile.js';
@@ -66,12 +65,7 @@ export function registerProfile(profile) {
 }
 
 export function refresh() {
-  convertClassRefs();
-  autoRefSections();
-  injectLabels();
-  resolveLabelOverlaps();
-  applyOutlineMode();
-  if (S.treeOpen) buildTreePanel();
+  survey();
 }
 
 // Calls made before StadiaRef has started are queued and applied in order

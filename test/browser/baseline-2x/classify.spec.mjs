@@ -2,7 +2,7 @@
 // and the per-element class stamp the overlay derives from it.
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
-import { open, harness, countVisible, visibleFullLabelRefs } from './helpers.mjs';
+import { open, harness, countVisible, visibleFullLabelRefs, labelTiers } from './helpers.mjs';
 
 // 2.x classified every address with the Titan grammar. 3.0 defaults to the
 // generic profile, so a 2.x page that relies on Titan tiers sets
@@ -17,11 +17,13 @@ const FIXTURES = Object.keys(expected).filter((k) => !k.startsWith('_'));
 for (const name of FIXTURES) {
   test(`fixture ${name}: classifier and stamped classes match 2.5.0`, async ({ page }) => {
     await open(page, '/test/fixtures/v5-data-ref/' + name + '.html');
+    await page.evaluate(() => window.seguruDebugToolbar.show());
+    // 3.0 keeps the tier on the label, not as a class on the element.
+    const tiers = await labelTiers(page);
     const got = await page.evaluate(() => Array.from(document.querySelectorAll('[data-ref]')).map((e) => {
       const r = e.getAttribute('data-ref');
-      const stamped = (String(e.className).match(/stadiaref-ref-class-(\w+)/) || [])[1];
-      return [r, window.seguruDebugToolbar.classifyDataRef(r), stamped];
-    }));
+      return [r, window.seguruDebugToolbar.classifyDataRef(r)];
+    })).then((list) => list.map(([r, c]) => [r, c, tiers[r]]));
     // classifyDataRef() is the raw 2.x grammar: identical to 2.5.0.
     expect(got.map(([r, c]) => [r, c])).toEqual(expected[name]);
     // The labels use the titan profile, which also applies the 3.0 core
@@ -63,6 +65,7 @@ test('mixed fixture: level filter hides by stamped class', async ({ page }) => {
   await open(page, '/test/fixtures/v5-data-ref/mixed.html');
   await page.evaluate(() => window.seguruDebugToolbar.show());
   const all = await countVisible(page, '.stadiaref-ref-full-label');
+  expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-ref-full-label.stadiaref-ref-clustered').length)).toBe(2);
   await page.evaluate(() => window.seguruDebugToolbar.setLevelFilter('section'));
   const sections = await countVisible(page, '.stadiaref-ref-full-label');
   await page.evaluate(() => window.seguruDebugToolbar.setLevelFilter('section-block'));
@@ -95,5 +98,7 @@ test('dense fixture: block-group collapse badge in All, gone in Sec+Blk', async 
 // That is a 2.5.0 bug, recorded in TASKS.md; the baseline pins the code.
 // Since stage 3, bad--ref is unclassified (core rules), so it drops out of
 // Sections and Sec+Blk. Since stage 4 the image label is filtered too.
-// 2.5.0 gave sections 6 and secBlk 17.
-const BASELINE_MIXED_COUNTS = { all: 22, sections: 4, secBlk: 15 };
+// Since stage 5 labels carry a tier tag and are larger, so under All the
+// overlap solver folds two more into "+N" badges (checked below).
+// 2.5.0 gave all 22, sections 6 and secBlk 17.
+const BASELINE_MIXED_COUNTS = { all: 20, sections: 4, secBlk: 15 };

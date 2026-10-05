@@ -6,6 +6,19 @@ import { posMap, toastPosMap, treePanelPosMap } from '../dock.js';
 // dock resolved at load (setDock() later overrides them with inline styles).
 export function buildShadowCss() {
   var shadowCss = [
+    // --- Highlights over page elements (highlight.js) ---
+    '.stadiaref-highlight {',
+    '  all: initial;',
+    '  position: fixed;',
+    '  box-sizing: border-box;',
+    '  pointer-events: none;',
+    '  z-index: 1;',
+    '  border-radius: 2px;',
+    '}',
+    '.stadiaref-highlight[hidden] { display: none; }',
+    '.stadiaref-highlight--hover { outline: 2px solid #EA580C; outline-offset: 3px; }',
+    '.stadiaref-highlight--jump { outline: 3px solid rgba(234, 88, 12, 0.92); outline-offset: 4px; box-shadow: 0 0 0 6px rgba(234, 88, 12, 0.16); }',
+
     // --- Toolbar chrome ---
     '.stadiaref-toolbar {',
     '  all: initial;',

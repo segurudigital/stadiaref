@@ -55,7 +55,7 @@ StadiaRef 3.0.0, built in stages. A new session starts at the first unticked sta
   - [ ] Screenshots of the toolbar (light, dark, desktop, 390px) and the sample page in each label mode, compared against the wireframe values
   - [ ] Every text and background pair at least 4.5:1 by calculation
   - [ ] Toolbar fully usable by keyboard, visible focus, accessible names and pressed/expanded state
-  - [ ] A hidden StadiaRef leaves the page DOM byte-identical (class converter off)
+  - [x] A hidden StadiaRef leaves the page DOM byte-identical (class converter off) — `host-page.spec.mjs`, five pages, including setters called while hidden
 - [ ] **Stage 6 — Pick and Find.**
   - [ ] Pick: pointer, arrow keys, Esc, an element with no address, clicks don't reach the host
   - [ ] Find: exact, substring, no match, hidden match, keyboard navigation, shortcut letters typed into the field, dim layer clears on close

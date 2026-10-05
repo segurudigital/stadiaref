@@ -1,11 +1,13 @@
 import { S } from './state.js';
+import { hasRecord, rec } from './records.js';
 import { copyRef } from './copy.js';
 import { forEachNode, toArray } from './dom.js';
 import { emitAddressEvent, emitEvent } from './events.js';
-import { getActiveLabel, injectLabels, resolveLabelOverlaps } from './labels.js';
+import { getActiveLabel, injectLabels, recordedTier, resolveLabelOverlaps } from './labels.js';
 import { applyOutlineMode } from './outline.js';
 import { autoRefSections, clearAutoRefs, convertClassRefs } from './survey.js';
 import { updateAutoChip, updateShowControl } from './toolbar.js';
+import { applyRootState, isLive } from './mount.js';
 import { buildTreePanel } from './tree.js';
 import { getEffectiveBgLuminance } from './visibility.js';
 
@@ -45,13 +47,11 @@ export function parseTiers(list) {
 }
 
 export function applyTiers() {
-  var hidden = TIER_NAMES.filter(function (t) { return !S.tiers[t]; });
-  var root = document.documentElement;
-  if (hidden.length) root.setAttribute('data-stadiaref-hidden-tiers', hidden.join(' '));
-  else root.removeAttribute('data-stadiaref-hidden-tiers');
-  resolveLabelOverlaps();
   updateShowControl();
   if (S.treeOpen) buildTreePanel();
+  if (!isLive()) return;
+  applyRootState();
+  resolveLabelOverlaps();
 }
 
 export function setTiers(list) {
@@ -102,15 +102,17 @@ export function applyAutoAddress(depth) {
     S.autoRefDepth = depth;
   }
 
-  clearAutoRefs();
-  if (S.autoRefEnabled) {
-    convertClassRefs();
-    autoRefSections();
-  }
-  injectLabels();
-  resolveLabelOverlaps();
   updateAutoChip();
-  applyOutlineMode();
+  if (isLive()) {
+    clearAutoRefs();
+    if (S.autoRefEnabled) {
+      convertClassRefs();
+      autoRefSections();
+    }
+    injectLabels();
+    resolveLabelOverlaps();
+    applyOutlineMode();
+  }
 
   // Rebuild tree panel if open
   if (S.treeOpen) buildTreePanel();
@@ -122,7 +124,7 @@ export function applyAutoAddress(depth) {
 // Block group collapse
 // When blocks and elements are both shown and a section has more than 6
 // direct-child block-tier addresses, those blocks are collapsed into a
-// "+N blocks" badge on the section. "Direct-child" means no intervening stadiaref-ref-class-section
+// "+N blocks" badge on the section. "Direct-child" means no intervening section-tier
 // ancestor between the block and this section.
 
 export function getDirectBlockRefs(sectionEl) {
@@ -130,11 +132,11 @@ export function getDirectBlockRefs(sectionEl) {
   var allRefs = toArray(sectionEl.querySelectorAll('[data-ref]'));
   for (var i = 0; i < allRefs.length; i++) {
     var ref = allRefs[i];
-    if (!ref.classList.contains('stadiaref-ref-class-block')) continue;
+    if (recordedTier(ref) !== 'block') continue;
     var parent = ref.parentElement;
     var direct = true;
     while (parent && parent !== sectionEl) {
-      if (parent.classList && parent.classList.contains('stadiaref-ref-class-section')) {
+      if (recordedTier(parent) === 'section') {
         direct = false;
         break;
       }
@@ -146,19 +148,31 @@ export function getDirectBlockRefs(sectionEl) {
 }
 
 export function clearBlockGroupCollapse() {
-  var members = document.querySelectorAll('.stadiaref-ref-block-group-member');
-  forEachNode(members, function (el) {
-    el.classList.remove('stadiaref-ref-block-group-member');
-    el._stadiarefBlockGroupMember = false;
-  });
+  forEachNode(document.querySelectorAll('.stadiaref-collapsed'), function (n) { n.classList.remove('stadiaref-collapsed'); });
   var badges = document.querySelectorAll('.stadiaref-block-group-badge');
   forEachNode(badges, function (b) { b.parentNode && b.parentNode.removeChild(b); });
-  var owners = document.querySelectorAll('[data-ref]');
-  forEachNode(owners, function (el) { el._stadiarefBlockGroupBadge = null; });
+  forEachNode(document.querySelectorAll('[data-ref]'), function (el) {
+    if (!hasRecord(el)) return;
+    rec(el).blockGroupMember = false;
+    rec(el).collapsed = false;
+    rec(el).groupBadge = null;
+  });
+}
+
+// Hide the labels of a collapsed block and of everything addressed inside it.
+function collapseLabels(blockEl) {
+  var els = [blockEl].concat(toArray(blockEl.querySelectorAll('[data-ref]')));
+  for (var i = 0; i < els.length; i++) {
+    if (!hasRecord(els[i])) continue;
+    var r = rec(els[i]);
+    r.collapsed = true;
+    var nodes = [r.icon, r.tooltip, r.fullLabel, r.link];
+    for (var j = 0; j < nodes.length; j++) if (nodes[j]) nodes[j].classList.add('stadiaref-collapsed');
+  }
 }
 
 export function applyBlockGroupCollapse() {
-  var sections = document.querySelectorAll('[data-ref].stadiaref-ref-class-section');
+  var sections = toArray(document.querySelectorAll('[data-ref]')).filter(function (el) { return recordedTier(el) === 'section'; });
   forEachNode(sections, function (sectionEl) {
     var blocks = getDirectBlockRefs(sectionEl);
     if (blocks.length <= 6) return;
@@ -206,13 +220,13 @@ export function applyBlockGroupCollapse() {
       popover.appendChild(row);
     }
     badge.appendChild(popover);
-    sectionEl.appendChild(badge);
-    sectionEl._stadiarefBlockGroupBadge = badge;
+    (rec(sectionEl).host || sectionEl).appendChild(badge);
+    rec(sectionEl).groupBadge = badge;
 
     // Mark block members so the overlap solver skips them
     for (var j = 0; j < blocks.length; j++) {
-      blocks[j]._stadiarefBlockGroupMember = true;
-      blocks[j].classList.add('stadiaref-ref-block-group-member');
+      rec(blocks[j]).blockGroupMember = true;
+      collapseLabels(blocks[j]);
     }
   });
 }

@@ -36,6 +36,11 @@ export const S = {
   position: null,
   labelCss: null,
   shadowHost: null,
+  shadowRoot: null,
+  // Mounted: the host and label stylesheet have been added to the page.
+  mounted: false,
+  // Per-element records (records.js).
+  records: new WeakMap(),
   shadowCss: null,
   toolbar: null,
   toast: null,
@@ -43,7 +48,9 @@ export const S = {
   visibilityRecheckScheduled: false,
   treeOpen: false,
   treeJumpTimer: null,
-  treeJumpTarget: null,
+  // Frames drawn over page elements (highlight.js).
+  highlights: null,
+  highlightTracking: false,
   treePanel: null,
   activeRefTreeOpen: false,
   activeRefTreePinned: false,

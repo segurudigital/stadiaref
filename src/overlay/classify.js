@@ -4,18 +4,6 @@ import { classify, hasProfile, DEFAULT_PROFILE } from '../core/index.js';
 // The overlay's side of the address grammar. All classification goes
 // through stadiaref/core with the active profile.
 
-export function clearDataRefClass(el) {
-  var classNames = [
-    'stadiaref-ref-class-section',
-    'stadiaref-ref-class-block',
-    'stadiaref-ref-class-element',
-    'stadiaref-ref-class-unclassified'
-  ];
-  for (var i = 0; i < classNames.length; i++) {
-    el.classList.remove(classNames[i]);
-  }
-}
-
 export function normalizeRefClass(refClass) {
   return (
     refClass === 'section' ||

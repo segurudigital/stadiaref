@@ -36,12 +36,13 @@ test('starts hidden; show/hide/toggle/isVisible', async ({ page }) => {
   await open(page, harness());
   const host = page.locator('#' + HOST_ID);
   expect(await page.evaluate(() => window.seguruDebugToolbar.isVisible())).toBe(false);
-  await expect(host).toBeHidden();
-  expect(await page.evaluate(() => document.body.classList.contains('stadiaref-presentation'))).toBe(true);
+  // 3.0 writes nothing to the page until first shown: no host yet.
+  await expect(host).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.hasAttribute('data-stadiaref-visible'))).toBe(false);
 
   await page.evaluate(() => window.seguruDebugToolbar.show());
   expect(await page.evaluate(() => window.seguruDebugToolbar.isVisible())).toBe(true);
-  expect(await page.evaluate(() => document.body.classList.contains('stadiaref-presentation'))).toBe(false);
+  expect(await page.evaluate(() => document.documentElement.hasAttribute('data-stadiaref-visible'))).toBe(true);
   await expect(shadow(page, '.stadiaref-toolbar')).toBeVisible();
 
   // idempotent
@@ -55,6 +56,8 @@ test('starts hidden; show/hide/toggle/isVisible', async ({ page }) => {
   await page.evaluate(() => window.seguruDebugToolbar.hide());
   await page.evaluate(() => window.seguruDebugToolbar.hide());
   expect((await events(page, 'hide')).length).toBe(2);
+  await expect(host).toBeHidden();
+  expect(await page.evaluate(() => document.documentElement.hasAttribute('data-stadiaref-visible'))).toBe(false);
 });
 
 test('setState / getState drive label mode', async ({ page }) => {
@@ -71,7 +74,7 @@ test('setState / getState drive label mode', async ({ page }) => {
   expect(await page.evaluate(() => window.seguruDebugToolbar.getState())).toBe(1);
   expect(await countVisible(page, '.stadiaref-ref-full-label')).toBe(0);
   expect(await countVisible(page, '.stadiaref-ref-icon')).toBe(0);
-  expect(await page.evaluate(() => document.body.classList.contains('stadiaref-hide'))).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.getAttribute('data-stadiaref-labels'))).toBe('off');
   await expect(shadow(page, '[data-stadiaref-toggle="mode"] .stadiaref-toolbar__value')).toHaveText('Off');
 });
 
@@ -158,7 +161,7 @@ test('setHotkey / getHotkey normalise to one upper-case letter or false', async 
 
 test('setTheme / getTheme, persisted to localStorage', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
-  await open(page, harness());
+  await open(page, harness({ page: { startHidden: false } }));
   expect(await page.evaluate(() => window.seguruDebugToolbar.getTheme())).toBe('light');
   await page.evaluate(() => window.seguruDebugToolbar.setTheme('dark'));
   expect(await page.evaluate(() => window.seguruDebugToolbar.getTheme())).toBe('dark');

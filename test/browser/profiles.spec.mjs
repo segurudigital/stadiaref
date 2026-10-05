@@ -2,18 +2,15 @@
 // third-party profiles, re-classification on survey, invalid and duplicate
 // addresses.
 import { test, expect } from '@playwright/test';
-import { makeHelpers, NEW } from './helpers.mjs';
+import { makeHelpers, NEW, labelTiers as tiers } from './helpers.mjs';
 
-const { harness, open, recordEvents, events } = makeHelpers(NEW);
+const { harness, open: openHidden, recordEvents, events } = makeHelpers(NEW);
 
-const tiers = (page) => page.evaluate(() => {
-  const out = {};
-  document.querySelectorAll('[data-ref]').forEach((el) => {
-    const m = String(el.className).match(/stadiaref-ref-class-(\w+)/);
-    out[el.getAttribute('data-ref')] = m ? m[1] : null;
-  });
-  return out;
-});
+// These tests read the labels, so StadiaRef is shown first.
+async function open(page, url) {
+  await openHidden(page, url);
+  await page.evaluate(() => window.stadiaref.show());
+}
 
 function warnings(page, needle) {
   const list = [];

@@ -136,6 +136,7 @@ test.describe('auto-address', () => {
   test('automatic addresses are valid, unique and unchanged across ten forced surveys', async ({ page }) => {
     for (const url of [harness({ body: 'auto-only', page: { autoAddress: true } }), '/test/demo.html?ar=1&cc=1']) {
       await open(page, url);
+      await page.evaluate(() => window.stadiaref.show());
       const read = () => page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-ref')));
       const first = await read();
       expect(first.length).toBeGreaterThan(5);
@@ -153,7 +154,7 @@ test.describe('auto-address', () => {
   });
 
   test('a new element gets a new number, never a reused one', async ({ page }) => {
-    await open(page, harness({ body: 'auto-only', page: { autoAddress: true, pageSlug: 'demo' } }));
+    await open(page, harness({ body: 'auto-only', page: { startHidden: false, autoAddress: true, pageSlug: 'demo' } }));
     const before = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-ref')));
     const max = Math.max(...before.map((a) => Number(a.split('-')[1])));
     await page.evaluate(() => {
@@ -170,7 +171,7 @@ test.describe('auto-address', () => {
   });
 
   test('a slug or context that breaks the rules is sanitised', async ({ page }) => {
-    await open(page, harness({ body: 'auto-only', page: { autoAddress: true, pageSlug: 'About_Us/Team.v2' } }));
+    await open(page, harness({ body: 'auto-only', page: { startHidden: false, autoAddress: true, pageSlug: 'About_Us/Team.v2' } }));
     const addrs = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-ref')));
     for (const a of addrs) expect(a).toMatch(/^about-us-team-v2-\d{2,}-[a-z0-9-]+$/);
   });

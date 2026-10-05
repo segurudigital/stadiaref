@@ -1,6 +1,8 @@
 import { S } from './state.js';
+import { rec } from './records.js';
 import { forEachNode } from './dom.js';
-import { resolveLabelOverlaps } from './labels.js';
+import { isLabelled, resolveLabelOverlaps } from './labels.js';
+import { isLive } from './mount.js';
 
 // ─── Background luminance detection ────────────────────────
 // Walks up the DOM to find the first non-transparent background,
@@ -44,8 +46,7 @@ export function getEffectiveBgLuminance(el) {
 // beneath are about to land there, not on the panel. Treating
 // mid-transition values as untrusted closes the 16–200ms click-intercept
 // race on the close path. The transitionend listener re-evaluates once
-// opacity has settled. Surfaced on EC home-screen cowork session
-// 2026-05-21 (200ms opacity ease-out close on .ec-mega-menu panels).
+// opacity has settled (seen with a 200ms opacity ease-out on a mega-menu).
 export function isEffectivelyVisible(el) {
   var cur = el;
   while (cur && cur.nodeType === 1 && cur !== document.documentElement) {
@@ -85,14 +86,16 @@ export function isOpacityTransitioning(cs) {
 }
 
 export function applyLabelVisibilityState() {
+  if (!isLive()) return false;
   var refs = document.querySelectorAll('[data-ref]');
   var anyChanged = false;
   forEachNode(refs, function (el) {
+    if (!isLabelled(el)) return;
     var visible = isEffectivelyVisible(el);
-    if (el._stadiarefVisible === visible) return;
-    el._stadiarefVisible = visible;
+    if (rec(el).visible === visible) return;
+    rec(el).visible = visible;
     anyChanged = true;
-    var nodes = [el._stadiarefIcon, el._stadiarefTooltip, el._stadiarefFullLabel, el._stadiarefLink];
+    var nodes = [rec(el).icon, rec(el).tooltip, rec(el).fullLabel, rec(el).link];
     for (var i = 0; i < nodes.length; i++) {
       var n = nodes[i];
       if (!n) continue;
@@ -102,7 +105,7 @@ export function applyLabelVisibilityState() {
         // tooltip stays pointer-events:none until the icon is hovered
         // (existing :hover + .stadiaref-ref-tooltip rule), and the link is
         // pointer-events:none by design.
-        if (n === el._stadiarefIcon || n === el._stadiarefFullLabel) {
+        if (n === rec(el).icon || n === rec(el).fullLabel) {
           n.classList.add('stadiaref-visible-host');
         }
       } else {
@@ -125,18 +128,18 @@ export function applyLabelVisibilityState() {
 // unhide them). Restricted to subtrees that actually contain [data-ref]
 // descendants so unrelated DOM churn doesn't pay the cost.
 export function eagerHideDescendantLabels(node) {
-  if (!node || node.nodeType !== 1) return;
+  if (!isLive() || !node || node.nodeType !== 1) return;
   var refs = [];
-  if (node.hasAttribute && node.hasAttribute('data-ref') && node._stadiarefLabelled) refs.push(node);
+  if (node.hasAttribute && node.hasAttribute('data-ref') && isLabelled(node)) refs.push(node);
   if (node.querySelectorAll) {
     var inner = node.querySelectorAll('[data-ref]');
     for (var i = 0; i < inner.length; i++) {
-      if (inner[i]._stadiarefLabelled) refs.push(inner[i]);
+      if (isLabelled(inner[i])) refs.push(inner[i]);
     }
   }
   for (var j = 0; j < refs.length; j++) {
     var el = refs[j];
-    var nodes = [el._stadiarefIcon, el._stadiarefTooltip, el._stadiarefFullLabel, el._stadiarefLink];
+    var nodes = [rec(el).icon, rec(el).tooltip, rec(el).fullLabel, rec(el).link];
     for (var k = 0; k < nodes.length; k++) {
       var n = nodes[k];
       if (!n) continue;
@@ -144,9 +147,9 @@ export function eagerHideDescendantLabels(node) {
       n.classList.remove('stadiaref-visible-host');
     }
     // Clear cached visibility so the rAF tick definitely re-runs the
-    // check rather than skipping due to "_stadiarefVisible === visible" early
+    // check rather than skipping due to the "visible === visible" early
     // return.
-    el._stadiarefVisible = null;
+    rec(el).visible = null;
   }
 }
 export function scheduleVisibilityRecheck() {

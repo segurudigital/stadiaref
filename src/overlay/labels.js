@@ -1,14 +1,15 @@
 import { S } from './state.js';
-import { clearDataRefClass, tierOf } from './classify.js';
+import { forget, hasRecord, rec } from './records.js';
+import { tierOf } from './classify.js';
 import { copyRef } from './copy.js';
 import { forEachNode, rectsOverlap, toArray } from './dom.js';
 import { emitAddressEvent } from './events.js';
 import { getElementContext } from './survey.js';
 import { applyBlockGroupCollapse, clearBlockGroupCollapse, tierShown } from './tiers.js';
 import { applyLabelVisibilityState, getEffectiveBgLuminance } from './visibility.js';
+import { isLive } from './mount.js';
 
 // Label injection
-export const MARKER = '_stadiarefLabelled';
 export const LABEL_BASE_TOP = 2;
 export const LABEL_COLLISION_GAP = 4;
 export const LABEL_OFFSET_STEP = 18;
@@ -43,10 +44,10 @@ export function getDepthLift(depth) {
 export function setLabelOffset(el, offset, depth) {
   var top = (LABEL_BASE_TOP + offset) + 'px';
   var xInset = getDepthInset(depth || 0);
-  var icon = el._stadiarefIcon;
-  var link = el._stadiarefLink;
-  var tooltip = el._stadiarefTooltip;
-  var fullLabel = el._stadiarefFullLabel;
+  var icon = rec(el).icon;
+  var link = rec(el).link;
+  var tooltip = rec(el).tooltip;
+  var fullLabel = rec(el).fullLabel;
 
   if (icon) icon.style.top = top;
   if (link) {
@@ -66,14 +67,14 @@ export function setLabelOffset(el, offset, depth) {
 export function resetLabelOffsets() {
   var refs = document.querySelectorAll('[data-ref]');
   forEachNode(refs, function (el) {
-    el._stadiarefDepth = getRefDepth(el);
-    setLabelOffset(el, getDepthLift(el._stadiarefDepth || 0), el._stadiarefDepth || 0);
+    rec(el).depth = getRefDepth(el);
+    setLabelOffset(el, getDepthLift(rec(el).depth || 0), rec(el).depth || 0);
   });
 }
 
 export function getActiveLabel(el) {
   if (S.presentationMode || S.state === 1) return null;
-  return S.state === 2 ? el._stadiarefFullLabel : el._stadiarefIcon;
+  return S.state === 2 ? rec(el).fullLabel : rec(el).icon;
 }
 
 export function resolveLabelOverlaps() {
@@ -83,10 +84,11 @@ export function resolveLabelOverlaps() {
   // attached to its cluster.
   var placedSlots = [];
 
+  if (!isLive()) return;
   resetLabelOffsets();
   clearClusters();
   clearBlockGroupCollapse();
-  if (S.presentationMode || S.state === 1) return;
+  if (S.state === 1) return;
 
   // Block group collapse: sections with >6 direct block children when
   // level filter is All. Must run before the placement loop so collapsed
@@ -104,12 +106,12 @@ export function resolveLabelOverlaps() {
     // opacity:0). Their labels are display:none via .stadiaref-ref-hidden, so
     // they shouldn't consume collision slots — otherwise hidden mega-menu
     // labels would push visible labels around.
-    if (el._stadiarefVisible === false) return;
+    if (rec(el).visible === false) return;
 
     // Skip block-group-collapsed members and tiers Show is hiding — their
     // labels are hidden by CSS and must not take part in collision detection.
-    if (el._stadiarefBlockGroupMember) return;
-    if (!tierShown(el._stadiarefTier)) return;
+    if (rec(el).blockGroupMember || rec(el).collapsed) return;
+    if (!tierShown(rec(el).tier)) return;
 
     var anchor = getActiveLabel(el);
     var attempt;
@@ -120,11 +122,11 @@ export function resolveLabelOverlaps() {
 
     if (!anchor) return;
 
-    preferredOffset = getDepthLift(el._stadiarefDepth || 0);
+    preferredOffset = getDepthLift(rec(el).depth || 0);
 
     collisionWith = null;
     for (attempt = 0; attempt < LABEL_OFFSET_LIMIT; attempt++) {
-      setLabelOffset(el, preferredOffset + (attempt * LABEL_OFFSET_STEP), el._stadiarefDepth || 0);
+      setLabelOffset(el, preferredOffset + (attempt * LABEL_OFFSET_STEP), rec(el).depth || 0);
       rect = anchor.getBoundingClientRect();
       collisionWith = null;
 
@@ -176,24 +178,24 @@ export function clearClusters() {
   // Clear per-owner cluster lists from the previous resolution pass.
   var refs = document.querySelectorAll('[data-ref]');
   forEachNode(refs, function (el) {
-    el._stadiarefCluster = null;
-    el._stadiarefClusterBadge = null;
+    rec(el).cluster = null;
+    rec(el).clusterBadge = null;
   });
 }
 
 export function addToCluster(ownerEl, memberEl) {
-  if (!ownerEl._stadiarefCluster) ownerEl._stadiarefCluster = [];
-  ownerEl._stadiarefCluster.push(memberEl);
+  if (!rec(ownerEl).cluster) rec(ownerEl).cluster = [];
+  rec(ownerEl).cluster.push(memberEl);
   // Hide all label variants of the clustered member so it can't
   // collide visually with anything else and can't intercept clicks.
-  var nodes = [memberEl._stadiarefIcon, memberEl._stadiarefTooltip, memberEl._stadiarefFullLabel, memberEl._stadiarefLink];
+  var nodes = [rec(memberEl).icon, rec(memberEl).tooltip, rec(memberEl).fullLabel, rec(memberEl).link];
   for (var i = 0; i < nodes.length; i++) {
     if (nodes[i]) nodes[i].classList.add('stadiaref-ref-clustered');
   }
 }
 
 export function renderClusterBadgeIfNeeded(ownerEl) {
-  var cluster = ownerEl._stadiarefCluster;
+  var cluster = rec(ownerEl).cluster;
   if (!cluster || cluster.length === 0) return;
   var anchor = getActiveLabel(ownerEl);
   if (!anchor) return;
@@ -248,7 +250,7 @@ export function renderClusterBadgeIfNeeded(ownerEl) {
   badge.appendChild(popover);
 
   ownerEl.appendChild(badge);
-  ownerEl._stadiarefClusterBadge = badge;
+  rec(ownerEl).clusterBadge = badge;
 }
 
 // ─── Void-element label hosts (v2.5.0) ──────────────────────
@@ -264,7 +266,7 @@ export function needsVoidHost(el) {
 }
 
 export function syncVoidHost(el) {
-  var host = el._stadiarefHost;
+  var host = rec(el).host;
   if (!host || !host.parentNode) return;
   host.style.left = el.offsetLeft + 'px';
   host.style.top = el.offsetTop + 'px';
@@ -273,9 +275,10 @@ export function syncVoidHost(el) {
 }
 
 export function syncAllVoidHosts() {
+  if (!isLive()) return;
   var hosts = document.querySelectorAll('.stadiaref-ref-void-host');
   forEachNode(hosts, function (host) {
-    var owner = host._stadiarefOwner;
+    var owner = rec(host).owner;
     if (!owner || !owner.parentNode) { if (host.parentNode) host.parentNode.removeChild(host); return; }
     syncVoidHost(owner);
   });
@@ -283,43 +286,78 @@ export function syncAllVoidHosts() {
 
 export function labelHostFor(el) {
   if (!needsVoidHost(el)) return el;
-  if (el._stadiarefHost && el._stadiarefHost.parentNode) return el._stadiarefHost;
+  if (rec(el).host && rec(el).host.parentNode) return rec(el).host;
   var parent = el.parentNode;
   if (!parent || parent.nodeType !== 1) return el;
   var host = document.createElement('span');
   host.className = 'stadiaref-ref-void-host';
   host.setAttribute('data-stadiaref-host-for', el.getAttribute('data-ref') || '');
-  host._stadiarefOwner = el;
+  rec(host).owner = el;
   var pPos = window.getComputedStyle(parent).position;
   if (pPos === 'static') parent.style.position = 'relative';
   parent.insertBefore(host, el.nextSibling);
-  el._stadiarefHost = host;
+  rec(el).host = host;
   syncVoidHost(el);
   return host;
 }
 
 export function removeVoidHost(el) {
-  var host = el._stadiarefHost;
+  var host = rec(el).host;
   if (host && host.parentNode) host.parentNode.removeChild(host);
-  delete el._stadiarefHost;
+  rec(el).host = null;
+}
+
+// An element is labelled when its label nodes are still attached and were
+// made for the address it carries now. A framework that re-renders an
+// element's children deletes them; a reused node can get a new address.
+export function isLabelled(el) {
+  if (!hasRecord(el)) return false;
+  var r = rec(el);
+  return !!(r.fullLabel && r.fullLabel.isConnected && r.address === el.getAttribute('data-ref'));
+}
+
+// Remove an element's label nodes and forget everything about it.
+export function unlabel(el) {
+  if (!hasRecord(el)) return;
+  var r = rec(el);
+  var nodes = [r.link, r.icon, r.tooltip, r.fullLabel, r.clusterBadge, r.groupBadge];
+  for (var i = 0; i < nodes.length; i++) {
+    if (nodes[i] && nodes[i].parentNode) nodes[i].parentNode.removeChild(nodes[i]);
+  }
+  removeVoidHost(el);
+  forget(el);
+}
+
+// The tag a label carries: the tier, or AUTO for an automatic address.
+var TIER_TAGS = { section: 'SEC', block: 'BLK', element: 'EL', unclassified: '?' };
+var TIER_LETTERS = { section: 'S', block: 'B', element: 'E', unclassified: '?' };
+
+function addressSpan(text) {
+  var span = document.createElement('span');
+  span.className = 'stadiaref-ref-address';
+  span.textContent = text;
+  return span;
+}
+
+function tagSpan() {
+  var span = document.createElement('span');
+  span.className = 'stadiaref-ref-tag';
+  return span;
 }
 
 export function injectLabels() {
+  if (!isLive()) return;
   var refs = document.querySelectorAll('[data-ref]');
 
   forEachNode(refs, function (el) {
-    if (el[MARKER]) return;
-    el[MARKER] = true;
+    if (isLabelled(el)) return;
+    unlabel(el);
 
     var refValue = el.getAttribute('data-ref');
     var elContext = getElementContext(el);
+    var auto = el.hasAttribute('data-stadiaref-auto');
 
-    // Classify by data-ref v5.0 grammar and stamp the class on the
-    // element so CSS level-filter rules and block group collapse can
-    // target it without re-running the parser.
     var refClass = tierOf(el);
-    clearDataRefClass(el);
-    el.classList.add('stadiaref-ref-class-' + refClass);
     if (refClass === 'unclassified' && typeof console !== 'undefined' && console.warn) {
       console.warn('[stadiaref] unclassified address:', refValue);
     }
@@ -327,6 +365,7 @@ export function injectLabels() {
     // Adaptive background class
     var lum = getEffectiveBgLuminance(el);
     var bgClass = lum < 0.40 ? 'stadiaref-on-dark' : 'stadiaref-on-light';
+    var autoClass = auto ? ' stadiaref-auto' : '';
 
     var host = labelHostFor(el);
     if (host === el) {
@@ -335,9 +374,10 @@ export function injectLabels() {
     }
 
     var icon = document.createElement('span');
-    icon.className = 'stadiaref-ref-icon ' + bgClass;
-    icon.textContent = '\u24D8';
-    icon.title = elContext + ' \u00B7 ' + refValue + ' (click to copy)';
+    icon.className = 'stadiaref-ref-icon ' + bgClass + autoClass;
+    icon.setAttribute('role', 'button');
+    icon.tabIndex = -1;
+    icon.title = refValue + ' (click to copy)';
     icon.addEventListener('click', function (e) {
       e.stopPropagation();
       e.preventDefault();
@@ -353,7 +393,7 @@ export function injectLabels() {
 
     var tooltip = document.createElement('span');
     tooltip.className = 'stadiaref-ref-tooltip ' + bgClass;
-    tooltip.innerHTML = '<span class="stadiaref-ref-tag">' + elContext + '</span> \u00B7 ' + refValue;
+    tooltip.appendChild(addressSpan(refValue));
     tooltip.addEventListener('click', function (e) {
       e.stopPropagation();
       e.preventDefault();
@@ -362,9 +402,10 @@ export function injectLabels() {
     });
 
     var fullLabel = document.createElement('span');
-    fullLabel.className = 'stadiaref-ref-full-label ' + bgClass;
-    fullLabel.innerHTML = '<span class="stadiaref-ref-tag">' + elContext + '</span> \u00B7 ' + refValue;
-    fullLabel.title = 'Click to copy: ' + refValue;
+    fullLabel.className = 'stadiaref-ref-full-label ' + bgClass + autoClass;
+    fullLabel.appendChild(tagSpan());
+    fullLabel.appendChild(addressSpan(refValue));
+    fullLabel.title = 'Click to copy: ' + refValue + (elContext ? ' (' + elContext + ')' : '');
     fullLabel.addEventListener('click', function (e) {
       e.stopPropagation();
       e.preventDefault();
@@ -385,12 +426,15 @@ export function injectLabels() {
     host.appendChild(icon);
     host.appendChild(tooltip);
     host.appendChild(fullLabel);
-    el._stadiarefIcon = icon;
-    el._stadiarefLink = link;
-    el._stadiarefTooltip = tooltip;
-    el._stadiarefFullLabel = fullLabel;
-    el._stadiarefDepth = getRefDepth(el);
-    setLabelOffset(el, getDepthLift(el._stadiarefDepth), el._stadiarefDepth);
+    var r = rec(el);
+    r.address = refValue;
+    r.auto = auto;
+    r.icon = icon;
+    r.link = link;
+    r.tooltip = tooltip;
+    r.fullLabel = fullLabel;
+    r.depth = getRefDepth(el);
+    setLabelOffset(el, getDepthLift(r.depth), r.depth);
     setLabelTier(el, refClass);
   });
   reclassifyLabels();
@@ -412,13 +456,9 @@ export function reclassifyLabels() {
       if (typeof console !== 'undefined' && console.warn) console.warn('[stadiaref] duplicate address on this screen:', ref);
     }
     seen[ref] = true;
-    if (!el[MARKER]) return;
+    if (!isLabelled(el)) return;
     var tier = tierOf(el);
-    if (!el.classList.contains('stadiaref-ref-class-' + tier)) {
-      clearDataRefClass(el);
-      el.classList.add('stadiaref-ref-class-' + tier);
-    }
-    if (el._stadiarefTier !== tier) setLabelTier(el, tier);
+    if (rec(el).tier !== tier) setLabelTier(el, tier);
   });
 }
 
@@ -427,12 +467,20 @@ export function reclassifyLabels() {
 var TIER_CLASSES = ['stadiaref-tier-section', 'stadiaref-tier-block', 'stadiaref-tier-element', 'stadiaref-tier-unclassified'];
 
 export function setLabelTier(el, tier) {
-  el._stadiarefTier = tier;
-  var nodes = [el._stadiarefIcon, el._stadiarefTooltip, el._stadiarefFullLabel, el._stadiarefLink];
+  var r = rec(el);
+  r.tier = tier;
+  var nodes = [r.icon, r.tooltip, r.fullLabel, r.link];
   for (var i = 0; i < nodes.length; i++) {
     var n = nodes[i];
     if (!n) continue;
     for (var j = 0; j < TIER_CLASSES.length; j++) n.classList.remove(TIER_CLASSES[j]);
     n.classList.add('stadiaref-tier-' + tier);
   }
+  if (r.icon) r.icon.textContent = TIER_LETTERS[tier];
+  if (r.fullLabel) r.fullLabel.firstChild.textContent = r.auto ? 'AUTO' : TIER_TAGS[tier];
+}
+
+// The tier recorded for a labelled element at the last survey.
+export function recordedTier(el) {
+  return hasRecord(el) ? rec(el).tier : undefined;
 }
