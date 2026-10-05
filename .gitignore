@@ -10,3 +10,7 @@ node_modules/
 docs/endpoint-feedback/
 docs/_internal/
 .claude/
+
+# Playwright output
+test-results/
+playwright-report/

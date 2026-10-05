@@ -11,7 +11,7 @@
 
 A zero-dependency JavaScript tool that turns `data-ref` attributes into a clickable visual overlay. Used for wireframe QA, design review, client revision rounds, and debugging block-based sites. Installable as an npm package or WordPress plugin.
 
-Single JS file in `src/`. No framework. Plain ES5-compatible IIFE.
+Source in `src/`, bundled by esbuild into one shipped file. No framework, no runtime dependencies.
 
 ---
 
@@ -19,10 +19,11 @@ Single JS file in `src/`. No framework. Plain ES5-compatible IIFE.
 
 | Layer | Tech |
 |-------|------|
-| Source | Plain JavaScript (ES5 IIFE) |
+| Source | Plain JavaScript; ES modules and modern syntax allowed, bundled to one IIFE |
 | Build | esbuild — `npm run build` → `dist/seguru-debug-toolbar.min.js` |
 | WordPress plugin | PHP 8.1+, WordPress 5.8+ |
 | Package | npm (`@segurudigital/seguru-debug-toolbar`) |
+| Tests | `npm test`: Node's built-in test runner (unit) and Playwright (browser) |
 | Test page | `test/demo.html` (open directly in browser, no server needed) |
 
 ---
@@ -53,10 +54,18 @@ test/
 
 ---
 
+## 3.0.0 build in progress
+
+The project is being rebuilt as **StadiaRef 3.0.0** in stages. The **"3.0.0 build"** section of `TASKS.md` lists the stages and their checks; the first unticked stage is where a session starts. The stages follow an internal build brief that is kept outside this repo. Where that brief and this file disagree, the brief wins.
+
+Until stage 10 rewrites this file for the 3.0 layout, some sections below still describe 2.5.0.
+
+---
+
 ## Session protocol
 
 ### Start
-1. `git pull origin main`
+1. `git status` — the tree should be clean
 2. Read this file (AGENTS.md)
 3. Read **TASKS.md** — the canonical list of all open work for this sprint
 4. Read **ROADMAP.md** — upcoming scope and what's next after this sprint
@@ -77,8 +86,10 @@ All three of TASKS.md, ROADMAP.md, and CHANGELOG.md must be in sync at the start
 3. **ROADMAP.md** — if a future-scope item moved into a sprint or is now complete, update ROADMAP accordingly so it stays accurate as a forward view
 4. Bump version in all locations below if releasing
 5. `npm run build` to regenerate dist
-6. Commit with conventional message
-7. Push
+6. `npm test` — the whole suite, not only new tests
+7. Commit with conventional message
+
+Don't push. Pushing, tagging, releases and npm publishing are done by the maintainer.
 
 ---
 
@@ -108,6 +119,8 @@ When bumping the version, update ALL of these:
 ---
 
 ## Release flow
+
+The maintainer cuts releases. Agents don't push, tag or publish; this section is reference.
 
 Cutting a release:
 
@@ -162,9 +175,8 @@ npm install --prefix /tmp/esbuild-local esbuild
 
 ## Architecture guardrails
 
-- **Single IIFE.** The entire tool is one self-contained IIFE. No modules, no classes, no external deps. Keep it that way.
+- **One shipped file.** The overlay ships as one self-contained file with zero runtime dependencies and no network requests. Source may be split into ES modules and use modern syntax; esbuild bundles it into the single IIFE (SR-07).
 - **Shadow DOM split.** Toolbar and toast render inside a shadow root. Labels (`sdt-ref-icon`, `sdt-ref-tooltip`, `sdt-ref-full-label`) inject into the main document DOM. This is intentional — do not move labels into the shadow DOM.
-- **ES5 compatible.** No arrow functions, `const`/`let`, template literals, or spread operators. The source uses `var` throughout.
 - **Config merge order.** `seguruDebugConfig` (per-page) overrides `sdtConfig` (WordPress-injected). Both fall back to defaults. Never read just one source.
 - **No minification of source.** `src/seguru-debug-toolbar.js` is the readable source. `dist/seguru-debug-toolbar.min.js` is the build output. Never edit dist directly.
 - **WordPress plugin PHP must stay PHP 8.1+.** The `??` null coalescing operator is used — do not downgrade.
@@ -173,27 +185,37 @@ npm install --prefix /tmp/esbuild-local esbuild
 
 ## Git conventions
 
-Prefix → use:
-- `feature/` — new functionality
-- `fix/` — bug fixes
-- `docs/` — documentation only
-- `refactor/` — no behaviour change
-- `hotfix/` — urgent fix from main
+- Commit to `main`. No branches.
+- Don't push, tag, create releases, publish to npm or change GitHub settings. The maintainer does all of that.
+- Stage files by name. Never `git add .` or `git add -A`.
+- Never commit `docs/_internal/`.
+- One commit per coherent step, with a conventional message.
 
-Commit type: `feat`, `fix`, `docs`, `style`, `refactor`, `chore`  
-Commit scope examples: `toolbar`, `labels`, `depth`, `config`, `wp`, `build`, `docs`
+Commit type: `feat`, `fix`, `docs`, `style`, `refactor`, `chore`, `test`  
+Commit scope examples: `toolbar`, `labels`, `core`, `config`, `wp`, `build`, `docs`, `test`
 
-Never `git add .` — stage specific files only.
+---
+
+## Tests
+
+```bash
+npm test             # build, then unit tests, then browser tests
+npm run test:unit    # node --test: core logic, PHP lint, build output
+npm run test:browser # Playwright: runs every browser test twice, against the
+                     # source (bundled on the fly) and against dist/
+```
+
+`test/support/server.mjs` serves the repo for the browser tests and answers any request for the overlay script with the build under test, so `test/demo.html` and the fixtures need no edits. Its `/__harness` route builds pages with chosen config, script attributes and markup (see `test/browser/helpers.mjs`).
+
+The `baseline-*` browser tests pin what 2.5.0 does. They are the safety net for the 3.0 refactor; change one only when a stage deliberately changes that behaviour, and say so in the commit.
 
 ---
 
 ## Pre-commit checklist
 
-1. `node --check src/seguru-debug-toolbar.js` (syntax check)
-2. `npm run build` (confirm build passes)
-3. Open `test/demo.html` and verify toolbar loads
-4. Stage specific files
-5. Commit with conventional message
+1. `npm test`
+2. Stage specific files
+3. Commit with conventional message
 
 ---
 
@@ -227,7 +249,7 @@ All user-facing documentation is in `docs/`. When changing behaviour, update the
 | Page builder support | `docs/page-builders.md` |
 | Visual/UI changes | `docs/DESIGN.md` |
 | Naming conventions | `docs/naming-conventions.md` |
-| Brand/colour decisions | `docs/DESIGN.md` + `Seguru-Ops/00_Core/Seguru/Brand/Seguru-Brand-Handbook.md §10` |
+| Brand/colour decisions | `docs/DESIGN.md` |
 
 ---
 
@@ -237,7 +259,7 @@ All user-facing documentation is in `docs/`. When changing behaviour, update the
 |------|-----------|
 | Any coding session | This file + TASKS.md |
 | UI/CSS changes | `docs/DESIGN.md` |
-| Brand or colour decisions | `docs/DESIGN.md` + Brand Handbook §10 |
+| Brand or colour decisions | `docs/DESIGN.md` |
 | WordPress changes | `docs/wordpress.md` + `docs/wp-settings-page.md` |
 | Page builder support | `docs/page-builders.md` |
 | Rolling the toolbar out into a different project | `docs/agent-rollout-prompt.md` (copy-paste prompt for external agents) |
@@ -248,13 +270,11 @@ All user-facing documentation is in `docs/`. When changing behaviour, update the
 
 ## Brand authority
 
-This project is formally defined as a Seguru product in **Seguru-Brand-Handbook.md §10 — Product Brand: Seguru Debug Toolbar** (v4.2, April 2026).
-
-The handbook is the single source of truth for:
+This project is a Seguru Digital product. Seguru's brand guidelines are the source of truth for:
 - Colour tokens (`--color-sdt-primary`, `--color-sdt-dark`, `--color-sdt-wash`)
 - Colour separation rules (orange = functional, blue = S mark only)
 - Positioning and tagline
 - WordPress plugin icon specification
 - Open-source brand positioning
 
-The implementation detail lives in `docs/DESIGN.md`. When the two conflict, the handbook wins on brand decisions; DESIGN.md wins on pixel-level implementation.
+The implementation detail lives in `docs/DESIGN.md`. When the two conflict, the brand guidelines win on brand decisions; DESIGN.md wins on pixel-level implementation.

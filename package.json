@@ -17,6 +17,9 @@
     "build": "esbuild src/seguru-debug-toolbar.js --bundle --minify --outfile=dist/seguru-debug-toolbar.min.js --format=iife",
     "build:wp": "bash scripts/build-wp-zip.sh",
     "dev": "esbuild src/seguru-debug-toolbar.js --bundle --outfile=dist/seguru-debug-toolbar.js --format=iife --watch",
+    "test": "npm run build && npm run test:unit && npm run test:browser",
+    "test:unit": "node --test 'test/unit/**/*.test.mjs'",
+    "test:browser": "playwright test",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -46,6 +49,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "esbuild": "^0.20.2"
   }
 }

@@ -1,7 +1,7 @@
 # Tasks
 
 **Project:** Seguru Debug Toolbar
-**Current version:** 2.5.0
+**Current version:** 2.5.0 (3.0.0 in progress)
 
 > **How this file works**
 > TASKS.md is the canonical list of all open and recently-completed work, organised as **Sprints → Phases → subtasks**. Items are ticked off as they ship. At session end, completed items move from this file to **CHANGELOG.md** (the user-facing record) — only the most recent handoff note stays here as a starting point for the next session. **ROADMAP.md** is the forward view. Agent todo trackers (`TodoWrite`) mirror this file for the active session — they're never the source of truth on their own. All three docs (TASKS, CHANGELOG, ROADMAP) must be in sync at the start and end of every session.
@@ -10,30 +10,97 @@
 
 ## Handoff notes
 
-**Last session:** 2026-10-05 (v2.5.0 close-out)
+**Last session:** 2026-10-05 (3.0.0 build, stage 0)
 
-**What was done:**
+**State before this session:** v2.5.0 released (tag `v2.5.0` on `5805bc5`, GitHub release with both assets).
 
-- Committed the v2.5.0 source that had been sitting uncommitted since 2026-09-02: void-element label hosts, so refs on `<img>`, `<video>`, `<input>`, `<iframe>` and `<canvas>` are visible. See `CHANGELOG.md [2.5.0]`.
-- Finished the version bump. `package.json` and the source were already at 2.5.0; both WordPress plugin files were still at 2.4.1 and are now 2.5.0 (`Version:` header and `SDT_VERSION`).
-- Rebuilt `dist/seguru-debug-toolbar.min.js` (76,037 bytes) and `dist/seguru-debug-toolbar-wp-v2.5.0.zip`.
-
-**Where things were left:**
-
-- `node --check src/seguru-debug-toolbar.js`, `npm run build` and `npm run build:wp` pass. The Playwright QA harness was not re-run for this release.
-- Committed to `main`. Not pushed, not tagged, not released.
-
-**Next session should:**
-
-1. Push `main` and publish GitHub release `v2.5.0`. The release workflow attaches the assets and publishes to npm.
-2. Confirm `@segurudigital/seguru-debug-toolbar@2.5.0` is on npm. The publish job is `continue-on-error`, so a bad token fails quietly.
-3. Start 3.0.0, where the project is renamed StadiaRef.
+See the "3.0.0 build" section below for what was done and where to start.
 
 ---
 
 ## Currently in flight
 
-*v2.5.0 committed, release pending. Next sprint is 3.0.0.*
+*3.0.0 build. Package version stays at the current number until stage 2 sets `3.0.0-dev`, and `3.0.0` only at stage 10.*
+
+---
+
+## 3.0.0 build
+
+StadiaRef 3.0.0, built in stages. A new session starts at the first unticked stage. Each stage is finished, with its checks passing and its work committed, before the next one starts. `npm test` runs at the end of every stage.
+
+- [x] **Stage 0 — Safety net.** Baseline tests against 2.5.0, test tooling, AGENTS.md and this section.
+  - [x] Preconditions: tree clean; `origin/main` at the 2.5.0 commit; tag `v2.5.0` present; remote `segurudigital/stadiaref` (already renamed)
+  - [x] `npm test` runs unit tests (`node --test`) and browser tests (Playwright, against both the source and `dist/`)
+  - [x] Baseline tests cover every API member, every config key and script attribute, every emitted event with its detail, the D, L, T, O, F and Esc keys, `classifyDataRef()` against the v5 fixtures, label counts on `test/demo.html` in each mode, click-to-copy, `refresh()`, and `php -l` on the WordPress files
+  - [x] `npm test` passes against untouched 2.5.0 source
+  - [x] The commit contains only tests, tooling, `AGENTS.md` and `TASKS.md`
+- [ ] **Stage 1 — Modules, no behaviour change.** One state object, one `boot()`, nothing touches the DOM at import.
+  - [ ] Every baseline test passes unchanged
+  - [ ] `dist/` behaves identically on `test/demo.html` and the four v5 fixtures in a real browser
+- [ ] **Stage 2 — The rename, with aliases.**
+  - [ ] All tests pass under the new names and the old ones
+  - [ ] A page using only 2.x names (`window.seguruDebugConfig`, `seguruDebugToolbar.setDepth()`, `sdt:dataref-click`) works with one console notice
+  - [ ] No `sdt` or `seguru-debug` string left in `src/` outside `compat/` and history comments
+  - [ ] `npm run build:wp` still produces a working zip
+- [ ] **Stage 3 — Core and profiles.**
+  - [ ] Unit tests for all three profiles, the core rules, the registry and the throwaway third-party profile
+  - [ ] The v5 fixtures classify exactly as before with `profile: 'titan'`
+  - [ ] `node -e "import('./dist/core.mjs')"` succeeds
+- [ ] **Stage 4 — Show, Auto-address, keys.**
+  - [ ] Every non-empty tier combination shows what it says, on authored and on automatic-only pages; `setTiers([])` shows no labels
+  - [ ] Automatic addresses stay valid, unique and unchanged across ten forced surveys
+  - [ ] Alias tests pass, including the five Target values and three Level values against 2.5.0 (titan profile)
+  - [ ] Keys rebind, disable, and work with Shift held
+- [ ] **Stage 5 — Brand, toolbar and labels.**
+  - [ ] Screenshots of the toolbar (light, dark, desktop, 390px) and the sample page in each label mode, compared against the wireframe values
+  - [ ] Every text and background pair at least 4.5:1 by calculation
+  - [ ] Toolbar fully usable by keyboard, visible focus, accessible names and pressed/expanded state
+  - [ ] A hidden StadiaRef leaves the page DOM byte-identical (class converter off)
+- [ ] **Stage 6 — Pick and Find.**
+  - [ ] Pick: pointer, arrow keys, Esc, an element with no address, clicks don't reach the host
+  - [ ] Find: exact, substring, no match, hidden match, keyboard navigation, shortcut letters typed into the field, dim layer clears on close
+  - [ ] `copied` flag in both outcomes
+- [ ] **Stage 7 — Apps.**
+  - [ ] Route change in a small SPA fixture relabels without `refresh()`
+  - [ ] A framework-style text update that wipes a label: label back within two frames
+  - [ ] `<dialog>` via `showModal()`: toolbar clickable, Find accepts typing; scripted `role="dialog"` with a focus trap; Esc closes the host dialog without hiding StadiaRef
+  - [ ] Touch sheet under mobile emulation; docking above a fixed bottom bar
+  - [ ] `<body>` swap followed by recovery; one survey per frame
+- [ ] **Stage 8 — Entry points and integrations.**
+  - [ ] Astro (5 and current major) and Vite projects: dev server serves StadiaRef; production output has no `data-stadiaref-root`
+  - [ ] A `setup` module registers a profile the overlay then uses
+  - [ ] `import('stadiaref')` in Node resolves and does nothing
+  - [ ] `npm pack --dry-run` lists only what should ship
+  - [ ] Types check under `strict` with `moduleResolution` `bundler` and `node16`
+- [ ] **Stage 9 — WordPress.**
+  - [ ] Both PHP files and the bridge pass `php -l`
+  - [ ] Both zips build and unpack to the right folder names; bridge zip name matches `^seguru-debug-toolbar-wp-v[\d.]+\.zip$`
+  - [ ] With a local WordPress: option copy, admin-only loading, page config wins, bridge installs over 2.5.0. Without one: reported as untested
+- [ ] **Stage 10 — Docs, release pack, release candidate.**
+  - [ ] Every doc statement true of the built code; bundle size filled in
+  - [ ] Scrub, community files, CI, release and Pages workflows
+  - [ ] Version `3.0.0` everywhere (bridge stays `2.5.1`); full CHANGELOG entry
+  - [ ] Clean build, full test run, release notes written
+
+### Baseline notes (stage 0)
+
+The baseline tests pin what the 2.5.0 code does, not what the README says. Where they differ:
+
+| Area | 2.5.0 code | README / fixture says | Test |
+|---|---|---|---|
+| `sdt:ready` with a deferred script | Fires before `window.seguruDebugToolbar` is assigned | "SDT has booted and the API is callable" | `baseline-config` › deferred script |
+| Events | Also emits `sdt:level-filter-change` `{ levelFilter }` | Not in the event table | `baseline-events` |
+| Level filter | Labels of void elements (`<img>` etc.) live in a sibling host, so the level-filter CSS doesn't hide them | Sections only shows only sections | `baseline-classify` › void-hosted image |
+| `bad--ref` in `mixed.html` | Classifies as `section` (last segment is non-numeric) | Fixture comment says unclassified | `baseline-classify` |
+| v4.0 refs | Element only when they carry a page prefix (6+ segments); bare `heading-01-01-primary` is a section | "receive `sdt-ref-class-element`" | `baseline-classify` › edge cases |
+| Address chain row click | `current` in `sdt:dataref-click` is always the last row (loop `var` capture) | Not documented | `baseline-events` › chain row |
+| Labels while hidden | Injected at boot even when hidden | n/a (3.0 rule 1 changes this) | `baseline-config` › labels injected at boot |
+| Automatic address slug | Path-derived, unsanitised: `/test/demo.html` → `test-demo.html-03-section` | n/a (stage 4 sanitises) | `baseline-config`, `baseline-labels` |
+| Tree copy button | Copies, emits no event | n/a (stage 6 adds `source: 'tree'`) | `baseline-events` › Tree row |
+
+For stage 3: `bad--ref` breaks the core rule against doubled hyphens, so under 3.0 it is `unclassified` in every profile, including titan. That is the one fixture address whose class changes. Raise it at stage 3 (brief, decision 2).
+
+For stage 10: the v5 fixtures use page codes (`hf-`, `mpt-v2-`) that look like they came from a real project. Rename them, and `expected-2.5.0.json` with them.
 
 ---
 
