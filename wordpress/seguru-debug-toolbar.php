@@ -7,7 +7,7 @@
  * Author URI:  https://seguru.digital
  *
  * Drop this file into wp-content/mu-plugins/ (create the folder if it doesn't exist).
- * Then copy seguru-debug-toolbar.min.js into wp-content/mu-plugins/seguru-debug-toolbar/
+ * Then copy stadiaref.min.js into wp-content/mu-plugins/seguru-debug-toolbar/
  *
  * This mu-plugin reads the same options as the installable plugin version,
  * so both share the same Settings → Debug Toolbar page if present.
@@ -36,14 +36,15 @@ add_action( 'wp_enqueue_scripts', function () {
 
     // Look for the JS file next to this plugin file
     $dir  = __DIR__ . '/seguru-debug-toolbar';
-    $file = $dir . '/seguru-debug-toolbar.min.js';
-    $url  = plugin_dir_url( __FILE__ ) . 'seguru-debug-toolbar/seguru-debug-toolbar.min.js';
+    $file = $dir . '/stadiaref.min.js';
+    $url  = plugin_dir_url( __FILE__ ) . 'seguru-debug-toolbar/stadiaref.min.js';
 
     // Fallback: check npm in the active theme.
     // Checks the scoped path first (canonical since v2.2.2) then the legacy
     // unscoped path for themes installed before the rename to @segurudigital/.
     if ( ! file_exists( $file ) ) {
         $candidates = [
+            '/node_modules/stadiaref/dist/stadiaref.min.js',
             '/node_modules/@segurudigital/seguru-debug-toolbar/dist/seguru-debug-toolbar.min.js',
             '/node_modules/seguru-debug-toolbar/dist/seguru-debug-toolbar.min.js',
         ];

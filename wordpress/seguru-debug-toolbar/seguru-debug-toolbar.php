@@ -269,12 +269,12 @@ add_action( 'wp_enqueue_scripts', function () {
     $cap      = sdt_role_capability( $min_role );
     if ( ! current_user_can( $cap ) ) return;
 
-    $file = SDT_PLUGIN_DIR . 'assets/seguru-debug-toolbar.min.js';
+    $file = SDT_PLUGIN_DIR . 'assets/stadiaref.min.js';
     if ( ! file_exists( $file ) ) return;
 
     wp_enqueue_script(
         'seguru-debug-toolbar',
-        SDT_PLUGIN_URL . 'assets/seguru-debug-toolbar.min.js',
+        SDT_PLUGIN_URL . 'assets/stadiaref.min.js',
         [],
         SDT_VERSION,
         true

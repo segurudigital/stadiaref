@@ -1,50 +1,48 @@
 {
-  "name": "@segurudigital/seguru-debug-toolbar",
-  "version": "2.5.0",
-  "description": "Zero-dependency visual overlay for data-ref element labels. Label, target, level-filter, outline, tree, and click-to-copy controls. Default hidden — press D to reveal. Works in static HTML, Vite/Webpack builds, React/Next/Vue, WordPress, and Shopify.",
-  "main": "dist/seguru-debug-toolbar.min.js",
-  "unpkg": "dist/seguru-debug-toolbar.min.js",
-  "jsdelivr": "dist/seguru-debug-toolbar.min.js",
+  "name": "stadiaref",
+  "version": "3.0.0-dev",
+  "description": "An address for every part of the screen. StadiaRef shows data-ref attributes as labels you can point at and copy. For websites, web apps and PWAs.",
+  "main": "dist/stadiaref.min.js",
+  "unpkg": "dist/stadiaref.min.js",
+  "jsdelivr": "dist/stadiaref.min.js",
   "files": [
-    "dist/seguru-debug-toolbar.min.js",
+    "dist/stadiaref.min.js",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "esbuild src/overlay/index.js --bundle --minify --outfile=dist/seguru-debug-toolbar.min.js --format=iife",
+    "build": "esbuild src/overlay/index.js --bundle --minify --outfile=dist/stadiaref.min.js --format=iife",
     "build:wp": "bash scripts/build-wp-zip.sh",
-    "dev": "esbuild src/overlay/index.js --bundle --outfile=dist/seguru-debug-toolbar.js --format=iife --watch",
+    "dev": "esbuild src/overlay/index.js --bundle --outfile=dist/stadiaref.js --format=iife --watch",
     "test": "npm run build && npm run test:unit && npm run test:browser",
     "test:unit": "node --test 'test/unit/**/*.test.mjs'",
     "test:browser": "playwright test",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
-    "debug",
-    "toolbar",
     "data-ref",
-    "wireframe",
+    "stadiaref",
     "overlay",
+    "labels",
     "qa",
+    "design-review",
+    "wireframe",
+    "web-app",
+    "pwa",
     "wordpress",
-    "design-system",
-    "elementor",
-    "bricks",
-    "shopify"
+    "astro",
+    "vite"
   ],
   "author": "Seguru Digital <hello@seguru.digital>",
   "license": "MIT",
-  "homepage": "https://github.com/segurudigital/seguru-debug-toolbar#readme",
+  "homepage": "https://github.com/segurudigital/stadiaref#readme",
   "bugs": {
-    "url": "https://github.com/segurudigital/seguru-debug-toolbar/issues"
+    "url": "https://github.com/segurudigital/stadiaref/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/segurudigital/seguru-debug-toolbar.git"
-  },
-  "publishConfig": {
-    "access": "public"
+    "url": "git+https://github.com/segurudigital/stadiaref.git"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

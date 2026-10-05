@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import { harness, open, recordEvents, events, countVisible, shadow, HOST_ID } from './helpers.mjs';
 
-const pkg = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf8'));
+const pkg = JSON.parse(fs.readFileSync(new URL('../../../package.json', import.meta.url), 'utf8'));
 
 const MEMBERS = [
   'version', 'setState', 'getState', 'setDepth', 'getDepth', 'setOutline', 'getOutline',
@@ -37,12 +37,12 @@ test('starts hidden; show/hide/toggle/isVisible', async ({ page }) => {
   const host = page.locator('#' + HOST_ID);
   expect(await page.evaluate(() => window.seguruDebugToolbar.isVisible())).toBe(false);
   await expect(host).toBeHidden();
-  expect(await page.evaluate(() => document.body.classList.contains('sdt-presentation'))).toBe(true);
+  expect(await page.evaluate(() => document.body.classList.contains('stadiaref-presentation'))).toBe(true);
 
   await page.evaluate(() => window.seguruDebugToolbar.show());
   expect(await page.evaluate(() => window.seguruDebugToolbar.isVisible())).toBe(true);
-  expect(await page.evaluate(() => document.body.classList.contains('sdt-presentation'))).toBe(false);
-  await expect(shadow(page, '.sdt-toolbar')).toBeVisible();
+  expect(await page.evaluate(() => document.body.classList.contains('stadiaref-presentation'))).toBe(false);
+  await expect(shadow(page, '.stadiaref-toolbar')).toBeVisible();
 
   // idempotent
   await page.evaluate(() => window.seguruDebugToolbar.show());
@@ -60,41 +60,41 @@ test('starts hidden; show/hide/toggle/isVisible', async ({ page }) => {
 test('setState / getState drive label mode', async ({ page }) => {
   await open(page, harness({ page: { startHidden: false } }));
   expect(await page.evaluate(() => window.seguruDebugToolbar.getState())).toBe(2);
-  expect(await countVisible(page, '.sdt-ref-full-label')).toBe(2);
+  expect(await countVisible(page, '.stadiaref-ref-full-label')).toBe(2);
 
   await page.evaluate(() => window.seguruDebugToolbar.setState(0));
   expect(await page.evaluate(() => window.seguruDebugToolbar.getState())).toBe(0);
-  expect(await countVisible(page, '.sdt-ref-full-label')).toBe(0);
-  expect(await countVisible(page, '.sdt-ref-icon')).toBe(2);
+  expect(await countVisible(page, '.stadiaref-ref-full-label')).toBe(0);
+  expect(await countVisible(page, '.stadiaref-ref-icon')).toBe(2);
 
   await page.evaluate(() => window.seguruDebugToolbar.setState(1));
   expect(await page.evaluate(() => window.seguruDebugToolbar.getState())).toBe(1);
-  expect(await countVisible(page, '.sdt-ref-full-label')).toBe(0);
-  expect(await countVisible(page, '.sdt-ref-icon')).toBe(0);
-  expect(await page.evaluate(() => document.body.classList.contains('sdt-hide'))).toBe(true);
-  await expect(shadow(page, '[data-sdt-toggle="mode"] .sdt-toolbar__value')).toHaveText('Off');
+  expect(await countVisible(page, '.stadiaref-ref-full-label')).toBe(0);
+  expect(await countVisible(page, '.stadiaref-ref-icon')).toBe(0);
+  expect(await page.evaluate(() => document.body.classList.contains('stadiaref-hide'))).toBe(true);
+  await expect(shadow(page, '[data-stadiaref-toggle="mode"] .stadiaref-toolbar__value')).toHaveText('Off');
 });
 
 test('setDepth / getDepth toggle auto-ref per tier', async ({ page }) => {
   await open(page, harness({ page: { startHidden: false } }));
   expect(await page.evaluate(() => window.seguruDebugToolbar.getDepth())).toBe('off');
-  expect(await page.evaluate(() => document.querySelectorAll('[data-sdt-auto]').length)).toBe(0);
+  expect(await page.evaluate(() => document.querySelectorAll('[data-stadiaref-auto]').length)).toBe(0);
 
   await page.evaluate(() => window.seguruDebugToolbar.setDepth('all'));
   expect(await page.evaluate(() => window.seguruDebugToolbar.getDepth())).toBe('all');
-  const allCount = await page.evaluate(() => document.querySelectorAll('[data-sdt-auto]').length);
+  const allCount = await page.evaluate(() => document.querySelectorAll('[data-stadiaref-auto]').length);
   expect(allCount).toBeGreaterThan(0);
 
   for (const d of ['section', 'block', 'element']) {
     await page.evaluate((v) => window.seguruDebugToolbar.setDepth(v), d);
     expect(await page.evaluate(() => window.seguruDebugToolbar.getDepth())).toBe(d);
-    const levels = await page.evaluate(() => Array.from(document.querySelectorAll('[data-sdt-auto]')).map((e) => e.getAttribute('data-sdt-auto-level')));
+    const levels = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-stadiaref-auto-tier')));
     for (const l of levels) expect(l).toBe(d);
   }
 
   await page.evaluate(() => window.seguruDebugToolbar.setDepth('off'));
   expect(await page.evaluate(() => window.seguruDebugToolbar.getDepth())).toBe('off');
-  expect(await page.evaluate(() => document.querySelectorAll('[data-sdt-auto]').length)).toBe(0);
+  expect(await page.evaluate(() => document.querySelectorAll('[data-stadiaref-auto]').length)).toBe(0);
   // authored addresses survive every depth change
   expect(await page.evaluate(() => document.querySelectorAll('[data-ref]').length)).toBe(2);
 });
@@ -115,9 +115,9 @@ test('setLevelFilter / getLevelFilter', async ({ page }) => {
   expect(await page.evaluate(() => window.seguruDebugToolbar.getLevelFilter())).toBe('all');
   await page.evaluate(() => window.seguruDebugToolbar.setLevelFilter('section'));
   expect(await page.evaluate(() => window.seguruDebugToolbar.getLevelFilter())).toBe('section');
-  expect(await page.evaluate(() => document.body.classList.contains('sdt-filter-section'))).toBe(true);
+  expect(await page.evaluate(() => document.body.classList.contains('stadiaref-filter-section'))).toBe(true);
   await page.evaluate(() => window.seguruDebugToolbar.setLevelFilter('section-block'));
-  expect(await page.evaluate(() => document.body.classList.contains('sdt-filter-section-block'))).toBe(true);
+  expect(await page.evaluate(() => document.body.classList.contains('stadiaref-filter-section-block'))).toBe(true);
   // invalid values are ignored with a warning
   const warnings = [];
   page.on('console', (m) => { if (m.type() === 'warning') warnings.push(m.text()); });
@@ -128,13 +128,13 @@ test('setLevelFilter / getLevelFilter', async ({ page }) => {
 
 test('toggleTree opens and closes the Tree panel', async ({ page }) => {
   await open(page, harness({ page: { startHidden: false } }));
-  const panel = shadow(page, '.sdt-tree-panel');
-  await expect(panel).not.toHaveClass(/sdt-tree-panel--open/);
+  const panel = shadow(page, '.stadiaref-tree-panel');
+  await expect(panel).not.toHaveClass(/stadiaref-tree-panel--open/);
   await page.evaluate(() => window.seguruDebugToolbar.toggleTree());
-  await expect(panel).toHaveClass(/sdt-tree-panel--open/);
+  await expect(panel).toHaveClass(/stadiaref-tree-panel--open/);
   await expect(panel).toContainText('home-hero');
   await page.evaluate(() => window.seguruDebugToolbar.toggleTree());
-  await expect(panel).not.toHaveClass(/sdt-tree-panel--open/);
+  await expect(panel).not.toHaveClass(/stadiaref-tree-panel--open/);
 });
 
 test('setHotkey / getHotkey normalise to one upper-case letter or false', async ({ page }) => {
@@ -161,8 +161,8 @@ test('setTheme / getTheme, persisted to localStorage', async ({ page }) => {
   expect(await page.evaluate(() => window.seguruDebugToolbar.getTheme())).toBe('light');
   await page.evaluate(() => window.seguruDebugToolbar.setTheme('dark'));
   expect(await page.evaluate(() => window.seguruDebugToolbar.getTheme())).toBe('dark');
-  expect(await page.evaluate(() => localStorage.getItem('seguru-debug-toolbar:theme'))).toBe('dark');
-  expect(await page.evaluate((id) => document.getElementById(id).classList.contains('sdt-theme-dark'), HOST_ID)).toBe(true);
+  expect(await page.evaluate(() => localStorage.getItem('stadiaref:theme'))).toBe('dark');
+  expect(await page.evaluate((id) => document.getElementById(id).classList.contains('stadiaref-theme-dark'), HOST_ID)).toBe(true);
   // invalid ignored
   await page.evaluate(() => window.seguruDebugToolbar.setTheme('purple'));
   expect(await page.evaluate(() => window.seguruDebugToolbar.getTheme())).toBe('dark');
@@ -182,8 +182,8 @@ test('setUser / getUser keep only documented fields', async ({ page }) => {
   expect(await page.evaluate(() => window.seguruDebugToolbar.getUser())).toBe(null);
   await page.evaluate(() => window.seguruDebugToolbar.setUser({ name: 'Ada Lovelace', role: 'reviewer', id: 'u1', email: 'ada@example.com', token: 'secret' }));
   expect(await page.evaluate(() => window.seguruDebugToolbar.getUser())).toEqual({ name: 'Ada Lovelace', role: 'reviewer', id: 'u1', email: 'ada@example.com' });
-  await expect(shadow(page, '[data-sdt-user-name]')).toHaveText('Ada Lovelace');
-  await expect(shadow(page, '[data-sdt-user-avatar]')).toHaveText('A');
+  await expect(shadow(page, '[data-stadiaref-user-name]')).toHaveText('Ada Lovelace');
+  await expect(shadow(page, '[data-stadiaref-user-avatar]')).toHaveText('A');
   // returned object is a copy
   await page.evaluate(() => { window.seguruDebugToolbar.getUser().name = 'X'; });
   expect((await page.evaluate(() => window.seguruDebugToolbar.getUser())).name).toBe('Ada Lovelace');
@@ -192,7 +192,7 @@ test('setUser / getUser keep only documented fields', async ({ page }) => {
   expect((await page.evaluate(() => window.seguruDebugToolbar.getUser())).name).toBe('Ada Lovelace');
   await page.evaluate(() => window.seguruDebugToolbar.setUser(null));
   expect(await page.evaluate(() => window.seguruDebugToolbar.getUser())).toBe(null);
-  await expect(shadow(page, '[data-sdt-user-name]')).toHaveText('');
+  await expect(shadow(page, '[data-stadiaref-user-name]')).toHaveText('');
 });
 
 test('setDock / getDock move the toolbar', async ({ page }) => {
@@ -201,7 +201,7 @@ test('setDock / getDock move the toolbar', async ({ page }) => {
   for (const d of ['bottom-left', 'top-right', 'top-left', 'bottom-right']) {
     await page.evaluate((v) => window.seguruDebugToolbar.setDock(v), d);
     expect(await page.evaluate(() => window.seguruDebugToolbar.getDock())).toBe(d);
-    const box = await shadow(page, '.sdt-toolbar').boundingBox();
+    const box = await shadow(page, '.stadiaref-toolbar').boundingBox();
     const vp = page.viewportSize();
     if (d.startsWith('top')) expect(box.y).toBeLessThan(vp.height / 2); else expect(box.y).toBeGreaterThan(vp.height / 2);
     if (d.endsWith('left')) expect(box.x).toBeLessThan(vp.width / 2); else expect(box.x).toBeGreaterThan(vp.width / 2);
@@ -220,9 +220,10 @@ test('init() accepts hotkey, theme, dock, user and returns the API', async ({ pa
     const a = window.seguruDebugToolbar;
     return [a.getHotkey(), a.getTheme(), a.getDock(), a.getUser().name];
   })).toEqual(['Q', 'dark', 'top-left', 'Bo']);
-  // other keys are ignored by 2.5.0 init()
+  // 2.5.0 init() ignored every other key. 3.0 init() takes every config key,
+  // 2.x names included, so this now shows the toolbar in Icons mode.
   await page.evaluate(() => window.seguruDebugToolbar.init({ startHidden: false, defaultMode: 0 }));
-  expect(await page.evaluate(() => [window.seguruDebugToolbar.isVisible(), window.seguruDebugToolbar.getState()])).toEqual([false, 2]);
+  expect(await page.evaluate(() => [window.seguruDebugToolbar.isVisible(), window.seguruDebugToolbar.getState()])).toEqual([true, 0]);
   expect(await page.evaluate(() => window.seguruDebugToolbar.init(null) === window.seguruDebugToolbar)).toBe(true);
 });
 
@@ -233,7 +234,7 @@ test('classifyDataRef is exposed', async ({ page }) => {
 
 test('refresh() picks up nodes added after boot', async ({ page }) => {
   await open(page, harness({ page: { startHidden: false } }));
-  expect(await countVisible(page, '.sdt-ref-full-label')).toBe(2);
+  expect(await countVisible(page, '.stadiaref-ref-full-label')).toBe(2);
   await page.evaluate(() => {
     const s = document.createElement('section');
     s.setAttribute('data-ref', 'home-late');
@@ -242,10 +243,10 @@ test('refresh() picks up nodes added after boot', async ({ page }) => {
   });
   // 2.5.0 has no childList observer: nothing happens until refresh()
   await page.waitForTimeout(100);
-  expect(await countVisible(page, '.sdt-ref-full-label')).toBe(2);
+  expect(await countVisible(page, '.stadiaref-ref-full-label')).toBe(2);
   await page.evaluate(() => window.seguruDebugToolbar.refresh());
-  expect(await countVisible(page, '.sdt-ref-full-label')).toBe(3);
+  expect(await countVisible(page, '.stadiaref-ref-full-label')).toBe(3);
   // refresh is idempotent: no double injection
   await page.evaluate(() => window.seguruDebugToolbar.refresh());
-  expect(await page.evaluate(() => document.querySelectorAll('.sdt-ref-full-label').length)).toBe(3);
+  expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-ref-full-label').length)).toBe(3);
 });

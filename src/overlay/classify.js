@@ -52,10 +52,10 @@ export function classifyDataRef(ref) {
 
 export function clearDataRefClass(el) {
   var classNames = [
-    'sdt-ref-class-section',
-    'sdt-ref-class-block',
-    'sdt-ref-class-element',
-    'sdt-ref-class-unclassified'
+    'stadiaref-ref-class-section',
+    'stadiaref-ref-class-block',
+    'stadiaref-ref-class-element',
+    'stadiaref-ref-class-unclassified'
   ];
   for (var i = 0; i < classNames.length; i++) {
     el.classList.remove(classNames[i]);
@@ -69,4 +69,10 @@ export function normalizeRefClass(refClass) {
     refClass === 'element' ||
     refClass === 'unclassified'
   ) ? refClass : 'unclassified';
+}
+
+// The tier a label shows for an addressed element: the automatic tier when
+// StadiaRef stamped the address, otherwise the classifier's answer.
+export function tierOf(el) {
+  return normalizeRefClass(el.getAttribute('data-stadiaref-auto-tier') || classifyDataRef(el.getAttribute('data-ref')));
 }

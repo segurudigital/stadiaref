@@ -11,8 +11,9 @@
 // 2. GET /__harness builds a page from query parameters, so a test can choose
 //    config objects, script attributes and body markup:
 //      body=<name>        test/browser/bodies/<name>.html (default "basic")
-//      page=<json>        assigned to the per-page config global
-//      wp=<json>          assigned to the WordPress-injected config global
+//      cfg=<json>         assigned to window.stadiarefConfig
+//      page=<json>        assigned to window.seguruDebugConfig (2.x per-page config)
+//      wp=<json>          assigned to window.sdtConfig (2.x WordPress config)
 //      attrs=<json>       extra attributes on the overlay <script> tag
 //      pre=<js>           inline script run before the overlay loads
 //      noscript=1         omit the overlay entirely (for DOM-diff tests)
@@ -29,8 +30,8 @@ const PORT = Number(process.env.PORT || 4173);
 const OVERLAY = process.env.OVERLAY || 'src';
 
 const SRC_ENTRY = path.join(ROOT, 'src/overlay/index.js');
-const DIST_FILE = path.join(ROOT, 'dist/seguru-debug-toolbar.min.js');
-const OVERLAY_NAMES = /\/(seguru-debug-toolbar(\.min)?\.js|overlay\.js)$/;
+const DIST_FILE = path.join(ROOT, 'dist/stadiaref.min.js');
+const OVERLAY_NAMES = /\/(seguru-debug-toolbar(\.min)?\.js|stadiaref(\.min)?\.js|overlay\.js)$/;
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -64,6 +65,7 @@ function harness(query) {
   const parts = [];
   if (query.has('wp')) parts.push('window.sdtConfig = ' + query.get('wp') + ';');
   if (query.has('page')) parts.push('window.seguruDebugConfig = ' + query.get('page') + ';');
+  if (query.has('cfg')) parts.push('window.stadiarefConfig = ' + query.get('cfg') + ';');
   if (query.has('pre')) parts.push(query.get('pre'));
   let attrs = '';
   if (query.has('attrs')) {

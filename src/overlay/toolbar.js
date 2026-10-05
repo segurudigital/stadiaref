@@ -3,17 +3,17 @@ import { forEachNode, setClassState } from './dom.js';
 
 // ─── Dropdown helpers ────────────────────────────────────────
 export function closeAllDropdowns() {
-  var menus = S.toolbar.querySelectorAll('.sdt-toolbar__dropdown');
-  forEachNode(menus, function (m) { m.classList.remove('sdt-toolbar__dropdown--open'); });
-  forEachNode(S.toolbar.querySelectorAll('[data-sdt-toggle]'), function (trigger) {
-    trigger.classList.remove('sdt-toolbar__select--open');
+  var menus = S.toolbar.querySelectorAll('.stadiaref-toolbar__dropdown');
+  forEachNode(menus, function (m) { m.classList.remove('stadiaref-toolbar__dropdown--open'); });
+  forEachNode(S.toolbar.querySelectorAll('[data-stadiaref-toggle]'), function (trigger) {
+    trigger.classList.remove('stadiaref-toolbar__select--open');
   });
 }
 
 export function toggleDropdown(name) {
-  var menu = S.toolbar.querySelector('[data-sdt-menu="' + name + '"]');
-  var trigger = S.toolbar.querySelector('[data-sdt-toggle="' + name + '"]');
-  var isOpen = menu.classList.contains('sdt-toolbar__dropdown--open');
+  var menu = S.toolbar.querySelector('[data-stadiaref-menu="' + name + '"]');
+  var trigger = S.toolbar.querySelector('[data-stadiaref-toggle="' + name + '"]');
+  var isOpen = menu.classList.contains('stadiaref-toolbar__dropdown--open');
   closeAllDropdowns();
   if (isOpen) return;
 
@@ -21,8 +21,8 @@ export function toggleDropdown(name) {
   menu.style.bottom = 'auto';
   menu.style.left = 'auto';
   menu.style.right = 'auto';
-  menu.classList.add('sdt-toolbar__dropdown--open');
-  if (trigger) trigger.classList.add('sdt-toolbar__select--open');
+  menu.classList.add('stadiaref-toolbar__dropdown--open');
+  if (trigger) trigger.classList.add('stadiaref-toolbar__select--open');
 
   var groupRect = menu.parentElement.getBoundingClientRect();
   var menuRect = menu.getBoundingClientRect();
@@ -51,14 +51,14 @@ export function shouldTriggerAppearActive(name, activeValue) {
 }
 
 export function updateDropdown(name, activeAttr, activeValue, label) {
-  var trigger = S.toolbar.querySelector('[data-sdt-toggle="' + name + '"]');
-  var valueNode = trigger.querySelector('.sdt-toolbar__value');
+  var trigger = S.toolbar.querySelector('[data-stadiaref-toggle="' + name + '"]');
+  var valueNode = trigger.querySelector('.stadiaref-toolbar__value');
   if (valueNode) valueNode.textContent = label;
-  setClassState(trigger, 'sdt-toolbar__select--active', shouldTriggerAppearActive(name, activeValue));
+  setClassState(trigger, 'stadiaref-toolbar__select--active', shouldTriggerAppearActive(name, activeValue));
 
-  var opts = S.toolbar.querySelectorAll('[data-sdt-menu="' + name + '"] .sdt-toolbar__option');
+  var opts = S.toolbar.querySelectorAll('[data-stadiaref-menu="' + name + '"] .stadiaref-toolbar__option');
   forEachNode(opts, function (opt) {
-    setClassState(opt, 'sdt-toolbar__option--active', opt.getAttribute(activeAttr) === String(activeValue));
+    setClassState(opt, 'stadiaref-toolbar__option--active', opt.getAttribute(activeAttr) === String(activeValue));
   });
 
   closeAllDropdowns();
@@ -68,7 +68,7 @@ export function updateDropdown(name, activeAttr, activeValue, label) {
 // ─── Hotkey + dock helpers ──────────────────────────────────
 export function updateModeHint() {
   if (!S.toolbar) return;
-  var hint = S.toolbar.querySelector('[data-sdt-mode-hint]');
+  var hint = S.toolbar.querySelector('[data-stadiaref-mode-hint]');
   if (!hint) return;
   hint.textContent = S.hotkey
     ? ('Press L to cycle · ' + S.hotkey + ' to hide all')

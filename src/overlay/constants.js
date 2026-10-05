@@ -2,9 +2,9 @@
 
 // ─── Version ────────────────────────────────────────────────
 // Single source of truth for the bundled version string. Exposed via
-// `seguruDebugToolbar.version` and emitted in the `sdt:ready` event detail.
+// `stadiaref.version` and emitted in the `stadiaref:ready` event detail.
 // Kept in sync with package.json on release.
-export const SDT_VERSION = '2.5.0';
+export const VERSION = '3.0.0-dev';
 
 // ─── Configuration ──────────────────────────────────────────
 export const ACCENT = '234, 88, 12';      // orange — functional UI accent

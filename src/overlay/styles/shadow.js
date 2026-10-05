@@ -7,7 +7,7 @@ import { posMap, toastPosMap, treePanelPosMap } from '../dock.js';
 export function buildShadowCss() {
   var shadowCss = [
     // --- Toolbar chrome ---
-    '.sdt-toolbar {',
+    '.stadiaref-toolbar {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  position: fixed;',
@@ -31,7 +31,7 @@ export function buildShadowCss() {
     '  pointer-events: auto;',
     '}',
 
-    '.sdt-toolbar__cluster {',
+    '.stadiaref-toolbar__cluster {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: flex;',
@@ -40,7 +40,7 @@ export function buildShadowCss() {
     '  gap: 4px;',
     '}',
 
-    '.sdt-toolbar__cluster--primary {',
+    '.stadiaref-toolbar__cluster--primary {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: flex;',
@@ -52,7 +52,7 @@ export function buildShadowCss() {
     '  border-right: 1px solid #E5E7EB;',
     '}',
 
-    '.sdt-toolbar__group {',
+    '.stadiaref-toolbar__group {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: flex;',
@@ -60,7 +60,7 @@ export function buildShadowCss() {
     '  position: relative;',
     '}',
 
-    '.sdt-toolbar__select {',
+    '.stadiaref-toolbar__select {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: flex;',
@@ -80,40 +80,40 @@ export function buildShadowCss() {
     '  transition: background 0.1s, border-color 0.1s, color 0.1s;',
     '}',
 
-    '.sdt-toolbar__select:hover { background: #F3F4F6; border-color: #E5E7EB; }',
+    '.stadiaref-toolbar__select:hover { background: #F3F4F6; border-color: #E5E7EB; }',
 
-    '.sdt-toolbar__select--utility { background: transparent; color: #6B7280; }',
+    '.stadiaref-toolbar__select--utility { background: transparent; color: #6B7280; }',
 
-    '.sdt-toolbar__select--active {',
+    '.stadiaref-toolbar__select--active {',
     '  background: ' + ACCENT_WASH + ';',
     '  border-color: rgba(' + ACCENT + ', 0.18);',
     '  color: ' + ACCENT_HEX + ';',
     '}',
 
-    '.sdt-toolbar__select--diagnostic.sdt-toolbar__select--active {',
+    '.stadiaref-toolbar__select--diagnostic.stadiaref-toolbar__select--active {',
     '  background: rgba(17, 24, 39, 0.05);',
     '  border-color: rgba(' + ACCENT + ', 0.26);',
     '  color: #111827;',
     '  box-shadow: inset 0 0 0 1px rgba(' + ACCENT + ', 0.08);',
     '}',
 
-    '.sdt-toolbar__select--open {',
+    '.stadiaref-toolbar__select--open {',
     '  background: #fff;',
     '  border-color: rgba(' + ACCENT + ', 0.24);',
     '  box-shadow: 0 0 0 3px rgba(' + ACCENT + ', 0.10);',
     '}',
 
-    '.sdt-toolbar__select:focus-visible,',
-    '.sdt-toolbar__option:focus-visible,',
-    '.sdt-tree-row:focus-visible,',
-    '.sdt-tree-copy:focus-visible,',
-    '.sdt-tree-panel__close:focus-visible,',
-    '.sdt-toolbar__badge:focus-visible {',
+    '.stadiaref-toolbar__select:focus-visible,',
+    '.stadiaref-toolbar__option:focus-visible,',
+    '.stadiaref-tree-row:focus-visible,',
+    '.stadiaref-tree-copy:focus-visible,',
+    '.stadiaref-tree-panel__close:focus-visible,',
+    '.stadiaref-toolbar__badge:focus-visible {',
     '  outline: 2px solid rgba(' + ACCENT + ', 0.58);',
     '  outline-offset: 2px;',
     '}',
 
-    '.sdt-toolbar__key {',
+    '.stadiaref-toolbar__key {',
     '  all: initial;',
     '  font-family: ' + FONT_UI + ';',
     '  font-size: 0.625rem;',
@@ -124,7 +124,7 @@ export function buildShadowCss() {
     '  white-space: nowrap;',
     '}',
 
-    '.sdt-toolbar__value {',
+    '.stadiaref-toolbar__value {',
     '  all: initial;',
     '  font-family: ' + FONT_UI + ';',
     '  font-size: 0.75rem;',
@@ -133,9 +133,9 @@ export function buildShadowCss() {
     '  white-space: nowrap;',
     '}',
 
-    '.sdt-toolbar__select--active .sdt-toolbar__key { color: currentColor; opacity: 0.72; }',
+    '.stadiaref-toolbar__select--active .stadiaref-toolbar__key { color: currentColor; opacity: 0.72; }',
 
-    '.sdt-toolbar__select--diagnostic .sdt-toolbar__key::before {',
+    '.stadiaref-toolbar__select--diagnostic .stadiaref-toolbar__key::before {',
     '  content: "";',
     '  display: inline-block;',
     '  width: 6px;',
@@ -147,11 +147,11 @@ export function buildShadowCss() {
     '  vertical-align: middle;',
     '}',
 
-    '.sdt-toolbar__select--diagnostic.sdt-toolbar__select--active .sdt-toolbar__key::before {',
+    '.stadiaref-toolbar__select--diagnostic.stadiaref-toolbar__select--active .stadiaref-toolbar__key::before {',
     '  opacity: 0.95;',
     '}',
 
-    '.sdt-toolbar__caret {',
+    '.stadiaref-toolbar__caret {',
     '  all: initial;',
     '  font-size: 8px;',
     '  color: #9CA3AF;',
@@ -159,12 +159,12 @@ export function buildShadowCss() {
     '  transition: transform 0.12s ease, color 0.12s ease;',
     '}',
 
-    '.sdt-toolbar__select--open .sdt-toolbar__caret {',
+    '.stadiaref-toolbar__select--open .stadiaref-toolbar__caret {',
     '  transform: rotate(180deg);',
     '  color: currentColor;',
     '}',
 
-    '.sdt-toolbar__dropdown {',
+    '.stadiaref-toolbar__dropdown {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: none;',
@@ -179,9 +179,9 @@ export function buildShadowCss() {
     '  font-family: ' + FONT_UI + ';',
     '}',
 
-    '.sdt-toolbar__dropdown--open { display: block; }',
+    '.stadiaref-toolbar__dropdown--open { display: block; }',
 
-    '.sdt-toolbar__option {',
+    '.stadiaref-toolbar__option {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: flex;',
@@ -201,15 +201,15 @@ export function buildShadowCss() {
     '  transition: background 0.1s;',
     '}',
 
-    '.sdt-toolbar__option:hover { background: #F9FAFB; }',
+    '.stadiaref-toolbar__option:hover { background: #F9FAFB; }',
 
-    '.sdt-toolbar__option--active {',
+    '.stadiaref-toolbar__option--active {',
     '  color: ' + ACCENT_HEX + ';',
     '  font-weight: 600;',
     '  background: ' + ACCENT_WASH + ';',
     '}',
 
-    '.sdt-toolbar__option-dot {',
+    '.stadiaref-toolbar__option-dot {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: block;',
@@ -220,7 +220,7 @@ export function buildShadowCss() {
     '  flex-shrink: 0;',
     '}',
 
-    '.sdt-toolbar__hint {',
+    '.stadiaref-toolbar__hint {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: block;',
@@ -231,7 +231,7 @@ export function buildShadowCss() {
     '  border-bottom: 1px solid #F3F4F6;',
     '}',
 
-    '.sdt-toolbar__badge {',
+    '.stadiaref-toolbar__badge {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: flex;',
@@ -246,9 +246,9 @@ export function buildShadowCss() {
     '  align-self: stretch;',
     '}',
 
-    '.sdt-toolbar__badge:hover { background: #F9FAFB; }',
+    '.stadiaref-toolbar__badge:hover { background: #F9FAFB; }',
 
-    '.sdt-toolbar__badge-tip {',
+    '.stadiaref-toolbar__badge-tip {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  position: absolute;',
@@ -269,7 +269,7 @@ export function buildShadowCss() {
     '  z-index: 100001;',
     '}',
 
-    '.sdt-toolbar__badge:hover .sdt-toolbar__badge-tip {',
+    '.stadiaref-toolbar__badge:hover .stadiaref-toolbar__badge-tip {',
     '  opacity: 1;',
     '  transform: translateX(-50%) translateY(0);',
     '}',
@@ -279,7 +279,7 @@ export function buildShadowCss() {
     // so it pairs with the badge instead of competing with the orange UI accent
     // on active controls. A subtle left divider separates the pill from the
     // badge when both are present.
-    '.sdt-toolbar__user {',
+    '.stadiaref-toolbar__user {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: none;',
@@ -305,13 +305,13 @@ export function buildShadowCss() {
     '  text-overflow: ellipsis;',
     '}',
 
-    '.sdt-toolbar__user--visible { display: inline-flex; }',
+    '.stadiaref-toolbar__user--visible { display: inline-flex; }',
 
     // Avatar uses a neutral dark slate so it reads as identity, not brand —
     // Seguru blue (`#00C0F3`) is reserved for the S mark badge to keep the
     // brand anchor unique. Pure orange (`#EA580C`) is reserved for active
     // controls. Slate sits cleanly outside both.
-    '.sdt-toolbar__user-avatar {',
+    '.stadiaref-toolbar__user-avatar {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: inline-flex;',
@@ -329,7 +329,7 @@ export function buildShadowCss() {
     '  line-height: 1;',
     '}',
 
-    '.sdt-toolbar__user-name {',
+    '.stadiaref-toolbar__user-name {',
     '  all: initial;',
     '  font-family: ' + FONT_UI + ';',
     '  font-size: 0.6875rem;',
@@ -341,7 +341,7 @@ export function buildShadowCss() {
     '  max-width: 130px;',
     '}',
 
-    '.sdt-toolbar__user-role {',
+    '.stadiaref-toolbar__user-role {',
     '  all: initial;',
     '  font-family: ' + FONT_UI + ';',
     '  font-size: 0.625rem;',
@@ -351,32 +351,32 @@ export function buildShadowCss() {
     '}',
 
     // --- Dark mode ---
-    ':host-context(html.dark) .sdt-toolbar { background: #27272A; border-color: #3F3F46; }',
-    ':host-context(html.dark) .sdt-toolbar__cluster--primary { border-right-color: #3F3F46; }',
-    ':host-context(html.dark) .sdt-toolbar__select { background: #313136; color: #F3F4F6; }',
-    ':host-context(html.dark) .sdt-toolbar__select:hover { background: #3F3F46; border-color: #52525B; }',
-    ':host-context(html.dark) .sdt-toolbar__select--utility { background: transparent; color: #D1D5DB; }',
-    ':host-context(html.dark) .sdt-toolbar__select--active { background: rgba(' + ACCENT + ', 0.14); border-color: rgba(' + ACCENT + ', 0.25); }',
-    ':host-context(html.dark) .sdt-toolbar__select--diagnostic.sdt-toolbar__select--active { background: rgba(255, 255, 255, 0.07); color: #FFF7ED; }',
-    ':host-context(html.dark) .sdt-toolbar__select--open { background: #3A3A42; border-color: rgba(' + ACCENT + ', 0.35); box-shadow: 0 0 0 3px rgba(' + ACCENT + ', 0.14); }',
-    ':host-context(html.dark) .sdt-toolbar__key { color: #A1A1AA; }',
-    ':host-context(html.dark) .sdt-toolbar__dropdown { background: #27272A; border-color: #3F3F46; }',
-    ':host-context(html.dark) .sdt-toolbar__option { color: #D1D5DB; }',
-    ':host-context(html.dark) .sdt-toolbar__option:hover { background: #3F3F46; }',
-    ':host-context(html.dark) .sdt-toolbar__option--active { background: rgba(' + ACCENT + ', 0.12); }',
-    ':host-context(html.dark) .sdt-toolbar__hint { border-bottom-color: #3F3F46; }',
-    ':host-context(html.dark) .sdt-toolbar__badge:hover { background: #3F3F46; }',
-    ':host-context(html.dark) .sdt-toolbar__badge-tip { color: #B1B3B6; }',
-    ':host-context(html.dark) .sdt-toolbar__user { background: #313136; border-top-color: #3F3F46; border-right-color: #3F3F46; border-bottom-color: #3F3F46; border-left-color: #3F3F46; color: #D1D5DB; }',
+    ':host-context(html.dark) .stadiaref-toolbar { background: #27272A; border-color: #3F3F46; }',
+    ':host-context(html.dark) .stadiaref-toolbar__cluster--primary { border-right-color: #3F3F46; }',
+    ':host-context(html.dark) .stadiaref-toolbar__select { background: #313136; color: #F3F4F6; }',
+    ':host-context(html.dark) .stadiaref-toolbar__select:hover { background: #3F3F46; border-color: #52525B; }',
+    ':host-context(html.dark) .stadiaref-toolbar__select--utility { background: transparent; color: #D1D5DB; }',
+    ':host-context(html.dark) .stadiaref-toolbar__select--active { background: rgba(' + ACCENT + ', 0.14); border-color: rgba(' + ACCENT + ', 0.25); }',
+    ':host-context(html.dark) .stadiaref-toolbar__select--diagnostic.stadiaref-toolbar__select--active { background: rgba(255, 255, 255, 0.07); color: #FFF7ED; }',
+    ':host-context(html.dark) .stadiaref-toolbar__select--open { background: #3A3A42; border-color: rgba(' + ACCENT + ', 0.35); box-shadow: 0 0 0 3px rgba(' + ACCENT + ', 0.14); }',
+    ':host-context(html.dark) .stadiaref-toolbar__key { color: #A1A1AA; }',
+    ':host-context(html.dark) .stadiaref-toolbar__dropdown { background: #27272A; border-color: #3F3F46; }',
+    ':host-context(html.dark) .stadiaref-toolbar__option { color: #D1D5DB; }',
+    ':host-context(html.dark) .stadiaref-toolbar__option:hover { background: #3F3F46; }',
+    ':host-context(html.dark) .stadiaref-toolbar__option--active { background: rgba(' + ACCENT + ', 0.12); }',
+    ':host-context(html.dark) .stadiaref-toolbar__hint { border-bottom-color: #3F3F46; }',
+    ':host-context(html.dark) .stadiaref-toolbar__badge:hover { background: #3F3F46; }',
+    ':host-context(html.dark) .stadiaref-toolbar__badge-tip { color: #B1B3B6; }',
+    ':host-context(html.dark) .stadiaref-toolbar__user { background: #313136; border-top-color: #3F3F46; border-right-color: #3F3F46; border-bottom-color: #3F3F46; border-left-color: #3F3F46; color: #D1D5DB; }',
     // In dark mode the pill background is already a deep slate (#313136), so a
     // dark navy avatar would disappear into it. Bump to a mid-slate (#71717A,
     // zinc-500) so the avatar still reads as an inset chip on the dark pill.
-    ':host-context(html.dark) .sdt-toolbar__user-avatar { background: #71717A; color: #fff; }',
-    ':host-context(html.dark) .sdt-toolbar__user-name { color: #F3F4F6; }',
-    ':host-context(html.dark) .sdt-toolbar__user-role { color: #A1A1AA; }',
+    ':host-context(html.dark) .stadiaref-toolbar__user-avatar { background: #71717A; color: #fff; }',
+    ':host-context(html.dark) .stadiaref-toolbar__user-name { color: #F3F4F6; }',
+    ':host-context(html.dark) .stadiaref-toolbar__user-role { color: #A1A1AA; }',
 
     // --- Toast ---
-    '.sdt-toast {',
+    '.stadiaref-toast {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  position: fixed;',
@@ -396,13 +396,13 @@ export function buildShadowCss() {
     '  transition: opacity 0.2s, transform 0.2s;',
     '}',
 
-    '.sdt-toast--visible {',
+    '.stadiaref-toast--visible {',
     '  opacity: 1;',
     '  transform: translateY(0);',
     '}',
 
     // --- Tree panel ---
-    '.sdt-tree-panel {',
+    '.stadiaref-tree-panel {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  position: fixed;',
@@ -421,9 +421,9 @@ export function buildShadowCss() {
     '  pointer-events: auto;',
     '}',
 
-    '.sdt-tree-panel--open { display: flex; }',
+    '.stadiaref-tree-panel--open { display: flex; }',
 
-    '.sdt-tree-panel__header {',
+    '.stadiaref-tree-panel__header {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: block;',
@@ -434,7 +434,7 @@ export function buildShadowCss() {
     '  flex-shrink: 0;',
     '}',
 
-    '.sdt-tree-panel__header-main {',
+    '.stadiaref-tree-panel__header-main {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: flex;',
@@ -444,7 +444,7 @@ export function buildShadowCss() {
     '  font-family: ' + FONT_UI + ';',
     '}',
 
-    '.sdt-tree-panel__title-wrap {',
+    '.stadiaref-tree-panel__title-wrap {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: flex;',
@@ -454,7 +454,7 @@ export function buildShadowCss() {
     '  font-family: ' + FONT_UI + ';',
     '}',
 
-    '.sdt-tree-panel__title {',
+    '.stadiaref-tree-panel__title {',
     '  all: initial;',
     '  display: block;',
     '  font-family: ' + FONT_UI + ';',
@@ -464,7 +464,7 @@ export function buildShadowCss() {
     '  color: #111827;',
     '}',
 
-    '.sdt-tree-panel__meta {',
+    '.stadiaref-tree-panel__meta {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: flex;',
@@ -473,7 +473,7 @@ export function buildShadowCss() {
     '  font-family: ' + FONT_UI + ';',
     '}',
 
-    '.sdt-tree-panel__meta-item {',
+    '.stadiaref-tree-panel__meta-item {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: inline-flex;',
@@ -488,7 +488,7 @@ export function buildShadowCss() {
     '  color: #6B7280;',
     '}',
 
-    '.sdt-tree-panel__hint {',
+    '.stadiaref-tree-panel__hint {',
     '  all: initial;',
     '  display: block;',
     '  margin-top: 8px;',
@@ -498,7 +498,7 @@ export function buildShadowCss() {
     '  color: #9CA3AF;',
     '}',
 
-    '.sdt-tree-panel__close {',
+    '.stadiaref-tree-panel__close {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: inline-flex;',
@@ -515,9 +515,9 @@ export function buildShadowCss() {
     '  border-radius: 999px;',
     '  transition: background 0.1s, color 0.1s, border-color 0.1s;',
     '}',
-    '.sdt-tree-panel__close:hover { background: #FFF7ED; color: #EA580C; border-color: rgba(' + ACCENT + ', 0.24); }',
+    '.stadiaref-tree-panel__close:hover { background: #FFF7ED; color: #EA580C; border-color: rgba(' + ACCENT + ', 0.24); }',
 
-    '.sdt-tree-panel__body {',
+    '.stadiaref-tree-panel__body {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: block;',
@@ -527,7 +527,7 @@ export function buildShadowCss() {
     '  background: #FCFCFD;',
     '}',
 
-    '.sdt-tree-row {',
+    '.stadiaref-tree-row {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: flex;',
@@ -541,11 +541,11 @@ export function buildShadowCss() {
     '  transition: background 0.08s, border-color 0.08s, box-shadow 0.08s;',
     '  font-family: ' + FONT_UI + ';',
     '}',
-    '.sdt-tree-row:hover { background: #FFF7ED; border-color: rgba(' + ACCENT + ', 0.18); }',
-    '.sdt-tree-row:focus-within { background: #FFF7ED; border-color: rgba(' + ACCENT + ', 0.24); box-shadow: inset 3px 0 0 rgba(' + ACCENT + ', 0.58); }',
-    '.sdt-tree-row--active { background: rgba(' + ACCENT + ', 0.08); border-color: rgba(' + ACCENT + ', 0.24); box-shadow: inset 3px 0 0 rgba(' + ACCENT + ', 0.65); }',
+    '.stadiaref-tree-row:hover { background: #FFF7ED; border-color: rgba(' + ACCENT + ', 0.18); }',
+    '.stadiaref-tree-row:focus-within { background: #FFF7ED; border-color: rgba(' + ACCENT + ', 0.24); box-shadow: inset 3px 0 0 rgba(' + ACCENT + ', 0.58); }',
+    '.stadiaref-tree-row--active { background: rgba(' + ACCENT + ', 0.08); border-color: rgba(' + ACCENT + ', 0.24); box-shadow: inset 3px 0 0 rgba(' + ACCENT + ', 0.65); }',
 
-    '.sdt-tree-gutter {',
+    '.stadiaref-tree-gutter {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: flex;',
@@ -554,7 +554,7 @@ export function buildShadowCss() {
     '  flex-shrink: 0;',
     '}',
 
-    '.sdt-tree-indent {',
+    '.stadiaref-tree-indent {',
     '  all: initial;',
     '  display: inline-block;',
     '  box-sizing: border-box;',
@@ -563,12 +563,12 @@ export function buildShadowCss() {
     '  border-left: 1px solid #E5E7EB;',
     '  flex-shrink: 0;',
     '}',
-    '.sdt-tree-row:hover .sdt-tree-indent,',
-    '.sdt-tree-row--active .sdt-tree-indent {',
+    '.stadiaref-tree-row:hover .stadiaref-tree-indent,',
+    '.stadiaref-tree-row--active .stadiaref-tree-indent {',
     '  border-left-color: rgba(' + ACCENT + ', 0.24);',
     '}',
 
-    '.sdt-tree-content {',
+    '.stadiaref-tree-content {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  min-width: 0;',
@@ -579,7 +579,7 @@ export function buildShadowCss() {
     '  font-family: ' + FONT_UI + ';',
     '}',
 
-    '.sdt-tree-tag {',
+    '.stadiaref-tree-tag {',
     '  all: initial;',
     '  display: inline-flex;',
     '  align-items: center;',
@@ -594,7 +594,7 @@ export function buildShadowCss() {
     '  flex-shrink: 0;',
     '}',
 
-    '.sdt-tree-ref {',
+    '.stadiaref-tree-ref {',
     '  all: initial;',
     '  font-family: ' + FONT_MONO + ';',
     '  font-size: 0.688rem;',
@@ -606,7 +606,7 @@ export function buildShadowCss() {
     '  white-space: nowrap;',
     '}',
 
-    '.sdt-tree-copy {',
+    '.stadiaref-tree-copy {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: inline-flex;',
@@ -625,9 +625,9 @@ export function buildShadowCss() {
     '  line-height: 1.5;',
     '  font-family: ' + FONT_UI + ';',
     '}',
-    '.sdt-tree-copy:hover { background: #fff; color: #EA580C; border-color: rgba(' + ACCENT + ', 0.20); }',
+    '.stadiaref-tree-copy:hover { background: #fff; color: #EA580C; border-color: rgba(' + ACCENT + ', 0.20); }',
 
-    '.sdt-tree-empty {',
+    '.stadiaref-tree-empty {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: block;',
@@ -639,31 +639,31 @@ export function buildShadowCss() {
     '}',
 
     // Dark mode — tree panel
-    ':host-context(html.dark) .sdt-tree-panel { background: #27272A; border-color: #3F3F46; }',
-    ':host-context(html.dark) .sdt-tree-panel__header { border-bottom-color: #3F3F46; background: linear-gradient(180deg, rgba(39, 39, 42, 0.98) 0%, rgba(24, 24, 27, 0.98) 100%); }',
-    ':host-context(html.dark) .sdt-tree-panel__title { color: #F3F4F6; }',
-    ':host-context(html.dark) .sdt-tree-panel__meta-item { background: #18181B; border-color: #3F3F46; color: #A1A1AA; }',
-    ':host-context(html.dark) .sdt-tree-panel__hint { color: #A1A1AA; }',
-    ':host-context(html.dark) .sdt-tree-panel__close { background: #18181B; border-color: #3F3F46; color: #A1A1AA; }',
-    ':host-context(html.dark) .sdt-tree-panel__close:hover { background: rgba(' + ACCENT + ', 0.12); border-color: rgba(' + ACCENT_ON_DARK + ', 0.34); color: #FDBA74; }',
-    ':host-context(html.dark) .sdt-tree-panel__body { background: #111827; }',
-    ':host-context(html.dark) .sdt-tree-row:hover { background: rgba(' + ACCENT + ', 0.14); border-color: rgba(' + ACCENT_ON_DARK + ', 0.24); }',
-    ':host-context(html.dark) .sdt-tree-row:focus-within { background: rgba(' + ACCENT + ', 0.16); border-color: rgba(' + ACCENT_ON_DARK + ', 0.28); }',
-    ':host-context(html.dark) .sdt-tree-row--active { background: rgba(' + ACCENT + ', 0.18); border-color: rgba(' + ACCENT_ON_DARK + ', 0.28); }',
-    ':host-context(html.dark) .sdt-tree-indent { border-left-color: #3F3F46; }',
-    ':host-context(html.dark) .sdt-tree-row:hover .sdt-tree-indent,',
-    ':host-context(html.dark) .sdt-tree-row--active .sdt-tree-indent { border-left-color: rgba(' + ACCENT_ON_DARK + ', 0.32); }',
-    ':host-context(html.dark) .sdt-tree-tag { background: rgba(' + ACCENT + ', 0.16); color: #FDBA74; }',
-    ':host-context(html.dark) .sdt-tree-ref { color: #D1D5DB; }',
-    ':host-context(html.dark) .sdt-tree-copy:hover { background: #18181B; border-color: rgba(' + ACCENT_ON_DARK + ', 0.28); color: #FDBA74; }',
-    ':host-context(html.dark) .sdt-tree-empty { color: #A1A1AA; }',
+    ':host-context(html.dark) .stadiaref-tree-panel { background: #27272A; border-color: #3F3F46; }',
+    ':host-context(html.dark) .stadiaref-tree-panel__header { border-bottom-color: #3F3F46; background: linear-gradient(180deg, rgba(39, 39, 42, 0.98) 0%, rgba(24, 24, 27, 0.98) 100%); }',
+    ':host-context(html.dark) .stadiaref-tree-panel__title { color: #F3F4F6; }',
+    ':host-context(html.dark) .stadiaref-tree-panel__meta-item { background: #18181B; border-color: #3F3F46; color: #A1A1AA; }',
+    ':host-context(html.dark) .stadiaref-tree-panel__hint { color: #A1A1AA; }',
+    ':host-context(html.dark) .stadiaref-tree-panel__close { background: #18181B; border-color: #3F3F46; color: #A1A1AA; }',
+    ':host-context(html.dark) .stadiaref-tree-panel__close:hover { background: rgba(' + ACCENT + ', 0.12); border-color: rgba(' + ACCENT_ON_DARK + ', 0.34); color: #FDBA74; }',
+    ':host-context(html.dark) .stadiaref-tree-panel__body { background: #111827; }',
+    ':host-context(html.dark) .stadiaref-tree-row:hover { background: rgba(' + ACCENT + ', 0.14); border-color: rgba(' + ACCENT_ON_DARK + ', 0.24); }',
+    ':host-context(html.dark) .stadiaref-tree-row:focus-within { background: rgba(' + ACCENT + ', 0.16); border-color: rgba(' + ACCENT_ON_DARK + ', 0.28); }',
+    ':host-context(html.dark) .stadiaref-tree-row--active { background: rgba(' + ACCENT + ', 0.18); border-color: rgba(' + ACCENT_ON_DARK + ', 0.28); }',
+    ':host-context(html.dark) .stadiaref-tree-indent { border-left-color: #3F3F46; }',
+    ':host-context(html.dark) .stadiaref-tree-row:hover .stadiaref-tree-indent,',
+    ':host-context(html.dark) .stadiaref-tree-row--active .stadiaref-tree-indent { border-left-color: rgba(' + ACCENT_ON_DARK + ', 0.32); }',
+    ':host-context(html.dark) .stadiaref-tree-tag { background: rgba(' + ACCENT + ', 0.16); color: #FDBA74; }',
+    ':host-context(html.dark) .stadiaref-tree-ref { color: #D1D5DB; }',
+    ':host-context(html.dark) .stadiaref-tree-copy:hover { background: #18181B; border-color: rgba(' + ACCENT_ON_DARK + ', 0.28); color: #FDBA74; }',
+    ':host-context(html.dark) .stadiaref-tree-empty { color: #A1A1AA; }',
 
     // ── Active-ref tree ──
     // Fixed-corner panel showing the data-ref breadcrumb chain (section →
     // block → element) when hovering any labelled [data-ref] element.
     // Positioned at the opposite vertical edge from the toolbar so it
     // never overlaps it. Position is updated by applyDockPosition().
-    '.sdt-active-ref-tree {',
+    '.stadiaref-active-ref-tree {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  position: fixed;',
@@ -683,9 +683,9 @@ export function buildShadowCss() {
     '  overflow: hidden;',
     '}',
 
-    '.sdt-active-ref-tree--open { display: block; }',
+    '.stadiaref-active-ref-tree--open { display: block; }',
 
-    '.sdt-active-ref-tree__header {',
+    '.stadiaref-active-ref-tree__header {',
     '  display: flex;',
     '  align-items: center;',
     '  justify-content: space-between;',
@@ -693,7 +693,7 @@ export function buildShadowCss() {
     '  border-bottom: 1px solid #E5E7EB;',
     '}',
 
-    '.sdt-active-ref-tree__title {',
+    '.stadiaref-active-ref-tree__title {',
     '  all: initial;',
     '  font-family: ' + FONT_UI + ';',
     '  font-size: 0.625rem;',
@@ -703,7 +703,7 @@ export function buildShadowCss() {
     '  color: #9CA3AF;',
     '}',
 
-    '.sdt-active-ref-tree__pin {',
+    '.stadiaref-active-ref-tree__pin {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: flex;',
@@ -721,19 +721,19 @@ export function buildShadowCss() {
     '  transition: background 0.1s, color 0.1s, border-color 0.1s;',
     '}',
 
-    '.sdt-active-ref-tree__pin:hover { background: #F3F4F6; border-color: #E5E7EB; color: #374151; }',
+    '.stadiaref-active-ref-tree__pin:hover { background: #F3F4F6; border-color: #E5E7EB; color: #374151; }',
 
-    '.sdt-active-ref-tree__pin--active {',
+    '.stadiaref-active-ref-tree__pin--active {',
     '  background: ' + ACCENT_WASH + ';',
     '  border-color: rgba(' + ACCENT + ', 0.22);',
     '  color: ' + ACCENT_HEX + ';',
     '}',
 
-    '.sdt-active-ref-tree__rows {',
+    '.stadiaref-active-ref-tree__rows {',
     '  padding: 4px 0;',
     '}',
 
-    '.sdt-active-ref-tree__row {',
+    '.stadiaref-active-ref-tree__row {',
     '  all: initial;',
     '  box-sizing: border-box;',
     '  display: flex;',
@@ -745,15 +745,15 @@ export function buildShadowCss() {
     '  transition: background 0.08s;',
     '}',
 
-    '.sdt-active-ref-tree__row:hover { background: #F9FAFB; }',
+    '.stadiaref-active-ref-tree__row:hover { background: #F9FAFB; }',
 
-    '.sdt-active-ref-tree__row--current {',
+    '.stadiaref-active-ref-tree__row--current {',
     '  background: ' + ACCENT_WASH + ';',
     '}',
 
-    '.sdt-active-ref-tree__row--current:hover { background: rgba(' + ACCENT + ', 0.12); }',
+    '.stadiaref-active-ref-tree__row--current:hover { background: rgba(' + ACCENT + ', 0.12); }',
 
-    '.sdt-active-ref-tree__row-class {',
+    '.stadiaref-active-ref-tree__row-class {',
     '  all: initial;',
     '  font-family: ' + FONT_UI + ';',
     '  font-size: 9px;',
@@ -766,9 +766,9 @@ export function buildShadowCss() {
     '  flex-shrink: 0;',
     '}',
 
-    '.sdt-active-ref-tree__row--current .sdt-active-ref-tree__row-class { color: ' + ACCENT_HEX + '; }',
+    '.stadiaref-active-ref-tree__row--current .stadiaref-active-ref-tree__row-class { color: ' + ACCENT_HEX + '; }',
 
-    '.sdt-active-ref-tree__row-ref {',
+    '.stadiaref-active-ref-tree__row-ref {',
     '  all: initial;',
     '  font-family: ' + FONT_MONO + ';',
     '  font-size: 0.688rem;',
@@ -779,30 +779,30 @@ export function buildShadowCss() {
     '  white-space: nowrap;',
     '}',
 
-    '.sdt-active-ref-tree__row--current .sdt-active-ref-tree__row-ref { color: ' + ACCENT_HEX + '; font-weight: 600; }',
+    '.stadiaref-active-ref-tree__row--current .stadiaref-active-ref-tree__row-ref { color: ' + ACCENT_HEX + '; font-weight: 600; }',
 
     // Dark mode — active-ref tree
-    ':host-context(html.dark) .sdt-active-ref-tree { background: #27272A; border-color: #3F3F46; }',
-    ':host-context(html.dark) .sdt-active-ref-tree__header { border-bottom-color: #3F3F46; }',
-    ':host-context(html.dark) .sdt-active-ref-tree__title { color: #71717A; }',
-    ':host-context(html.dark) .sdt-active-ref-tree__pin { color: #71717A; }',
-    ':host-context(html.dark) .sdt-active-ref-tree__pin:hover { background: #18181B; border-color: #3F3F46; color: #A1A1AA; }',
-    ':host-context(html.dark) .sdt-active-ref-tree__pin--active { background: rgba(' + ACCENT + ', 0.12); border-color: rgba(' + ACCENT_ON_DARK + ', 0.34); color: #FDBA74; }',
-    ':host-context(html.dark) .sdt-active-ref-tree__row:hover { background: rgba(255,255,255,0.04); }',
-    ':host-context(html.dark) .sdt-active-ref-tree__row--current { background: rgba(' + ACCENT + ', 0.10); }',
-    ':host-context(html.dark) .sdt-active-ref-tree__row-ref { color: #D1D5DB; }',
-    ':host-context(html.dark) .sdt-active-ref-tree__row--current .sdt-active-ref-tree__row-ref { color: #FDBA74; }',
-    ':host-context(html.dark) .sdt-active-ref-tree__row--current .sdt-active-ref-tree__row-class { color: #FDBA74; }',
+    ':host-context(html.dark) .stadiaref-active-ref-tree { background: #27272A; border-color: #3F3F46; }',
+    ':host-context(html.dark) .stadiaref-active-ref-tree__header { border-bottom-color: #3F3F46; }',
+    ':host-context(html.dark) .stadiaref-active-ref-tree__title { color: #71717A; }',
+    ':host-context(html.dark) .stadiaref-active-ref-tree__pin { color: #71717A; }',
+    ':host-context(html.dark) .stadiaref-active-ref-tree__pin:hover { background: #18181B; border-color: #3F3F46; color: #A1A1AA; }',
+    ':host-context(html.dark) .stadiaref-active-ref-tree__pin--active { background: rgba(' + ACCENT + ', 0.12); border-color: rgba(' + ACCENT_ON_DARK + ', 0.34); color: #FDBA74; }',
+    ':host-context(html.dark) .stadiaref-active-ref-tree__row:hover { background: rgba(255,255,255,0.04); }',
+    ':host-context(html.dark) .stadiaref-active-ref-tree__row--current { background: rgba(' + ACCENT + ', 0.10); }',
+    ':host-context(html.dark) .stadiaref-active-ref-tree__row-ref { color: #D1D5DB; }',
+    ':host-context(html.dark) .stadiaref-active-ref-tree__row--current .stadiaref-active-ref-tree__row-ref { color: #FDBA74; }',
+    ':host-context(html.dark) .stadiaref-active-ref-tree__row--current .stadiaref-active-ref-tree__row-class { color: #FDBA74; }',
 
   ].join('\n');
 
-  // Mirror every `:host-context(html.dark)` rule with a `:host(.sdt-theme-dark)`
+  // Mirror every `:host-context(html.dark)` rule with a `:host(.stadiaref-theme-dark)`
   // parallel so explicit setTheme('dark') / theme: 'dark' opt-in works without
   // requiring the host page to add `html.dark`. The original rules are kept so
   // legacy hosts that already toggle `html.dark` continue to work unchanged.
   shadowCss = shadowCss.split('\n').map(function (line) {
     if (line.indexOf(':host-context(html.dark)') !== -1) {
-      return line + '\n' + line.replace(':host-context(html.dark)', ':host(.sdt-theme-dark)');
+      return line + '\n' + line.replace(':host-context(html.dark)', ':host(.stadiaref-theme-dark)');
     }
     return line;
   }).join('\n');

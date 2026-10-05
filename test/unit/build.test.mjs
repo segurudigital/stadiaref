@@ -6,7 +6,7 @@ import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
 const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-const BUNDLE = path.join(ROOT, 'dist/seguru-debug-toolbar.min.js');
+const BUNDLE = path.join(ROOT, 'dist/stadiaref.min.js');
 
 test('the bundle exists and carries the package version', () => {
   const src = fs.readFileSync(BUNDLE, 'utf8');

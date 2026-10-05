@@ -1,47 +1,31 @@
 /**
- * Seguru Debug Toolbar — Element Reference Labels
- * https://github.com/segurudigital/seguru-debug-toolbar
+ * StadiaRef — an address for every part of the screen.
+ * https://github.com/segurudigital/stadiaref
  *
- * Visual overlay for `data-ref` element labels on wireframes,
- * dev builds, and live WordPress pages.
+ * Shows data-ref attributes as labels you can point at and copy.
+ * Starts hidden: press D to show it. Labels (L), outline (O), the Tree,
+ * click-to-copy and the JavaScript API on window.stadiaref.
  *
  * Usage:
- *   <script src="seguru-debug-toolbar.js"></script>
- *   (auto-injects toolbar HTML, CSS, and binds keyboard shortcuts)
- *
- * Three modes cycled by clicking buttons or pressing L:
- *   0 = Icons   — small dot per element, hover to see full label
- *   1 = Off     — nothing shown, clean view for screenshots
- *   2 = Full    — always-visible text labels on every element (default)
- *
- * Press D to toggle presentation mode: hides toolbar + all labels.
- *   By default the toolbar loads in presentation mode (hidden) so it stays
- *   out of screenshots, AI/Chrome debug sessions, and client demos. Press D
- *   to reveal the toolbar and labels. Override with seguruDebugConfig.startHidden = false.
- * Press T to cycle auto-ref depth: Off → Sections → Blocks → Elements → All.
- *   Each depth shows only that level's auto-refs; All shows every level simultaneously.
- *   Auto-ref is OFF by default; enabled via the WordPress plugin (sdtConfig.autoRef)
- *   or explicitly with seguruDebugConfig.autoRef = true.
- * Use Outline to show section/block boundaries for spacing QA (off by default).
- *
- * Click any label to copy the data-ref value to clipboard.
- *
- * Programmatic API:
- *   window.seguruDebugToolbar.setState(0|1|2)
- *   window.seguruDebugToolbar.getState()
- *   window.seguruDebugToolbar.setDepth('off'|'section'|'block'|'element'|'all')
- *   window.seguruDebugToolbar.getDepth()
- *   window.seguruDebugToolbar.setOutline('off'|'section'|'block')
- *   window.seguruDebugToolbar.getOutline()
- *   window.seguruDebugToolbar.refresh()  // re-scan for new data-ref elements
+ *   <script src="stadiaref.min.js"></script>
+ *   window.stadiarefConfig = { … } before the tag to configure it.
  */
 
 // Entry point. esbuild bundles this file and its imports into the single
-// IIFE in dist/. Importing modules does no DOM work; boot() does all of it,
-// in the order 2.5.0 did at load, then the API is published on window.
+// IIFE in dist/. Importing modules does no DOM work. Start-up order:
+//   1. the global is assigned, so code that runs during start can see it
+//   2. boot() reads config and builds the DOM; once the document is ready
+//      init() applies queued calls, resolves `ready`, then fires
+//      stadiaref:ready (and sdt:ready)
+import { S } from './state.js';
+import { api, queueable } from './api.js';
 import { boot } from './boot.js';
-import { api } from './api.js';
+import { installAliases } from '../compat/aliases.js';
+
+api.ready = new Promise(function (resolve) {
+  S.resolveReady = function () { resolve(api); };
+});
+installAliases(api, queueable);
+window.stadiaref = api;
 
 boot();
-
-window.seguruDebugToolbar = api;

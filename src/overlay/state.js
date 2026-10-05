@@ -1,10 +1,12 @@
 // The overlay's one state object. Every value that changes after load lives
 // here; boot() fills it in. No other module keeps mutable module-level state.
 export const S = {
-  wpConfig: null,
-  pageConfig: null,
+  // Start-up: calls queued before start, the ready resolver, the 2.x event hook.
+  booted: false,
+  queue: [],
+  resolveReady: null,
+  legacyEmit: null,
   hostScriptEl: null,
-  scriptConfig: null,
   config: null,
   state: null,
   classConverterEnabled: null,

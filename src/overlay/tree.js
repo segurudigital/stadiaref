@@ -10,19 +10,19 @@ export function clearTreeJumpHighlight() {
     S.treeJumpTimer = null;
   }
   if (S.treeJumpTarget) {
-    S.treeJumpTarget.classList.remove('sdt-tree-jump-highlight');
+    S.treeJumpTarget.classList.remove('stadiaref-tree-jump-highlight');
     S.treeJumpTarget = null;
   }
 }
 
 export function clearTreeHoverHighlights() {
-  var highlighted = document.querySelectorAll('.sdt-tree-highlight');
+  var highlighted = document.querySelectorAll('.stadiaref-tree-highlight');
   forEachNode(highlighted, function (el) {
-    el.classList.remove('sdt-tree-highlight');
+    el.classList.remove('stadiaref-tree-highlight');
   });
   if (S.treePanel) {
-    forEachNode(S.treePanel.querySelectorAll('.sdt-tree-row--active'), function (row) {
-      row.classList.remove('sdt-tree-row--active');
+    forEachNode(S.treePanel.querySelectorAll('.stadiaref-tree-row--active'), function (row) {
+      row.classList.remove('stadiaref-tree-row--active');
     });
   }
 }
@@ -34,10 +34,10 @@ export function jumpToTreeTarget(target) {
   } catch (err) {
     target.scrollIntoView();
   }
-  target.classList.add('sdt-tree-jump-highlight');
+  target.classList.add('stadiaref-tree-jump-highlight');
   S.treeJumpTarget = target;
   S.treeJumpTimer = setTimeout(function () {
-    if (S.treeJumpTarget) S.treeJumpTarget.classList.remove('sdt-tree-jump-highlight');
+    if (S.treeJumpTarget) S.treeJumpTarget.classList.remove('stadiaref-tree-jump-highlight');
     S.treeJumpTarget = null;
     S.treeJumpTimer = null;
   }, 1400);
@@ -55,24 +55,24 @@ export function buildTreePanel() {
   });
 
   var header = document.createElement('div');
-  header.className = 'sdt-tree-panel__header';
+  header.className = 'stadiaref-tree-panel__header';
   var headerMain = document.createElement('div');
-  headerMain.className = 'sdt-tree-panel__header-main';
+  headerMain.className = 'stadiaref-tree-panel__header-main';
   var titleWrap = document.createElement('div');
-  titleWrap.className = 'sdt-tree-panel__title-wrap';
+  titleWrap.className = 'stadiaref-tree-panel__title-wrap';
   var title = document.createElement('span');
-  title.className = 'sdt-tree-panel__title';
-  title.textContent = 'Element Tree';
+  title.className = 'stadiaref-tree-panel__title';
+  title.textContent = 'Address tree';
   var meta = document.createElement('div');
-  meta.className = 'sdt-tree-panel__meta';
+  meta.className = 'stadiaref-tree-panel__meta';
   var countMeta = document.createElement('span');
-  countMeta.className = 'sdt-tree-panel__meta-item';
-  countMeta.textContent = refs.length + ' refs';
+  countMeta.className = 'stadiaref-tree-panel__meta-item';
+  countMeta.textContent = refs.length + (refs.length === 1 ? ' address' : ' addresses');
   var depthMeta = document.createElement('span');
-  depthMeta.className = 'sdt-tree-panel__meta-item';
+  depthMeta.className = 'stadiaref-tree-panel__meta-item';
   depthMeta.textContent = 'Depth: ' + depthLabel;
   var outlineMeta = document.createElement('span');
-  outlineMeta.className = 'sdt-tree-panel__meta-item';
+  outlineMeta.className = 'stadiaref-tree-panel__meta-item';
   outlineMeta.textContent = 'Outline: ' + outlineLabel;
   meta.appendChild(countMeta);
   meta.appendChild(depthMeta);
@@ -80,7 +80,7 @@ export function buildTreePanel() {
   titleWrap.appendChild(title);
   titleWrap.appendChild(meta);
   var closeBtn = document.createElement('button');
-  closeBtn.className = 'sdt-tree-panel__close';
+  closeBtn.className = 'stadiaref-tree-panel__close';
   closeBtn.type = 'button';
   closeBtn.textContent = '\u00D7';
   closeBtn.title = 'Close tree panel';
@@ -89,17 +89,17 @@ export function buildTreePanel() {
   headerMain.appendChild(closeBtn);
   header.appendChild(headerMain);
   var hint = document.createElement('div');
-  hint.className = 'sdt-tree-panel__hint';
+  hint.className = 'stadiaref-tree-panel__hint';
   hint.textContent = refs.length ? 'Hover to preview the target. Click a row to jump to it.' : 'Select a depth to begin.';
   header.appendChild(hint);
 
   var body = document.createElement('div');
-  body.className = 'sdt-tree-panel__body';
+  body.className = 'stadiaref-tree-panel__body';
 
   if (refs.length === 0) {
     var empty = document.createElement('div');
-    empty.className = 'sdt-tree-empty';
-    empty.textContent = 'No labeled elements yet.';
+    empty.className = 'stadiaref-tree-empty';
+    empty.textContent = 'No addresses on this screen yet.';
     body.appendChild(empty);
   } else {
     forEachNode(refs, function (el) {
@@ -111,37 +111,37 @@ export function buildTreePanel() {
       }
 
       var row = document.createElement('div');
-      row.className = 'sdt-tree-row';
+      row.className = 'stadiaref-tree-row';
       row.tabIndex = 0;
       row.title = 'Jump to ' + el.getAttribute('data-ref');
 
       var gutter = document.createElement('div');
-      gutter.className = 'sdt-tree-gutter';
+      gutter.className = 'stadiaref-tree-gutter';
 
       for (var i = 0; i < depth; i++) {
         var indent = document.createElement('span');
-        indent.className = 'sdt-tree-indent';
+        indent.className = 'stadiaref-tree-indent';
         gutter.appendChild(indent);
       }
 
       row.appendChild(gutter);
 
       var content = document.createElement('div');
-      content.className = 'sdt-tree-content';
+      content.className = 'stadiaref-tree-content';
 
       var tag = document.createElement('span');
-      tag.className = 'sdt-tree-tag';
+      tag.className = 'stadiaref-tree-tag';
       tag.textContent = getElementContext(el);
 
       var ref = document.createElement('span');
-      ref.className = 'sdt-tree-ref';
+      ref.className = 'stadiaref-tree-ref';
       ref.textContent = el.getAttribute('data-ref');
       ref.title = el.getAttribute('data-ref');
 
       var copyBtn = document.createElement('button');
-      copyBtn.className = 'sdt-tree-copy';
+      copyBtn.className = 'stadiaref-tree-copy';
       copyBtn.textContent = '\u2398';
-      copyBtn.title = 'Copy';
+      copyBtn.title = 'Copy address';
       (function (refVal) {
         copyBtn.addEventListener('click', function (e) {
           e.stopPropagation();
@@ -151,20 +151,20 @@ export function buildTreePanel() {
 
       (function (target) {
         row.addEventListener('mouseenter', function () {
-          target.classList.add('sdt-tree-highlight');
-          row.classList.add('sdt-tree-row--active');
+          target.classList.add('stadiaref-tree-highlight');
+          row.classList.add('stadiaref-tree-row--active');
         });
         row.addEventListener('mouseleave', function () {
-          target.classList.remove('sdt-tree-highlight');
-          row.classList.remove('sdt-tree-row--active');
+          target.classList.remove('stadiaref-tree-highlight');
+          row.classList.remove('stadiaref-tree-row--active');
         });
         row.addEventListener('focus', function () {
-          target.classList.add('sdt-tree-highlight');
-          row.classList.add('sdt-tree-row--active');
+          target.classList.add('stadiaref-tree-highlight');
+          row.classList.add('stadiaref-tree-row--active');
         });
         row.addEventListener('blur', function () {
-          target.classList.remove('sdt-tree-highlight');
-          row.classList.remove('sdt-tree-row--active');
+          target.classList.remove('stadiaref-tree-highlight');
+          row.classList.remove('stadiaref-tree-row--active');
         });
         row.addEventListener('click', function () {
           jumpToTreeTarget(target);
@@ -192,16 +192,16 @@ export function buildTreePanel() {
 
 export function toggleTree() {
   S.treeOpen = !S.treeOpen;
-  setClassState(S.treePanel, 'sdt-tree-panel--open', S.treeOpen);
+  setClassState(S.treePanel, 'stadiaref-tree-panel--open', S.treeOpen);
   if (S.treeOpen) buildTreePanel();
   else {
     clearTreeJumpHighlight();
     clearTreeHoverHighlights();
   }
-  var treeBtn = S.toolbar.querySelector('[data-sdt-toggle-tree]');
+  var treeBtn = S.toolbar.querySelector('[data-stadiaref-toggle-tree]');
   if (treeBtn) {
-    var treeValue = treeBtn.querySelector('.sdt-toolbar__value');
+    var treeValue = treeBtn.querySelector('.stadiaref-toolbar__value');
     if (treeValue) treeValue.textContent = S.treeOpen ? '\u229F Tree' : '\u229E Tree';
-    setClassState(treeBtn, 'sdt-toolbar__select--active', S.treeOpen);
+    setClassState(treeBtn, 'stadiaref-toolbar__select--active', S.treeOpen);
   }
 }

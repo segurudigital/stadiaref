@@ -1,8 +1,9 @@
-// Baseline: the 2.5.0 keyboard shortcuts D, L, T, O, F and Esc.
+// Baseline on the 3.0 names: the keys D, L, O and Esc. T and F (Target and
+// Level) are covered by baseline-2x/ until stage 4 replaces them.
 import { test, expect } from '@playwright/test';
 import { harness, open, press, shadow } from './helpers.mjs';
 
-const a = (page, expr) => page.evaluate('window.seguruDebugToolbar.' + expr);
+const a = (page, expr) => page.evaluate('window.stadiaref.' + expr);
 
 test('D toggles the toolbar', async ({ page }) => {
   await open(page, harness());
@@ -27,22 +28,14 @@ test('a hotkey rebound to L toggles instead of cycling labels', async ({ page })
   await open(page, harness({ page: { hotkey: 'l', startHidden: false } }));
   await press(page, 'l');
   expect(await a(page, 'isVisible()')).toBe(false);
-  expect(await a(page, 'getState()')).toBe(2);
+  expect(await a(page, 'getLabels()')).toBe('full');
 });
 
 test('L cycles Labels Off → Icons → Full', async ({ page }) => {
   await open(page, harness({ page: { startHidden: false } }));
   const seen = [];
-  for (let i = 0; i < 4; i++) { await press(page, 'l'); seen.push(await a(page, 'getState()')); }
-  // from Full (2): next is Off (1), Icons (0), Full (2), Off (1)
-  expect(seen).toEqual([1, 0, 2, 1]);
-});
-
-test('T cycles Target Off → Sections → Blocks → Elements → All → Off', async ({ page }) => {
-  await open(page, harness({ page: { startHidden: false } }));
-  const seen = [];
-  for (let i = 0; i < 5; i++) { await press(page, 't'); seen.push(await a(page, 'getDepth()')); }
-  expect(seen).toEqual(['section', 'block', 'element', 'all', 'off']);
+  for (let i = 0; i < 4; i++) { await press(page, 'l'); seen.push(await a(page, 'getLabels()')); }
+  expect(seen).toEqual(['off', 'icons', 'full', 'off']);
 });
 
 test('O cycles Outline Off → Sections → Blocks → Off', async ({ page }) => {
@@ -52,34 +45,25 @@ test('O cycles Outline Off → Sections → Blocks → Off', async ({ page }) =>
   expect(seen).toEqual(['section', 'block', 'off']);
 });
 
-test('F cycles Level All → Sec+Blk → Sections → All', async ({ page }) => {
-  await open(page, harness({ page: { startHidden: false } }));
-  const seen = [];
-  for (let i = 0; i < 3; i++) { await press(page, 'f'); seen.push(await a(page, 'getLevelFilter()')); }
-  expect(seen).toEqual(['section-block', 'section', 'all']);
-});
-
-test('L, T, O, F work while the toolbar is hidden', async ({ page }) => {
+test('L and O work while the toolbar is hidden', async ({ page }) => {
   await open(page, harness());
   await press(page, 'l');
-  await press(page, 't');
   await press(page, 'o');
-  await press(page, 'f');
   expect(await page.evaluate(() => {
-    const x = window.seguruDebugToolbar;
-    return [x.isVisible(), x.getState(), x.getDepth(), x.getOutline(), x.getLevelFilter()];
-  })).toEqual([false, 1, 'section', 'section', 'section-block']);
+    const x = window.stadiaref;
+    return [x.isVisible(), x.getLabels(), x.getOutline()];
+  })).toEqual([false, 'off', 'section']);
 });
 
 test('Esc closes menus and the Tree and hides the toolbar in one press', async ({ page }) => {
   await open(page, harness({ page: { startHidden: false } }));
-  await shadow(page, '[data-sdt-toggle="mode"]').click();
-  await expect(shadow(page, '[data-sdt-menu="mode"]')).toHaveClass(/sdt-toolbar__dropdown--open/);
-  await page.evaluate(() => window.seguruDebugToolbar.toggleTree());
+  await shadow(page, '[data-stadiaref-toggle="mode"]').click();
+  await expect(shadow(page, '[data-stadiaref-menu="mode"]')).toHaveClass(/stadiaref-toolbar__dropdown--open/);
+  await page.evaluate(() => window.stadiaref.toggleTree());
   await press(page, 'Escape');
   expect(await a(page, 'isVisible()')).toBe(false);
-  await expect(shadow(page, '[data-sdt-menu="mode"]')).not.toHaveClass(/sdt-toolbar__dropdown--open/);
-  await expect(shadow(page, '.sdt-tree-panel')).not.toHaveClass(/sdt-tree-panel--open/);
+  await expect(shadow(page, '[data-stadiaref-menu="mode"]')).not.toHaveClass(/stadiaref-toolbar__dropdown--open/);
+  await expect(shadow(page, '.stadiaref-tree-panel')).not.toHaveClass(/stadiaref-tree-panel--open/);
   // Esc while hidden is a no-op (no extra hide event, stays hidden)
   await press(page, 'Escape');
   expect(await a(page, 'isVisible()')).toBe(false);
@@ -88,7 +72,7 @@ test('Esc closes menus and the Tree and hides the toolbar in one press', async (
 test('keys are ignored with any modifier, Shift included (2.5.0)', async ({ page }) => {
   await open(page, harness({ page: { startHidden: false } }));
   for (const k of ['Shift+L', 'Control+l', 'Alt+l', 'Meta+l', 'Shift+D', 'Shift+Escape']) await press(page, k);
-  expect(await page.evaluate(() => [window.seguruDebugToolbar.getState(), window.seguruDebugToolbar.isVisible()])).toEqual([2, true]);
+  expect(await page.evaluate(() => [window.stadiaref.getLabels(), window.stadiaref.isVisible()])).toEqual(['full', true]);
 });
 
 test('keys are ignored while typing in inputs, textareas, selects and contenteditable', async ({ page }) => {
@@ -99,7 +83,7 @@ test('keys are ignored while typing in inputs, textareas, selects and contentedi
     await page.keyboard.press('l');
     await page.keyboard.press('Escape');
   }
-  expect(await page.evaluate(() => [window.seguruDebugToolbar.getState(), window.seguruDebugToolbar.isVisible()])).toEqual([2, true]);
+  expect(await page.evaluate(() => [window.stadiaref.getLabels(), window.stadiaref.isVisible()])).toEqual(['full', true]);
 });
 
 test('existing QA page: hotkey disabled leaves the input usable', async ({ page }) => {

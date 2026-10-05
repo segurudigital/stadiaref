@@ -29,8 +29,8 @@ export function getEffectiveBgLuminance(el) {
 // which are common patterns for hidden mega-menus, dropdowns, modals, and
 // tabs. Returns false for any element whose ancestor chain makes it
 // visually hidden so we can suppress its labels — otherwise invisible
-// .sdt-ref-icon nodes would intercept clicks on the visible content
-// beneath them (mitigated structurally by the .sdt-visible-host gate
+// .stadiaref-ref-icon nodes would intercept clicks on the visible content
+// beneath them (mitigated structurally by the .stadiaref-visible-host gate
 // below; this check is what controls when the gate is added). Stops at
 // <html> to avoid measuring the document itself.
 //
@@ -89,64 +89,64 @@ export function applyLabelVisibilityState() {
   var anyChanged = false;
   forEachNode(refs, function (el) {
     var visible = isEffectivelyVisible(el);
-    if (el._sdtVisible === visible) return;
-    el._sdtVisible = visible;
+    if (el._stadiarefVisible === visible) return;
+    el._stadiarefVisible = visible;
     anyChanged = true;
-    var nodes = [el._sdtIcon, el._sdtTooltip, el._sdtFullLabel, el._sdtLink];
+    var nodes = [el._stadiarefIcon, el._stadiarefTooltip, el._stadiarefFullLabel, el._stadiarefLink];
     for (var i = 0; i < nodes.length; i++) {
       var n = nodes[i];
       if (!n) continue;
       if (visible) {
-        n.classList.remove('sdt-ref-hidden');
+        n.classList.remove('stadiaref-ref-hidden');
         // Only icon and full-label opt in to pointer-events:auto — the
         // tooltip stays pointer-events:none until the icon is hovered
-        // (existing :hover + .sdt-ref-tooltip rule), and the link is
+        // (existing :hover + .stadiaref-ref-tooltip rule), and the link is
         // pointer-events:none by design.
-        if (n === el._sdtIcon || n === el._sdtFullLabel) {
-          n.classList.add('sdt-visible-host');
+        if (n === el._stadiarefIcon || n === el._stadiarefFullLabel) {
+          n.classList.add('stadiaref-visible-host');
         }
       } else {
-        n.classList.add('sdt-ref-hidden');
-        n.classList.remove('sdt-visible-host');
+        n.classList.add('stadiaref-ref-hidden');
+        n.classList.remove('stadiaref-visible-host');
       }
     }
   });
   return anyChanged;
 }
 
-// Eager-hide on mutation — the timing brace to the .sdt-visible-host gate.
+// Eager-hide on mutation — the timing brace to the .stadiaref-visible-host gate.
 // The MutationObserver fires synchronously after an ancestor's class or
 // style changes. Without this, the next rAF tick is the first chance to
 // re-evaluate visibility, leaving a ~16ms window in which labels stay
 // pointer-events:auto and intercept clicks on visible content that's
-// about to be revealed. Adding .sdt-ref-hidden and removing
-// .sdt-visible-host eagerly is safe: the worst case is a brief 1-frame
+// about to be revealed. Adding .stadiaref-ref-hidden and removing
+// .stadiaref-visible-host eagerly is safe: the worst case is a brief 1-frame
 // flicker for labels that turn out to still be visible (rAF re-eval will
 // unhide them). Restricted to subtrees that actually contain [data-ref]
 // descendants so unrelated DOM churn doesn't pay the cost.
 export function eagerHideDescendantLabels(node) {
   if (!node || node.nodeType !== 1) return;
   var refs = [];
-  if (node.hasAttribute && node.hasAttribute('data-ref') && node._sdtLabelled) refs.push(node);
+  if (node.hasAttribute && node.hasAttribute('data-ref') && node._stadiarefLabelled) refs.push(node);
   if (node.querySelectorAll) {
     var inner = node.querySelectorAll('[data-ref]');
     for (var i = 0; i < inner.length; i++) {
-      if (inner[i]._sdtLabelled) refs.push(inner[i]);
+      if (inner[i]._stadiarefLabelled) refs.push(inner[i]);
     }
   }
   for (var j = 0; j < refs.length; j++) {
     var el = refs[j];
-    var nodes = [el._sdtIcon, el._sdtTooltip, el._sdtFullLabel, el._sdtLink];
+    var nodes = [el._stadiarefIcon, el._stadiarefTooltip, el._stadiarefFullLabel, el._stadiarefLink];
     for (var k = 0; k < nodes.length; k++) {
       var n = nodes[k];
       if (!n) continue;
-      n.classList.add('sdt-ref-hidden');
-      n.classList.remove('sdt-visible-host');
+      n.classList.add('stadiaref-ref-hidden');
+      n.classList.remove('stadiaref-visible-host');
     }
     // Clear cached visibility so the rAF tick definitely re-runs the
-    // check rather than skipping due to "_sdtVisible === visible" early
+    // check rather than skipping due to "_stadiarefVisible === visible" early
     // return.
-    el._sdtVisible = null;
+    el._stadiarefVisible = null;
   }
 }
 export function scheduleVisibilityRecheck() {

@@ -1,15 +1,16 @@
 import { S } from './state.js';
 import { S_MARK_SVG } from './brand.js';
 import { hideActiveRefTree, showActiveRefTree } from './chain.js';
-import { normalizeHotkey, readPersistedTheme, readScriptAttr } from './config.js';
-import { DEPTH_LABELS, LEVEL_LABELS, MODE_LABELS, OUTLINE_LABELS, SDT_VERSION } from './constants.js';
+import { normalizeHotkey, readConfig, readPersistedTheme } from './config.js';
+import { migrateLegacyStorage } from '../compat/aliases.js';
+import { DEPTH_LABELS, LEVEL_LABELS, MODE_LABELS, OUTLINE_LABELS, VERSION } from './constants.js';
 import { applyDockPosition, normalizeDock, pickAutoDock } from './dock.js';
 import { closestMatch, forEachNode } from './dom.js';
 import { emitEvent } from './events.js';
 import { attachKeys } from './keys.js';
 import { MARKER, injectLabels, resolveLabelOverlaps, syncAllVoidHosts, syncVoidHost } from './labels.js';
 import { applyVisibility } from './lifecycle.js';
-import { setState } from './mode.js';
+import { LABEL_MODES, applyState, setState } from './mode.js';
 import { applyOutlineMode, setOutline } from './outline.js';
 import { LABEL_CSS } from './styles/labels.js';
 import { buildShadowCss } from './styles/shadow.js';
@@ -23,51 +24,31 @@ import { applyLabelVisibilityState, eagerHideDescendantLabels, scheduleVisibilit
 
 export function boot() {
 
-  // ─── Config merge: wpConfig (PHP-injected) + sdtConfig (per-page override) + script[data-*]
-  // wpConfig is set by WordPress via wp_localize_script under the key 'sdtConfig'.
-  // sdtConfig is a per-page override set directly on window (e.g. in wireframes).
-  // The host script tag may also carry data-hotkey / data-theme / data-dock attributes.
-  // Page-level sdtConfig overrides wpConfig; both fall back to defaults.
-  S.wpConfig = (typeof window.sdtConfig !== 'undefined') ? window.sdtConfig : {};
-  S.pageConfig = (typeof window.seguruDebugConfig !== 'undefined') ? window.seguruDebugConfig : {};
-
-  // Capture the host <script> element (only valid during initial sync execution).
+  // ─── Config ───────────────────────────────────────────────
+  // Sources, highest first: window.stadiarefConfig, the 2.x config objects,
+  // attributes on the script tag. See readConfig().
+  // The host <script> element is only available during this first, synchronous run.
   S.hostScriptEl = document.currentScript || null;
-  S.scriptConfig = {
-    hotkey: readScriptAttr('data-hotkey'),
-    theme: readScriptAttr('data-theme'),
-    dock: readScriptAttr('data-dock'),
-    position: readScriptAttr('data-position')
-  };
+  S.config = readConfig();
+  migrateLegacyStorage();
 
-  // Merge: pageConfig > wpConfig > scriptConfig
-  S.config = {};
-  var _keys = ['defaultMode', 'classConverter', 'autoRef', 'autoRefDepth', 'outlineMode', 'levelFilter', 'position', 'pageSlug', 'startHidden', 'hotkey', 'theme', 'dock', 'user'];
-  for (var _i = 0; _i < _keys.length; _i++) {
-    var _k = _keys[_i];
-    if (_k in S.pageConfig) S.config[_k] = S.pageConfig[_k];
-    else if (_k in S.wpConfig) S.config[_k] = S.wpConfig[_k];
-    else if (_k in S.scriptConfig && typeof S.scriptConfig[_k] !== 'undefined') S.config[_k] = S.scriptConfig[_k];
-  }
-
-  // 0=icons, 1=off, 2=full. Default 2 (Full) when no config provided.
-  var _parsedMode = parseInt(S.config.defaultMode, 10);
-  S.state = isNaN(_parsedMode) ? 2 : _parsedMode;
+  // Label mode: 0=icons, 1=off, 2=full. Default 2 (Full).
+  S.state = Object.prototype.hasOwnProperty.call(LABEL_MODES, S.config.labels) ? LABEL_MODES[S.config.labels] : 2;
 
   // Feature flags
   S.classConverterEnabled = S.config.classConverter === '1' || S.config.classConverter === true;
   // Auto-ref is OFF by default — only the WordPress plugin sets autoRef: true
-  // via sdtConfig (wp_localize_script). Standard hosts label elements manually
-  // with data-ref; auto-tagging is opt-in via seguruDebugConfig.autoRef = true.
+  // via its injected config. Standard hosts label elements manually
+  // with data-ref; auto-tagging is opt-in via the autoRef config key.
   S.autoRefEnabled = S.config.autoRef === '1' || S.config.autoRef === true;
   S.autoRefDepth = S.config.autoRefDepth || 'all'; // section | block | element | all (default all)
-  S.outlineMode = S.config.outlineMode || 'off'; // off | section | block
+  S.outlineMode = S.config.outline || 'off'; // off | section | block
   S.levelFilter = S.config.levelFilter || 'all'; // all | section | section-block
 
   // Presentation mode — visibility hotkey toggles toolbar + label visibility.
   // Default ON so the toolbar stays out of screenshots, Chrome debug sessions
   // (e.g. captured by AI agents), and client demos until explicitly revealed.
-  // Set seguruDebugConfig.startHidden = false to restore legacy "visible on load" behaviour.
+  // Set startHidden: false to start visible.
   S.presentationMode = !(S.config.startHidden === '0' || S.config.startHidden === false);
   S.hotkey = normalizeHotkey(S.config.hotkey);
   S.theme = (function () {
@@ -84,7 +65,7 @@ export function boot() {
   S.currentUser = snapshotUser(S.config.user);
   S._initialDock = (typeof S.config.dock === 'string' && S.config.dock.toLowerCase() === 'auto')
     ? 'auto'
-    : (normalizeDock(S.config.dock) || normalizeDock(S.config.position));
+    : normalizeDock(S.config.dock);
   S.position = S._initialDock === 'auto' ? 'bottom-right' : (S._initialDock || 'bottom-right');
 
   // ─── Label CSS (injected into main document) ───────────────
@@ -92,7 +73,7 @@ export function boot() {
   // `all:initial` resets inherited page/builder styles (Elementor, Bricks, etc.)
   // before re-declaring our own properties.
   S.labelCss = document.createElement('style');
-  S.labelCss.id = 'seguru-debug-toolbar-styles';
+  S.labelCss.id = 'stadiaref-styles';
   S.labelCss.textContent = LABEL_CSS;
 
   document.head.appendChild(S.labelCss);
@@ -100,7 +81,7 @@ export function boot() {
 
   // ─── Shadow DOM for toolbar + toast (isolated from page CSS) ─
   S.shadowHost = document.createElement('div');
-  S.shadowHost.id = 'seguru-debug-toolbar-host';
+  S.shadowHost.id = 'stadiaref-host';
   S.shadowHost.style.cssText = 'all:initial;position:fixed;top:0;left:0;width:0;height:0;overflow:visible;z-index:99999;pointer-events:none;';
   S.shadowCss = buildShadowCss();
 
@@ -112,37 +93,37 @@ export function boot() {
 
   // ─── Build toolbar DOM ──────────────────────────────────────
   S.toolbar = document.createElement('div');
-  S.toolbar.className = 'sdt-toolbar';
+  S.toolbar.className = 'stadiaref-toolbar';
   S.toolbar.setAttribute('role', 'toolbar');
-  S.toolbar.setAttribute('aria-label', 'Element reference labels');
+  S.toolbar.setAttribute('aria-label', 'StadiaRef');
   S.toolbar.innerHTML =
-    '<a class="sdt-toolbar__badge" href="https://seguru.digital" target="_blank" rel="noopener" aria-label="Powered by Seguru Digital">' +
+    '<a class="stadiaref-toolbar__badge" href="https://seguru.digital" target="_blank" rel="noopener" aria-label="Powered by Seguru Digital">' +
       S_MARK_SVG +
-      '<span class="sdt-toolbar__badge-tip">Powered by Seguru Digital</span>' +
+      '<span class="stadiaref-toolbar__badge-tip">Powered by Seguru Digital</span>' +
     '</a>' +
-    '<div class="sdt-toolbar__user" data-sdt-user-pill role="status">' +
-      '<span class="sdt-toolbar__user-avatar" data-sdt-user-avatar aria-hidden="true"></span>' +
-      '<span class="sdt-toolbar__user-name" data-sdt-user-name></span>' +
-      '<span class="sdt-toolbar__user-role" data-sdt-user-role></span>' +
+    '<div class="stadiaref-toolbar__user" data-stadiaref-user-pill role="status">' +
+      '<span class="stadiaref-toolbar__user-avatar" data-stadiaref-user-avatar aria-hidden="true"></span>' +
+      '<span class="stadiaref-toolbar__user-name" data-stadiaref-user-name></span>' +
+      '<span class="stadiaref-toolbar__user-role" data-stadiaref-user-role></span>' +
     '</div>' +
-    '<div class="sdt-toolbar__cluster sdt-toolbar__cluster--primary">' +
+    '<div class="stadiaref-toolbar__cluster stadiaref-toolbar__cluster--primary">' +
       // ── Mode dropdown ──
-      '<div class="sdt-toolbar__group sdt-toolbar__group--primary" data-sdt-group="mode">' +
-        '<button class="sdt-toolbar__select sdt-toolbar__select--active" data-sdt-toggle="mode">' +
-          '<span class="sdt-toolbar__key">Labels</span>' +
-          '<span class="sdt-toolbar__value">' + initModeLabel + '</span>' +
-          '<span class="sdt-toolbar__caret">&#9662;</span>' +
+      '<div class="stadiaref-toolbar__group stadiaref-toolbar__group--primary" data-stadiaref-group="mode">' +
+        '<button class="stadiaref-toolbar__select stadiaref-toolbar__select--active" data-stadiaref-toggle="mode">' +
+          '<span class="stadiaref-toolbar__key">Labels</span>' +
+          '<span class="stadiaref-toolbar__value">' + initModeLabel + '</span>' +
+          '<span class="stadiaref-toolbar__caret">&#9662;</span>' +
         '</button>' +
-        '<div class="sdt-toolbar__dropdown" data-sdt-menu="mode">' +
-          '<div class="sdt-toolbar__hint" data-sdt-mode-hint>Press L to cycle</div>' +
-          '<button class="sdt-toolbar__option' + (S.state === 2 ? ' sdt-toolbar__option--active' : '') + '" data-sdt-state="2">' +
-            '<span class="sdt-toolbar__option-dot"></span> Full' +
+        '<div class="stadiaref-toolbar__dropdown" data-stadiaref-menu="mode">' +
+          '<div class="stadiaref-toolbar__hint" data-stadiaref-mode-hint>Press L to cycle</div>' +
+          '<button class="stadiaref-toolbar__option' + (S.state === 2 ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-state="2">' +
+            '<span class="stadiaref-toolbar__option-dot"></span> Full' +
           '</button>' +
-          '<button class="sdt-toolbar__option' + (S.state === 0 ? ' sdt-toolbar__option--active' : '') + '" data-sdt-state="0">' +
-            '<span class="sdt-toolbar__option-dot"></span> Icons' +
+          '<button class="stadiaref-toolbar__option' + (S.state === 0 ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-state="0">' +
+            '<span class="stadiaref-toolbar__option-dot"></span> Icons' +
           '</button>' +
-          '<button class="sdt-toolbar__option' + (S.state === 1 ? ' sdt-toolbar__option--active' : '') + '" data-sdt-state="1">' +
-            '<span class="sdt-toolbar__option-dot"></span> Off' +
+          '<button class="stadiaref-toolbar__option' + (S.state === 1 ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-state="1">' +
+            '<span class="stadiaref-toolbar__option-dot"></span> Off' +
           '</button>' +
         '</div>' +
       '</div>' +
@@ -150,79 +131,79 @@ export function boot() {
       // The user-facing label is "Target"; internally we still call this
       // "depth" — public API methods setDepth/getDepth keep their names so
       // existing consumers don't break.
-      '<div class="sdt-toolbar__group sdt-toolbar__group--primary" data-sdt-group="depth">' +
-        '<button class="sdt-toolbar__select' + (S.autoRefEnabled ? ' sdt-toolbar__select--active' : '') + '" data-sdt-toggle="depth">' +
-          '<span class="sdt-toolbar__key">Target</span>' +
-          '<span class="sdt-toolbar__value">' + initDepthLabel + '</span>' +
-          '<span class="sdt-toolbar__caret">&#9662;</span>' +
+      '<div class="stadiaref-toolbar__group stadiaref-toolbar__group--primary" data-stadiaref-group="depth">' +
+        '<button class="stadiaref-toolbar__select' + (S.autoRefEnabled ? ' stadiaref-toolbar__select--active' : '') + '" data-stadiaref-toggle="depth">' +
+          '<span class="stadiaref-toolbar__key">Target</span>' +
+          '<span class="stadiaref-toolbar__value">' + initDepthLabel + '</span>' +
+          '<span class="stadiaref-toolbar__caret">&#9662;</span>' +
         '</button>' +
-        '<div class="sdt-toolbar__dropdown" data-sdt-menu="depth">' +
-          '<div class="sdt-toolbar__hint">Press T to cycle</div>' +
-          '<button class="sdt-toolbar__option' + (S.autoRefEnabled && S.autoRefDepth === 'all' ? ' sdt-toolbar__option--active' : '') + '" data-sdt-depth="all">' +
-            '<span class="sdt-toolbar__option-dot"></span> All — sections, blocks &amp; elements' +
+        '<div class="stadiaref-toolbar__dropdown" data-stadiaref-menu="depth">' +
+          '<div class="stadiaref-toolbar__hint">Press T to cycle</div>' +
+          '<button class="stadiaref-toolbar__option' + (S.autoRefEnabled && S.autoRefDepth === 'all' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-depth="all">' +
+            '<span class="stadiaref-toolbar__option-dot"></span> All — sections, blocks &amp; elements' +
           '</button>' +
-          '<button class="sdt-toolbar__option' + (S.autoRefEnabled && S.autoRefDepth === 'element' ? ' sdt-toolbar__option--active' : '') + '" data-sdt-depth="element">' +
-            '<span class="sdt-toolbar__option-dot"></span> Elements — headings, text, images, buttons only' +
+          '<button class="stadiaref-toolbar__option' + (S.autoRefEnabled && S.autoRefDepth === 'element' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-depth="element">' +
+            '<span class="stadiaref-toolbar__option-dot"></span> Elements — headings, text, images, buttons only' +
           '</button>' +
-          '<button class="sdt-toolbar__option' + (S.autoRefEnabled && S.autoRefDepth === 'block' ? ' sdt-toolbar__option--active' : '') + '" data-sdt-depth="block">' +
-            '<span class="sdt-toolbar__option-dot"></span> Blocks — containers only' +
+          '<button class="stadiaref-toolbar__option' + (S.autoRefEnabled && S.autoRefDepth === 'block' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-depth="block">' +
+            '<span class="stadiaref-toolbar__option-dot"></span> Blocks — containers only' +
           '</button>' +
-          '<button class="sdt-toolbar__option' + (S.autoRefEnabled && S.autoRefDepth === 'section' ? ' sdt-toolbar__option--active' : '') + '" data-sdt-depth="section">' +
-            '<span class="sdt-toolbar__option-dot"></span> Sections — top-level page sections only' +
+          '<button class="stadiaref-toolbar__option' + (S.autoRefEnabled && S.autoRefDepth === 'section' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-depth="section">' +
+            '<span class="stadiaref-toolbar__option-dot"></span> Sections — top-level page sections only' +
           '</button>' +
-          '<button class="sdt-toolbar__option' + (!S.autoRefEnabled ? ' sdt-toolbar__option--active' : '') + '" data-sdt-depth="off">' +
-            '<span class="sdt-toolbar__option-dot"></span> Off — manual labels only' +
+          '<button class="stadiaref-toolbar__option' + (!S.autoRefEnabled ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-depth="off">' +
+            '<span class="stadiaref-toolbar__option-dot"></span> Off — manual labels only' +
           '</button>' +
         '</div>' +
       '</div>' +
       // ── Level filter dropdown ──
       // Controls which grammar classes are shown: All (default), Sections only,
-      // Sections + Blocks. Filters by sdt-ref-class-* applied in injectLabels().
-      '<div class="sdt-toolbar__group sdt-toolbar__group--primary" data-sdt-group="level">' +
-        '<button class="sdt-toolbar__select' + (S.levelFilter !== 'all' ? ' sdt-toolbar__select--active' : '') + '" data-sdt-toggle="level">' +
-          '<span class="sdt-toolbar__key">Level</span>' +
-          '<span class="sdt-toolbar__value">' + initLevelFilterLabel + '</span>' +
-          '<span class="sdt-toolbar__caret">&#9662;</span>' +
+      // Sections + Blocks. Filters by stadiaref-ref-class-* applied in injectLabels().
+      '<div class="stadiaref-toolbar__group stadiaref-toolbar__group--primary" data-stadiaref-group="level">' +
+        '<button class="stadiaref-toolbar__select' + (S.levelFilter !== 'all' ? ' stadiaref-toolbar__select--active' : '') + '" data-stadiaref-toggle="level">' +
+          '<span class="stadiaref-toolbar__key">Level</span>' +
+          '<span class="stadiaref-toolbar__value">' + initLevelFilterLabel + '</span>' +
+          '<span class="stadiaref-toolbar__caret">&#9662;</span>' +
         '</button>' +
-        '<div class="sdt-toolbar__dropdown" data-sdt-menu="level">' +
-          '<div class="sdt-toolbar__hint">Press F to cycle</div>' +
-          '<button class="sdt-toolbar__option' + (S.levelFilter === 'all' ? ' sdt-toolbar__option--active' : '') + '" data-sdt-level="all">' +
-            '<span class="sdt-toolbar__option-dot"></span> All — sections, blocks, elements' +
+        '<div class="stadiaref-toolbar__dropdown" data-stadiaref-menu="level">' +
+          '<div class="stadiaref-toolbar__hint">Press F to cycle</div>' +
+          '<button class="stadiaref-toolbar__option' + (S.levelFilter === 'all' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-level="all">' +
+            '<span class="stadiaref-toolbar__option-dot"></span> All — sections, blocks, elements' +
           '</button>' +
-          '<button class="sdt-toolbar__option' + (S.levelFilter === 'section-block' ? ' sdt-toolbar__option--active' : '') + '" data-sdt-level="section-block">' +
-            '<span class="sdt-toolbar__option-dot"></span> Sec + Blk — sections and blocks' +
+          '<button class="stadiaref-toolbar__option' + (S.levelFilter === 'section-block' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-level="section-block">' +
+            '<span class="stadiaref-toolbar__option-dot"></span> Sec + Blk — sections and blocks' +
           '</button>' +
-          '<button class="sdt-toolbar__option' + (S.levelFilter === 'section' ? ' sdt-toolbar__option--active' : '') + '" data-sdt-level="section">' +
-            '<span class="sdt-toolbar__option-dot"></span> Sections — top-level sections only' +
+          '<button class="stadiaref-toolbar__option' + (S.levelFilter === 'section' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-level="section">' +
+            '<span class="stadiaref-toolbar__option-dot"></span> Sections — top-level sections only' +
           '</button>' +
         '</div>' +
       '</div>' +
     '</div>' +
-    '<div class="sdt-toolbar__cluster sdt-toolbar__cluster--utility">' +
+    '<div class="stadiaref-toolbar__cluster stadiaref-toolbar__cluster--utility">' +
       // ── Outline dropdown ──
-      '<div class="sdt-toolbar__group sdt-toolbar__group--utility" data-sdt-group="outline">' +
-        '<button class="sdt-toolbar__select sdt-toolbar__select--utility sdt-toolbar__select--diagnostic' + (S.outlineMode !== 'off' ? ' sdt-toolbar__select--active' : '') + '" data-sdt-toggle="outline">' +
-          '<span class="sdt-toolbar__key">Outline</span>' +
-          '<span class="sdt-toolbar__value">' + initOutlineLabel + '</span>' +
-          '<span class="sdt-toolbar__caret">&#9662;</span>' +
+      '<div class="stadiaref-toolbar__group stadiaref-toolbar__group--utility" data-stadiaref-group="outline">' +
+        '<button class="stadiaref-toolbar__select stadiaref-toolbar__select--utility stadiaref-toolbar__select--diagnostic' + (S.outlineMode !== 'off' ? ' stadiaref-toolbar__select--active' : '') + '" data-stadiaref-toggle="outline">' +
+          '<span class="stadiaref-toolbar__key">Outline</span>' +
+          '<span class="stadiaref-toolbar__value">' + initOutlineLabel + '</span>' +
+          '<span class="stadiaref-toolbar__caret">&#9662;</span>' +
         '</button>' +
-        '<div class="sdt-toolbar__dropdown" data-sdt-menu="outline">' +
-          '<div class="sdt-toolbar__hint">Press O to cycle</div>' +
-          '<button class="sdt-toolbar__option' + (S.outlineMode === 'block' ? ' sdt-toolbar__option--active' : '') + '" data-sdt-outline="block">' +
-            '<span class="sdt-toolbar__option-dot"></span> Blocks — sections plus inner containers' +
+        '<div class="stadiaref-toolbar__dropdown" data-stadiaref-menu="outline">' +
+          '<div class="stadiaref-toolbar__hint">Press O to cycle</div>' +
+          '<button class="stadiaref-toolbar__option' + (S.outlineMode === 'block' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-outline="block">' +
+            '<span class="stadiaref-toolbar__option-dot"></span> Blocks — sections plus inner containers' +
           '</button>' +
-          '<button class="sdt-toolbar__option' + (S.outlineMode === 'section' ? ' sdt-toolbar__option--active' : '') + '" data-sdt-outline="section">' +
-            '<span class="sdt-toolbar__option-dot"></span> Sections — top-level wrappers only' +
+          '<button class="stadiaref-toolbar__option' + (S.outlineMode === 'section' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-outline="section">' +
+            '<span class="stadiaref-toolbar__option-dot"></span> Sections — top-level wrappers only' +
           '</button>' +
-          '<button class="sdt-toolbar__option' + (S.outlineMode === 'off' ? ' sdt-toolbar__option--active' : '') + '" data-sdt-outline="off">' +
-            '<span class="sdt-toolbar__option-dot"></span> Off — no spacing guides' +
+          '<button class="stadiaref-toolbar__option' + (S.outlineMode === 'off' ? ' stadiaref-toolbar__option--active' : '') + '" data-stadiaref-outline="off">' +
+            '<span class="stadiaref-toolbar__option-dot"></span> Off — no spacing guides' +
           '</button>' +
         '</div>' +
       '</div>' +
       // ── Tree toggle ──
-      '<div class="sdt-toolbar__group sdt-toolbar__group--tree sdt-toolbar__group--utility" data-sdt-group="tree">' +
-        '<button class="sdt-toolbar__select sdt-toolbar__select--utility sdt-toolbar__select--diagnostic" data-sdt-toggle-tree>' +
-          '<span class="sdt-toolbar__value">\u229E Tree</span>' +
+      '<div class="stadiaref-toolbar__group stadiaref-toolbar__group--tree stadiaref-toolbar__group--utility" data-stadiaref-group="tree">' +
+        '<button class="stadiaref-toolbar__select stadiaref-toolbar__select--utility stadiaref-toolbar__select--diagnostic" data-stadiaref-toggle-tree>' +
+          '<span class="stadiaref-toolbar__value">\u229E Tree</span>' +
         '</button>' +
       '</div>' +
     '</div>';
@@ -230,7 +211,7 @@ export function boot() {
 
   // ─── Toast element ──────────────────────────────────────────
   S.toast = document.createElement('div');
-  S.toast.className = 'sdt-toast';
+  S.toast.className = 'stadiaref-toast';
   S.toastTimer = null;
 
   S.visibilityRecheckScheduled = false;
@@ -241,7 +222,7 @@ export function boot() {
   S.treeJumpTimer = null;
   S.treeJumpTarget = null;
   S.treePanel = document.createElement('div');
-  S.treePanel.className = 'sdt-tree-panel';
+  S.treePanel.className = 'stadiaref-tree-panel';
 
   // Active-ref tree panel — shows data-ref breadcrumb chain on hover.
   // Positioned at the opposite vertical edge from the toolbar.
@@ -250,7 +231,7 @@ export function boot() {
   S.activeRefTreePinned = false;
   S.activeRefTreeHideTimer = null;
   S.activeRefTree = document.createElement('div');
-  S.activeRefTree.className = 'sdt-active-ref-tree';
+  S.activeRefTree.className = 'stadiaref-active-ref-tree';
 
   // Watch <html class> mutations so `theme: 'auto'` reacts when the host
   // toggles `html.dark` post-init. Without this, the legacy `:host-context`
@@ -303,7 +284,7 @@ function init() {
   resolveLabelOverlaps();
   applyOutlineMode();
 
-  if (S.state !== 0) setState(S.state);
+  if (S.state !== 0) applyState(S.state);
   if (S.outlineMode !== 'off') setOutline(S.outlineMode);
   if (S.levelFilter !== 'all') applyLevelFilter();
 
@@ -313,43 +294,43 @@ function init() {
   applyVisibility();
 
   // Dropdown toggle clicks
-  forEachNode(S.toolbar.querySelectorAll('[data-sdt-toggle]'), function (trigger) {
+  forEachNode(S.toolbar.querySelectorAll('[data-stadiaref-toggle]'), function (trigger) {
     trigger.addEventListener('click', function (e) {
       e.stopPropagation();
-      toggleDropdown(trigger.getAttribute('data-sdt-toggle'));
+      toggleDropdown(trigger.getAttribute('data-stadiaref-toggle'));
     });
   });
 
   // Mode option clicks
-  forEachNode(S.toolbar.querySelectorAll('[data-sdt-state]'), function (opt) {
+  forEachNode(S.toolbar.querySelectorAll('[data-stadiaref-state]'), function (opt) {
     opt.addEventListener('click', function () {
-      setState(parseInt(opt.getAttribute('data-sdt-state'), 10));
+      setState(parseInt(opt.getAttribute('data-stadiaref-state'), 10));
     });
   });
 
   // Depth option clicks
-  forEachNode(S.toolbar.querySelectorAll('[data-sdt-depth]'), function (opt) {
+  forEachNode(S.toolbar.querySelectorAll('[data-stadiaref-depth]'), function (opt) {
     opt.addEventListener('click', function () {
-      setDepth(opt.getAttribute('data-sdt-depth'));
+      setDepth(opt.getAttribute('data-stadiaref-depth'));
     });
   });
 
   // Outline option clicks
-  forEachNode(S.toolbar.querySelectorAll('[data-sdt-outline]'), function (opt) {
+  forEachNode(S.toolbar.querySelectorAll('[data-stadiaref-outline]'), function (opt) {
     opt.addEventListener('click', function () {
-      setOutline(opt.getAttribute('data-sdt-outline'));
+      setOutline(opt.getAttribute('data-stadiaref-outline'));
     });
   });
 
   // Level filter option clicks
-  forEachNode(S.toolbar.querySelectorAll('[data-sdt-level]'), function (opt) {
+  forEachNode(S.toolbar.querySelectorAll('[data-stadiaref-level]'), function (opt) {
     opt.addEventListener('click', function () {
-      setLevelFilter(opt.getAttribute('data-sdt-level'));
+      setLevelFilter(opt.getAttribute('data-stadiaref-level'));
     });
   });
 
   // Tree panel toggle
-  var treeToggleBtn = S.toolbar.querySelector('[data-sdt-toggle-tree]');
+  var treeToggleBtn = S.toolbar.querySelector('[data-stadiaref-toggle-tree]');
   if (treeToggleBtn) {
     treeToggleBtn.addEventListener('click', function (e) {
       e.stopPropagation();
@@ -359,7 +340,7 @@ function init() {
 
   // Close dropdowns on click outside (shadow root)
   shadow.addEventListener('click', function (e) {
-    if (!closestMatch(e.target, '[data-sdt-toggle]') && !closestMatch(e.target, '.sdt-toolbar__dropdown')) {
+    if (!closestMatch(e.target, '[data-stadiaref-toggle]') && !closestMatch(e.target, '.stadiaref-toolbar__dropdown')) {
       closeAllDropdowns();
     }
   });
@@ -374,14 +355,14 @@ function init() {
   // Keyboard shortcuts
   attachKeys();
 
-  // Active-ref tree hover wiring via sdt:dataref-hover window event.
+  // Address chain hover wiring via the stadiaref:address-hover window event.
   // Both icon mouseenter and fullLabel mouseenter fire this event, so the
-  // tree updates smoothly when moving between label variants on the same el.
-  window.addEventListener('sdt:dataref-hover', function (e) {
+  // chain updates smoothly when moving between label variants on the same el.
+  window.addEventListener('stadiaref:address-hover', function (e) {
     if (S.presentationMode || S.state === 1) return;
-    showActiveRefTree(e.detail);
+    showActiveRefTree({ dataRef: e.detail.address, element: e.detail.element });
   });
-  window.addEventListener('sdt:dataref-leave', function () {
+  window.addEventListener('stadiaref:address-leave', function () {
     hideActiveRefTree();
   });
 
@@ -404,25 +385,25 @@ function init() {
   // exactly when their container does.
   if (typeof window.MutationObserver === 'function') {
     var visibilityObserver = new window.MutationObserver(function (mutations) {
-      var sawNonSdtMutation = false;
+      var sawHostMutation = false;
       for (var i = 0; i < mutations.length; i++) {
         var t = mutations[i].target;
-        // Ignore mutations on SDT's own label nodes (toggling
-        // .sdt-ref-hidden / .sdt-visible-host would otherwise loop).
+        // Ignore mutations on StadiaRef's own label nodes (toggling
+        // .stadiaref-ref-hidden / .stadiaref-visible-host would otherwise loop).
         if (t && t.classList && (
-          t.classList.contains('sdt-ref-icon') ||
-          t.classList.contains('sdt-ref-tooltip') ||
-          t.classList.contains('sdt-ref-full-label') ||
-          t.classList.contains('sdt-ref-link')
+          t.classList.contains('stadiaref-ref-icon') ||
+          t.classList.contains('stadiaref-ref-tooltip') ||
+          t.classList.contains('stadiaref-ref-full-label') ||
+          t.classList.contains('stadiaref-ref-link')
         )) continue;
-        sawNonSdtMutation = true;
+        sawHostMutation = true;
         // Eager-hide all [data-ref] descendants of the mutated node
         // before rAF schedules. This closes the ~16ms window between
         // the mutation firing and applyLabelVisibilityState running
         // where labels would otherwise still be pointer-events:auto.
         eagerHideDescendantLabels(t);
       }
-      if (sawNonSdtMutation) scheduleVisibilityRecheck();
+      if (sawHostMutation) scheduleVisibilityRecheck();
     });
     visibilityObserver.observe(document.body, {
       attributes: true,
@@ -467,5 +448,12 @@ function init() {
     window.addEventListener('load', lateRescan);
   }
 
-  emitEvent('ready', { version: SDT_VERSION });
+  // Started: the API is live. Apply the calls made before start, in order,
+  // then resolve `ready`, then announce it.
+  S.booted = true;
+  var queued = S.queue;
+  S.queue = [];
+  for (var q = 0; q < queued.length; q++) queued[q][0].apply(null, queued[q][1]);
+  if (S.resolveReady) S.resolveReady();
+  emitEvent('ready', { version: VERSION });
 }

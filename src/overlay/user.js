@@ -3,11 +3,11 @@ import { emitEvent } from './events.js';
 
 // ─── Identity (host-supplied user) ──────────────────────────
 export function renderUser() {
-  var pill = S.toolbar.querySelector('[data-sdt-user-pill]');
+  var pill = S.toolbar.querySelector('[data-stadiaref-user-pill]');
   if (!pill) return;
-  var avatar = pill.querySelector('[data-sdt-user-avatar]');
-  var nameEl = pill.querySelector('[data-sdt-user-name]');
-  var roleEl = pill.querySelector('[data-sdt-user-role]');
+  var avatar = pill.querySelector('[data-stadiaref-user-avatar]');
+  var nameEl = pill.querySelector('[data-stadiaref-user-name]');
+  var roleEl = pill.querySelector('[data-stadiaref-user-role]');
   if (!S.currentUser || !S.currentUser.name) {
     // Clear inner spans on `setUser(null)`. The pill is hidden via the class
     // toggle, but `role="status"` content is sometimes surfaced by assistive
@@ -16,7 +16,7 @@ export function renderUser() {
     if (avatar) avatar.textContent = '';
     if (nameEl) nameEl.textContent = '';
     if (roleEl) { roleEl.textContent = ''; roleEl.style.display = 'none'; }
-    pill.classList.remove('sdt-toolbar__user--visible');
+    pill.classList.remove('stadiaref-toolbar__user--visible');
     pill.removeAttribute('title');
     return;
   }
@@ -35,12 +35,12 @@ export function renderUser() {
     }
   }
   pill.title = role ? (name + ' · ' + role) : name;
-  pill.classList.add('sdt-toolbar__user--visible');
+  pill.classList.add('stadiaref-toolbar__user--visible');
 }
 
 // Snapshot the documented public fields only. Anything else the host hands us
 // (auth tokens, internal IDs) is dropped on the floor. Returns a fresh object
-// every call so external mutation can't reach SDT's stored state.
+// every call so external mutation can't reach StadiaRef's stored state.
 export function snapshotUser(u) {
   if (!u || typeof u !== 'object') return null;
   var clone = {};

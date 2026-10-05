@@ -8,6 +8,34 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 
 ## [Unreleased]
 
+Seguru Debug Toolbar becomes **StadiaRef**. Every 2.x name keeps working through 3.x; see `docs/migrating-from-2.x.md` once the 3.0 docs land.
+
+### Breaking
+
+- **Renamed to StadiaRef.** npm package `stadiaref`, bundle `dist/stadiaref.min.js`, global `window.stadiaref`, config object `window.stadiarefConfig`, events `stadiaref:*`. The 2.x global, config objects, keys, methods and `sdt:*` events still work (see Deprecated).
+- **CSS classes and internal attributes renamed, with no alias.** Classes starting `sdt-` now start `stadiaref-`. `data-sdt-auto` and `data-sdt-auto-level` are `data-stadiaref-auto` and `data-stadiaref-auto-tier`. The shadow host is `#stadiaref-host`, the label stylesheet `#stadiaref-styles`. Update your own CSS or scripts if they touched these. `data-ref` and the `dataref-` class prefix are unchanged.
+- **`init()` takes every config key.** In 2.x it only read `hotkey`, `theme`, `dock` and `user`. `init({ startHidden: false })` after start now shows the toolbar; 2.x key names are accepted and mapped.
+- **Address events have a new detail.** `stadiaref:address-click`, `-hover` and `-leave` carry `{ address, tier, element }`, and the click adds `source`. `sdt:dataref-*` keep `{ dataRef, element, current }`.
+
+### Added
+
+- `setLabels('full' | 'icons' | 'off')` / `getLabels()`, the `labels` config key, the `data-labels` script attribute, and `stadiaref:labels-change` `{ labels }`.
+- `stadiaref.ready`, a promise that resolves with the API once StadiaRef has started.
+
+### Fixed
+
+- Start-up order. The global is assigned before start, calls made before start are queued and applied once it has, then `ready` resolves, then `stadiaref:ready` fires. In 2.5.0 a deferred script fired `sdt:ready` before `window.seguruDebugToolbar` existed, and a setter called before `DOMContentLoaded` from a script in `<head>` could throw.
+
+### Deprecated
+
+These work as they did in 2.5.0 and are removed in 4.0:
+
+- `window.seguruDebugToolbar` (same object as `window.stadiaref`; logs one console notice on first use).
+- `window.seguruDebugConfig` and `window.sdtConfig`, read for any key `window.stadiarefConfig` doesn't set. Config keys `defaultMode`, `outlineMode` and `position` map to `labels`, `outline` and `dock`.
+- `setState()` / `getState()`, `setDepth()` / `getDepth()`, `setLevelFilter()` / `getLevelFilter()`, `classifyDataRef()`, `setHotkey()` / `getHotkey()`.
+- `sdt:*` events, fired after their `stadiaref:*` twins.
+- The theme saved under `seguru-debug-toolbar:theme` is moved to `stadiaref:theme` once.
+
 ### Changed
 
 - The source is now ES modules under `src/overlay/`, bundled by esbuild into the same single file. No behaviour change: the built overlay produces the same page and toolbar DOM as 2.5.0 on the demo page and the v5 fixtures.

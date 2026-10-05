@@ -174,8 +174,8 @@ export function autoRefSections() {
       var num = String(i + 1);
       if (num.length < 2) num = '0' + num;
       el.setAttribute('data-ref', slug + '-' + num + '-' + getElementContext(el));
-      el.setAttribute('data-sdt-auto', '1');
-      el.setAttribute('data-sdt-auto-level', getAutoRefLevel(el, S.autoRefDepth));
+      el.setAttribute('data-stadiaref-auto', '1');
+      el.setAttribute('data-stadiaref-auto-tier', getAutoRefLevel(el, S.autoRefDepth));
     }
   }
 }
@@ -183,15 +183,15 @@ export function autoRefSections() {
 
 // ─── Clear auto-ref'd labels (for depth switching) ─────────
 export function clearAutoRefs() {
-  var autoEls = document.querySelectorAll('[data-sdt-auto]');
+  var autoEls = document.querySelectorAll('[data-stadiaref-auto]');
   forEachNode(autoEls, function (el) {
     el.removeAttribute('data-ref');
-    el.removeAttribute('data-sdt-auto');
-    el.removeAttribute('data-sdt-auto-level');
+    el.removeAttribute('data-stadiaref-auto');
+    el.removeAttribute('data-stadiaref-auto-tier');
     clearDataRefClass(el);
     // Remove only DIRECT CHILD label nodes. A subtree querySelectorAll would
     // also reach labels belonging to nested [data-ref] elements, removing them
-    // while leaving their _sdtLabelled MARKER intact — so injectLabels() would
+    // while leaving their _stadiarefLabelled MARKER intact — so injectLabels() would
     // skip re-creating them, leaving those refs permanently unlabelled after
     // any T-key depth cycle that passes through a depth with auto-refs.
     var i, child;
@@ -199,20 +199,20 @@ export function clearAutoRefs() {
       child = el.childNodes[i];
       if (child.nodeType !== 1) continue;
       if (
-        child.classList.contains('sdt-ref-link') ||
-        child.classList.contains('sdt-ref-icon') ||
-        child.classList.contains('sdt-ref-tooltip') ||
-        child.classList.contains('sdt-ref-full-label')
+        child.classList.contains('stadiaref-ref-link') ||
+        child.classList.contains('stadiaref-ref-icon') ||
+        child.classList.contains('stadiaref-ref-tooltip') ||
+        child.classList.contains('stadiaref-ref-full-label')
       ) {
         el.removeChild(child);
       }
     }
     removeVoidHost(el);
     delete el[MARKER];
-    delete el._sdtIcon;
-    delete el._sdtLink;
-    delete el._sdtTooltip;
-    delete el._sdtFullLabel;
-    delete el._sdtDepth;
+    delete el._stadiarefIcon;
+    delete el._stadiarefLink;
+    delete el._stadiarefTooltip;
+    delete el._stadiarefFullLabel;
+    delete el._stadiarefDepth;
   });
 }

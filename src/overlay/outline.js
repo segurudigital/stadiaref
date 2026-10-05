@@ -7,18 +7,18 @@ import { updateDropdown } from './toolbar.js';
 import { getEffectiveBgLuminance } from './visibility.js';
 
 export function clearOutlines() {
-  var outlined = document.querySelectorAll('.sdt-outline-section, .sdt-outline-block');
+  var outlined = document.querySelectorAll('.stadiaref-outline-section, .stadiaref-outline-block');
   forEachNode(outlined, function (el) {
-    el.classList.remove('sdt-outline-section');
-    el.classList.remove('sdt-outline-block');
-    el.classList.remove('sdt-outline-on-dark');
+    el.classList.remove('stadiaref-outline-section');
+    el.classList.remove('stadiaref-outline-block');
+    el.classList.remove('stadiaref-outline-on-dark');
   });
 }
 
 export function applyOutlineClass(el, className) {
   var lum = getEffectiveBgLuminance(el);
   el.classList.add(className);
-  setClassState(el, 'sdt-outline-on-dark', lum < 0.40);
+  setClassState(el, 'stadiaref-outline-on-dark', lum < 0.40);
 }
 
 export function applyOutlineMode() {
@@ -30,7 +30,7 @@ export function applyOutlineMode() {
   var blockTargets;
 
   forEachNode(sectionTargets, function (el) {
-    applyOutlineClass(el, 'sdt-outline-section');
+    applyOutlineClass(el, 'stadiaref-outline-section');
     sectionLookup.push(el);
   });
 
@@ -39,13 +39,13 @@ export function applyOutlineMode() {
   blockTargets = collectTargetsByDepth('block');
   forEachNode(blockTargets, function (el) {
     if (arrayContainsNode(sectionLookup, el)) return;
-    applyOutlineClass(el, 'sdt-outline-block');
+    applyOutlineClass(el, 'stadiaref-outline-block');
   });
 }
 
 export function setOutline(newMode) {
   S.outlineMode = OUTLINE_LABELS[newMode] ? newMode : 'off';
   applyOutlineMode();
-  updateDropdown('outline', 'data-sdt-outline', S.outlineMode, OUTLINE_LABELS[S.outlineMode]);
+  updateDropdown('outline', 'data-stadiaref-outline', S.outlineMode, OUTLINE_LABELS[S.outlineMode]);
   emitEvent('outline-change', { outline: S.outlineMode });
 }

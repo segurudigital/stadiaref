@@ -37,11 +37,11 @@ StadiaRef 3.0.0, built in stages. A new session starts at the first unticked sta
 - [x] **Stage 1 — Modules, no behaviour change.** One state object, one `boot()`, nothing touches the DOM at import.
   - [x] Every baseline test passes unchanged
   - [x] `dist/` behaves identically on `test/demo.html` and the four v5 fixtures in a real browser (96 DOM snapshots, page and shadow root, identical to the 2.5.0 release bundle across 16 API states)
-- [ ] **Stage 2 — The rename, with aliases.**
-  - [ ] All tests pass under the new names and the old ones
-  - [ ] A page using only 2.x names (`window.seguruDebugConfig`, `seguruDebugToolbar.setDepth()`, `sdt:dataref-click`) works with one console notice
-  - [ ] No `sdt` or `seguru-debug` string left in `src/` outside `compat/` and history comments
-  - [ ] `npm run build:wp` still produces a working zip
+- [x] **Stage 2 — The rename, with aliases.**
+  - [x] All tests pass under the new names and the old ones (`test/browser/baseline/` on 3.0 names, `test/browser/baseline-2x/` on 2.x names, `test/browser/aliases.spec.mjs` for every 2.x name)
+  - [x] A page using only 2.x names (`window.seguruDebugConfig`, `seguruDebugToolbar.setDepth()`, `sdt:dataref-click`) works with one console notice
+  - [x] No `sdt` or `seguru-debug` string left in `src/` outside `compat/` and history comments (`test/unit/names.test.mjs`)
+  - [x] `npm run build:wp` still produces a working zip (builds and unpacks with `assets/stadiaref.min.js`, which the plugin now enqueues; not installed in a WordPress, see stage 9)
 - [ ] **Stage 3 — Core and profiles.**
   - [ ] Unit tests for all three profiles, the core rules, the registry and the throwaway third-party profile
   - [ ] The v5 fixtures classify exactly as before with `profile: 'titan'`
@@ -99,6 +99,13 @@ The baseline tests pin what the 2.5.0 code does, not what the README says. Where
 | Tree copy button | Copies, emits no event | n/a (stage 6 adds `source: 'tree'`) | `baseline-events` › Tree row |
 
 For stage 3: `bad--ref` breaks the core rule against doubled hyphens, so under 3.0 it is `unclassified` in every profile, including titan. That is the one fixture address whose class changes. Raise it at stage 3 (brief, decision 2).
+
+Left for later stages on purpose (stage 2):
+
+- `.github/workflows/release-assets.yml` still attaches `dist/seguru-debug-toolbar.min.js`, which no longer exists. Stage 10 rewrites the release workflow with the new asset names.
+- `README.md` and `docs/` still describe 2.x. Stage 10 replaces them.
+- `test/demo.html`, the QA pages and the v5 fixtures still use 2.x names (`seguruDebugConfig`, `sdt:*`, `../src/seguru-debug-toolbar.js`). The test server serves the current build for that path, so they double as 2.x pages until stage 10 moves them to the new names.
+- The 2.x copy of the baseline differs from the stage 0 originals only where 3.0 has no alias (CSS classes, internal attributes, ids, storage key) and in two intended fixes: the global now exists when a deferred script fires `ready`, and `init()` applies every config key.
 
 For stage 10: the v5 fixtures use page codes (`hf-`, `mpt-v2-`) that look like they came from a real project. Rename them, and `expected-2.5.0.json` with them.
 

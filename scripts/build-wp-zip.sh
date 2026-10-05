@@ -20,7 +20,7 @@ npm run build --silent
 
 # Assemble plugin contents
 cp "$ROOT_DIR/wordpress/seguru-debug-toolbar/seguru-debug-toolbar.php" "$TMP_DIR/seguru-debug-toolbar/"
-cp "$DIST_DIR/seguru-debug-toolbar.min.js" "$TMP_DIR/seguru-debug-toolbar/assets/"
+cp "$DIST_DIR/stadiaref.min.js" "$TMP_DIR/seguru-debug-toolbar/assets/"
 cp "$ROOT_DIR/LICENSE" "$TMP_DIR/seguru-debug-toolbar/"
 
 # Copy WordPress.org assets (banner, icon, screenshots) if present

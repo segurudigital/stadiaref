@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import { open, harness, countVisible, visibleFullLabelRefs } from './helpers.mjs';
 
-const expected = JSON.parse(fs.readFileSync(new URL('../fixtures/v5-data-ref/expected-2.5.0.json', import.meta.url), 'utf8'));
+const expected = JSON.parse(fs.readFileSync(new URL('../../fixtures/v5-data-ref/expected-2.5.0.json', import.meta.url), 'utf8'));
 const FIXTURES = Object.keys(expected).filter((k) => !k.startsWith('_'));
 
 for (const name of FIXTURES) {
@@ -12,7 +12,7 @@ for (const name of FIXTURES) {
     await open(page, '/test/fixtures/v5-data-ref/' + name + '.html');
     const got = await page.evaluate(() => Array.from(document.querySelectorAll('[data-ref]')).map((e) => {
       const r = e.getAttribute('data-ref');
-      const stamped = (String(e.className).match(/sdt-ref-class-(\w+)/) || [])[1];
+      const stamped = (String(e.className).match(/stadiaref-ref-class-(\w+)/) || [])[1];
       return [r, window.seguruDebugToolbar.classifyDataRef(r), stamped];
     }));
     expect(got.map(([r, c]) => [r, c])).toEqual(expected[name]);
@@ -52,11 +52,11 @@ test('classifyDataRef edge cases', async ({ page }) => {
 test('mixed fixture: level filter hides by stamped class', async ({ page }) => {
   await open(page, '/test/fixtures/v5-data-ref/mixed.html');
   await page.evaluate(() => window.seguruDebugToolbar.show());
-  const all = await countVisible(page, '.sdt-ref-full-label');
+  const all = await countVisible(page, '.stadiaref-ref-full-label');
   await page.evaluate(() => window.seguruDebugToolbar.setLevelFilter('section'));
-  const sections = await countVisible(page, '.sdt-ref-full-label');
+  const sections = await countVisible(page, '.stadiaref-ref-full-label');
   await page.evaluate(() => window.seguruDebugToolbar.setLevelFilter('section-block'));
-  const secBlk = await countVisible(page, '.sdt-ref-full-label');
+  const secBlk = await countVisible(page, '.stadiaref-ref-full-label');
   expect({ all, sections, secBlk }).toEqual(BASELINE_MIXED_COUNTS);
 });
 
@@ -69,10 +69,10 @@ test('mixed fixture: the void-hosted image label escapes the Sections filter (2.
 test('dense fixture: block-group collapse badge in All, gone in Sec+Blk', async ({ page }) => {
   await open(page, '/test/fixtures/v5-data-ref/block-bearing-dense.html');
   await page.evaluate(() => window.seguruDebugToolbar.show());
-  await expect.poll(() => countVisible(page, '.sdt-block-group-badge')).toBe(1);
-  expect(await page.locator('.sdt-block-group-badge').first().textContent()).toContain('8');
+  await expect.poll(() => countVisible(page, '.stadiaref-block-group-badge')).toBe(1);
+  expect(await page.locator('.stadiaref-block-group-badge').first().textContent()).toContain('8');
   await page.evaluate(() => window.seguruDebugToolbar.setLevelFilter('section-block'));
-  await expect.poll(() => countVisible(page, '.sdt-block-group-badge')).toBe(0);
+  await expect.poll(() => countVisible(page, '.stadiaref-block-group-badge')).toBe(0);
 });
 
 // Measured on 2.5.0. "all" is 38 refs less the 16 collapsed into the

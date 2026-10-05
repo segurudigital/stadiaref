@@ -120,7 +120,7 @@ export function setDock(value) {
   }
   if (!normalized) {
     if (typeof console !== 'undefined' && console.warn) {
-      console.warn('[seguru-debug-toolbar] setDock expected auto/bottom-right/bottom-left/top-right/top-left, got', value);
+      console.warn('[stadiaref] setDock expected auto/bottom-right/bottom-left/top-right/top-left, got', value);
     }
     return;
   }

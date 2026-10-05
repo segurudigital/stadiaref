@@ -7,12 +7,12 @@ import { toggleTree } from './tree.js';
 
 // ─── Lifecycle (hide / show / toggle) ───────────────────────
 // hide()/show()/toggle() are the canonical visibility API. They're idempotent,
-// safe to call before SDT has booted (the desired state is applied during
-// init), and they fire sdt:show / sdt:hide events.
+// queued when called before start (see queueable() in api.js), and they
+// fire stadiaref:show / stadiaref:hide.
 export function applyVisibility() {
   if (!document.body) return; // init() will re-apply once body exists
   S.shadowHost.style.display = S.presentationMode ? 'none' : '';
-  setClassState(document.body, 'sdt-presentation', S.presentationMode);
+  setClassState(document.body, 'stadiaref-presentation', S.presentationMode);
 }
 
 export function hide() {

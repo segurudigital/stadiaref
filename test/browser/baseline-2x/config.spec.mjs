@@ -53,22 +53,22 @@ test.describe('per-page config (seguruDebugConfig)', () => {
   test('autoRef and autoRefDepth', async ({ page }) => {
     await open(page, harness({ page: { autoRef: true } }));
     expect(await get(page, 'getDepth')).toBe('all');
-    expect(await page.evaluate(() => document.querySelectorAll('[data-sdt-auto]').length)).toBeGreaterThan(0);
+    expect(await page.evaluate(() => document.querySelectorAll('[data-stadiaref-auto]').length)).toBeGreaterThan(0);
 
     await open(page, harness({ page: { autoRef: '1', autoRefDepth: 'section' } }));
     expect(await get(page, 'getDepth')).toBe('section');
-    const levels = await page.evaluate(() => Array.from(document.querySelectorAll('[data-sdt-auto]')).map((e) => e.getAttribute('data-sdt-auto-level')));
+    const levels = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-stadiaref-auto-tier')));
     expect(levels.length).toBeGreaterThan(0);
     for (const l of levels) expect(l).toBe('section');
 
     await open(page, harness({ page: { autoRef: false, autoRefDepth: 'section' } }));
     expect(await get(page, 'getDepth')).toBe('off');
-    expect(await page.evaluate(() => document.querySelectorAll('[data-sdt-auto]').length)).toBe(0);
+    expect(await page.evaluate(() => document.querySelectorAll('[data-stadiaref-auto]').length)).toBe(0);
   });
 
   test('automatic addresses use pageSlug, position and context', async ({ page }) => {
     await open(page, harness({ page: { autoRef: true, autoRefDepth: 'section', pageSlug: 'demo' } }));
-    const refs = await page.evaluate(() => Array.from(document.querySelectorAll('[data-sdt-auto]')).map((e) => e.getAttribute('data-ref')));
+    const refs = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-ref')));
     expect(refs).toEqual(['demo-03-section']);
   });
 
@@ -76,20 +76,20 @@ test.describe('per-page config (seguruDebugConfig)', () => {
     // With no pageSlug, the slug comes from location.pathname: "/__harness" → "__harness".
     // 2.5.0 does not sanitise it (stage 4 fixes this); the baseline records it.
     await open(page, harness({ page: { autoRef: true, autoRefDepth: 'section' } }));
-    const refs = await page.evaluate(() => Array.from(document.querySelectorAll('[data-sdt-auto]')).map((e) => e.getAttribute('data-ref')));
+    const refs = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-ref')));
     expect(refs).toEqual(['__harness-03-section']);
   });
 
   test('outlineMode', async ({ page }) => {
     await open(page, harness({ page: { startHidden: false, outlineMode: 'section' } }));
     expect(await get(page, 'getOutline')).toBe('section');
-    expect(await page.evaluate(() => document.querySelectorAll('.sdt-outline-section').length)).toBeGreaterThan(0);
+    expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-outline-section').length)).toBeGreaterThan(0);
   });
 
   test('levelFilter', async ({ page }) => {
     await open(page, harness({ page: { levelFilter: 'section' } }));
     expect(await get(page, 'getLevelFilter')).toBe('section');
-    expect(await page.evaluate(() => document.body.classList.contains('sdt-filter-section'))).toBe(true);
+    expect(await page.evaluate(() => document.body.classList.contains('stadiaref-filter-section'))).toBe(true);
   });
 
   test('hotkey', async ({ page }) => {
@@ -103,7 +103,7 @@ test.describe('per-page config (seguruDebugConfig)', () => {
     await page.emulateMedia({ colorScheme: 'light' });
     await open(page, harness({ page: { theme: 'dark' } }));
     expect(await get(page, 'getTheme')).toBe('dark');
-    expect(await page.evaluate((id) => document.getElementById(id).classList.contains('sdt-theme-dark'), HOST_ID)).toBe(true);
+    expect(await page.evaluate((id) => document.getElementById(id).classList.contains('stadiaref-theme-dark'), HOST_ID)).toBe(true);
   });
 
   test('dock and its legacy alias position', async ({ page }) => {
@@ -125,7 +125,7 @@ test.describe('per-page config (seguruDebugConfig)', () => {
   test('user', async ({ page }) => {
     await open(page, harness({ page: { startHidden: false, user: { name: 'Sam', role: 'qa', secret: 1 } } }));
     expect(await get(page, 'getUser')).toEqual({ name: 'Sam', role: 'qa' });
-    await expect(shadow(page, '[data-sdt-user-role]')).toHaveText('qa');
+    await expect(shadow(page, '[data-stadiaref-user-role]')).toHaveText('qa');
   });
 });
 
@@ -179,15 +179,15 @@ test.describe('pre-boot calls and load order', () => {
     expect(await page.evaluate(() => window.seguruDebugToolbar.isVisible())).toBe(false);
   });
 
-  test('deferred script: ready fires before the global is assigned (2.5.0 bug)', async ({ page }) => {
+  // 3.0 fixes the 2.5.0 start-up order: the global is assigned before start,
+  // so it exists when ready fires even for a deferred script.
+  test('deferred script: the global exists when ready fires', async ({ page }) => {
     await page.addInitScript(() => {
       window.__readySawGlobal = null;
       window.addEventListener('sdt:ready', () => { window.__readySawGlobal = !!window.seguruDebugToolbar; });
     });
     await open(page, harness({ defer: true }));
-    // A deferred script runs after parsing, so readyState is "interactive" and
-    // init() runs synchronously, before `window.seguruDebugToolbar = api`.
-    expect(await page.evaluate(() => window.__readySawGlobal)).toBe(false);
+    expect(await page.evaluate(() => window.__readySawGlobal)).toBe(true);
   });
 
   test('classic script in body: global exists when ready fires', async ({ page }) => {
@@ -209,6 +209,6 @@ test('existing QA page: hotkey disabled', async ({ page }) => {
 test('labels are injected at boot even while hidden (2.5.0 behaviour)', async ({ page }) => {
   await open(page, harness());
   expect(await get(page, 'isVisible')).toBe(false);
-  expect(await page.evaluate(() => document.querySelectorAll('.sdt-ref-full-label').length)).toBe(2);
-  expect(await countVisible(page, '.sdt-ref-full-label')).toBe(0);
+  expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-ref-full-label').length)).toBe(2);
+  expect(await countVisible(page, '.stadiaref-ref-full-label')).toBe(0);
 });
