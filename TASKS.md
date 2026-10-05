@@ -14,6 +14,8 @@
 
 **State:** all ten stages done; 3.0.0 is a release candidate on `main`, not pushed, tagged or published. The release notes for the GitHub release are in `RELEASE_NOTES.md`.
 
+**Release zips are committed again** (2026-10-06, Samuel): `dist/stadiaref-wp-v<version>.zip` and the 2.5.1 bridge zip are force-added (`git add -f`) for each release, so they can be downloaded from the repo until the plugin is in the WordPress.org directory.
+
 **Next, for the maintainer** (none of this is done by an agent):
 - Review, then push `main`.
 - Rename the GitHub repo to `stadiaref` if not done yet (the 3.0 plugin's updater and the docs point at `segurudigital/stadiaref`).
