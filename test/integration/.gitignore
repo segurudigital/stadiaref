@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.astro/
+.pack/
+package-lock.json
+# Copied from shared/ by run.mjs
+*/stadiaref.setup.js
+!shared/stadiaref.setup.js

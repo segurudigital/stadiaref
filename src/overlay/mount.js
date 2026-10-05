@@ -8,6 +8,7 @@ import { LABEL_NAMES } from './mode.js';
 import { applyDockPosition } from './dock.js';
 import { applyDialogScope } from './dialogs.js';
 import { markSurvey, quiet, startWatching } from './watch.js';
+import { applyToolbarHost } from './host.js';
 
 // ─── Nothing is written to the page while StadiaRef is hidden ─────
 // Until the toolbar is first shown, StadiaRef keeps everything in memory:
@@ -62,7 +63,9 @@ export function survey() {
   if (S.treeOpen) buildTreePanel();
   syncAllVoidHosts();
   applyDialogScope();
+  applyToolbarHost();
   applyDockPosition();
+  if (S.afterSurvey) S.afterSurvey();
   markSurvey();
   // The page changes made by this survey are StadiaRef's own.
   quiet();
@@ -72,6 +75,7 @@ export function survey() {
 export function goLive() {
   mount();
   S.shadowHost.style.display = '';
+  applyToolbarHost();
   applyDockPosition();
   applyRootState();
   survey();

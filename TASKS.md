@@ -66,12 +66,12 @@ StadiaRef 3.0.0, built in stages. A new session starts at the first unticked sta
   - [x] `<dialog>` via `showModal()`: toolbar clickable, Find accepts typing; scripted `role="dialog"` with a focus trap; Esc closes the host dialog without hiding StadiaRef
   - [x] Touch sheet under mobile emulation; docking above a fixed bottom bar
   - [x] `<body>` swap followed by recovery; one survey per frame
-- [ ] **Stage 8 — Entry points and integrations.**
-  - [ ] Astro (5 and current major) and Vite projects: dev server serves StadiaRef; production output has no `data-stadiaref-root`
-  - [ ] A `setup` module registers a profile the overlay then uses
-  - [ ] `import('stadiaref')` in Node resolves and does nothing
-  - [ ] `npm pack --dry-run` lists only what should ship
-  - [ ] Types check under `strict` with `moduleResolution` `bundler` and `node16`
+- [x] **Stage 8 — Entry points and integrations.**
+  - [x] Astro (7, the current major; Astro 5 dropped, see notes) and Vite projects: dev server serves StadiaRef; production output has no `data-stadiaref-root`
+  - [x] A `setup` module registers a profile the overlay then uses
+  - [x] `import('stadiaref')` in Node resolves and does nothing
+  - [x] `npm pack --dry-run` lists only what should ship
+  - [x] Types check under `strict` with `moduleResolution` `bundler` and `node16`
 - [ ] **Stage 9 — WordPress.**
   - [ ] Both PHP files and the bridge pass `php -l`
   - [ ] Both zips build and unpack to the right folder names; bridge zip name matches `^seguru-debug-toolbar-wp-v[\d.]+\.zip$`
@@ -99,6 +99,17 @@ The baseline tests pin what the 2.5.0 code does, not what the README says. Where
 | Tree copy button | Copies, emits no event | n/a (stage 6 adds `source: 'tree'`) | `baseline-events` › Tree row |
 
 For stage 3: `bad--ref` breaks the core rule against doubled hyphens, so under 3.0 it is `unclassified` in every profile, including titan. That is the one fixture address whose class changes. Raise it at stage 3 (brief, decision 2).
+
+Notes from stage 8:
+
+- **Astro 7 and later only** (Samuel, 2026-10-05: Astro is at v7, no need to support v5). The peer range is `astro >=7`; the integration was also run once on Astro 5.18 before that decision and passed. The 3.0 docs still say "Needs Astro 5 or later" (`install/astro.md`): change that when the docs are copied in at stage 10. Vite's peer range stays `>=5`; tested on Vite 8.3.
+- **ESM only.** `stadiaref`, `stadiaref/core`, `stadiaref/vite` and `stadiaref/astro` are ES modules with no CommonJS build. Stage 10: say so in `install/vite.md` (a CommonJS `vite.config.js` can't import the plugin), as the brief asks.
+- The integration checks need the network (they install Vite, Astro and TypeScript), so they are `npm run test:integration`, not part of `npm test`. Each run packs the repo and installs the tarball, so they test what would be published.
+- Astro 7 backgrounds `astro dev` when it detects an agent; the runner passes `--ignore-lock` to keep it in the foreground.
+- The Astro host hooks sit on the API object under `Symbol.for('stadiaref.hostMode')` and `Symbol.for('stadiaref.astroHost')`: not config, not listed by `Object.keys()`. A test checks config can't reach them.
+- Using a panel control (Labels, Show, Outline, Pick, Find, Tree) shows StadiaRef if it is hidden. Opening the panel alone doesn't.
+- Both integrations exclude `stadiaref` and `stadiaref/core` from Vite's dependency pre-bundling. Without that, the first page load after install reloads once, and pre-bundling could give the overlay and a setup module's `stadiaref/core` import separate registries.
+- `types/` checks: `check.ts` against the real Vite and Astro types with `skipLibCheck` on (Astro's own types need it), plus StadiaRef's `.d.ts` files alone with `skipLibCheck` off against small stand-ins. TypeScript 7.0.
 
 Notes from stage 7:
 

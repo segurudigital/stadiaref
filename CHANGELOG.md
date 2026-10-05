@@ -55,6 +55,11 @@ Seguru Debug Toolbar becomes **StadiaRef**. Every 2.x name keeps working through
 - **Dialogs.** While a host modal is open (a `<dialog>` opened with `showModal()`, or `role="dialog"` / `alertdialog` with `aria-modal="true"`), only the labels inside it show, a status line says how many there are, and the toolbar moves into the modal so it can still be clicked and typed into. Esc is left to the dialog. Find searches inside the dialog only.
 - **Pick on touch.** Tap an element and a sheet rises with its chain, the full address, and Copy address, Parent and Close buttons at least 44px tall.
 - **Safe areas and fixed bars.** The toolbar and its panels keep clear of the device's safe-area insets and of a full-width bar fixed to the edge they dock on. `dockOffset: { top, right, bottom, left }` sets the distance yourself; a side it sets replaces the detected bar.
+- **`import 'stadiaref'`** (`dist/index.mjs`): the overlay as an ES module. Importing it starts StadiaRef in a browser and does nothing on a server; the default export is the API, the same object as `window.stadiaref`. It shares one profile registry with `stadiaref/core`.
+- **`stadiaref/vite`**: a Vite plugin that loads StadiaRef on the dev server only. `vite build` adds nothing.
+- **`stadiaref/astro`**: an Astro integration (Astro 7 and later) that loads StadiaRef during `astro dev` only, as an app in Astro's Dev Toolbar. Its panel has the brand, the AUTO chip, Labels, Show, Outline, the address count, Pick, Find and Tree; the floating toolbar steps aside while the Dev Toolbar is there and comes back when it is turned off.
+- Both take any config key, plus `setup`: a module in your project whose default export receives the API before the options are applied and before the first survey.
+- TypeScript types for `stadiaref`, `stadiaref/core`, `stadiaref/vite` and `stadiaref/astro`, including the `stadiaref:*` events on `window`.
 - StadiaRef never starts twice. If a copy of StadiaRef, or a 2.x Seguru Debug Toolbar, is already running on the page, a second copy logs one warning and doesn't start.
 
 ### Fixed
@@ -77,6 +82,7 @@ These work as they did in 2.5.0 and are removed in 4.0:
 
 ### Changed
 
+- `package.json` has an `exports` map; `main` is now `dist/index.mjs`. The script-tag build is still `dist/stadiaref.min.js` (also `unpkg` and `jsdelivr`). ESM only.
 - The source is now ES modules under `src/overlay/`, bundled by esbuild into the same single file. No behaviour change: the built overlay produces the same page and toolbar DOM as 2.5.0 on the demo page and the v5 fixtures.
 
 ---

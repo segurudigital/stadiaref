@@ -166,6 +166,15 @@ export function pairs() {
   out.push(['pick sheet address', '#E5E7EB', '#111827', '#111827']);
   out.push(['pick sheet copy button', '#111827', '#F97316', '#111827']);
   out.push(['pick sheet button', '#F9FAFB', '#111827', '#111827']);
+  // The panel in Astro's Dev Toolbar (panel.js), on Astro's dark window.
+  out.push(['astro panel text', '#F4F4F5', '#13151A', '#13151A']);
+  out.push(['astro panel key', '#A1A1AA', '#13151A', '#13151A']);
+  out.push(['astro panel version', '#A1A1AA', '#13151A', '#13151A']);
+  out.push(['astro panel count', '#D4D4D8', '#13151A', '#13151A']);
+  out.push(['astro panel segment', '#E4E4E7', '#25272E', '#13151A']);
+  out.push(['astro panel segment on', '#111827', '#F97316', '#13151A']);
+  out.push(['astro panel AUTO chip', '#E4E4E7', '#13151A', '#13151A']);
+  out.push(['astro panel pressed button', '#FDBA74', '#13151A', '#13151A']);
   ['light', 'dark'].forEach(function (theme) {
     var t = TOOLBAR[theme];
     out.push([theme + ' find field', t.fg, t.barBg, t.barBg]);

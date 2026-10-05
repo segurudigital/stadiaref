@@ -3,12 +3,34 @@
   "version": "3.0.0-dev",
   "description": "An address for every part of the screen. StadiaRef shows data-ref attributes as labels you can point at and copy. For websites, web apps and PWAs.",
   "type": "module",
-  "main": "dist/stadiaref.min.js",
+  "main": "./dist/index.mjs",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./core": {
+      "types": "./types/core.d.ts",
+      "import": "./dist/core.mjs"
+    },
+    "./astro": {
+      "types": "./types/astro.d.ts",
+      "import": "./dist/astro.mjs"
+    },
+    "./vite": {
+      "types": "./types/vite.d.ts",
+      "import": "./dist/vite.mjs"
+    },
+    "./dist/stadiaref.min.js": "./dist/stadiaref.min.js",
+    "./package.json": "./package.json"
+  },
   "unpkg": "dist/stadiaref.min.js",
   "jsdelivr": "dist/stadiaref.min.js",
   "files": [
+    "dist/*.mjs",
     "dist/stadiaref.min.js",
-    "dist/core.mjs",
+    "types",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
@@ -20,7 +42,8 @@
     "test": "npm run build && npm run test:unit && npm run test:browser",
     "test:unit": "node --test 'test/unit/**/*.test.mjs'",
     "test:browser": "playwright test",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test:integration": "npm run build && node test/integration/run.mjs"
   },
   "keywords": [
     "data-ref",
@@ -49,5 +72,17 @@
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "esbuild": "^0.20.2"
+  },
+  "peerDependencies": {
+    "astro": ">=7",
+    "vite": ">=5"
+  },
+  "peerDependenciesMeta": {
+    "astro": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    }
   }
 }

@@ -1,0 +1,12 @@
+{
+  "name": "stadiaref-integration-types",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^22",
+    "astro": "^7",
+    "stadiaref": "file:../.pack/stadiaref.tgz",
+    "typescript": "^7",
+    "vite": "^8"
+  }
+}

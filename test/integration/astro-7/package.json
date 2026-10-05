@@ -1,0 +1,9 @@
+{
+  "name": "stadiaref-integration-astro-7",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "astro": "^7",
+    "stadiaref": "file:../.pack/stadiaref.tgz"
+  }
+}

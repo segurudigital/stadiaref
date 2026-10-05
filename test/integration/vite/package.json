@@ -1,0 +1,9 @@
+{
+  "name": "stadiaref-integration-vite",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "stadiaref": "file:../.pack/stadiaref.tgz",
+    "vite": "^8"
+  }
+}

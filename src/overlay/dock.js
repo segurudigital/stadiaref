@@ -1,6 +1,7 @@
 import { S } from './state.js';
 import { closeAllDropdowns } from './toolbar.js';
 import { isLive } from './mount.js';
+import { astroBarReach, toolbarHosted } from './host.js';
 
 // ─── Position config ────────────────────────────────────────
 // `dock` is the canonical name; `position` is the legacy alias kept for back-compat.
@@ -91,7 +92,13 @@ export function fixedBarOffset(edge) {
 // docked pieces, before the base EDGE distance.
 function sideOffset(side, dockedV) {
   var set = S.dockOffset && typeof S.dockOffset[side] === 'number';
-  var extra = set ? S.dockOffset[side] : (side === dockedV && isLive() ? fixedBarOffset(side) : 0);
+  var extra = 0;
+  if (set) extra = S.dockOffset[side];
+  else if (side === dockedV && isLive()) {
+    extra = fixedBarOffset(side);
+    // In Astro's Dev Toolbar, keep clear of Astro's bar too.
+    if (side === 'bottom' && toolbarHosted()) extra = Math.max(extra, astroBarReach());
+  }
   return 'env(safe-area-inset-' + side + ', 0px) + ' + extra + 'px';
 }
 
@@ -109,8 +116,8 @@ export function applyDockPosition() {
   var v = parts[0];
   var h = parts[1];
   var opposite = v === 'top' ? 'bottom' : 'top';
-  var barHeight = (S.toolbar && S.toolbar.offsetHeight) || 40;
-  var near = EDGE + barHeight + GAP;
+  // With the toolbar drawn by a host, the panels take its place in the corner.
+  var near = toolbarHosted() ? EDGE : EDGE + ((S.toolbar && S.toolbar.offsetHeight) || 40) + GAP;
   var status = S.dialogStatus && !S.dialogStatus.hidden ? S.dialogStatus.offsetHeight + GAP : 0;
   var side = h + ':' + at(EDGE, h, v) + ';' + (h === 'left' ? 'right:auto;' : 'left:auto;');
   applyStyleSnippet(S.toolbar, v + ':' + at(EDGE, v, v) + ';' + opposite + ':auto;' + side);

@@ -75,4 +75,9 @@ export const S = {
   lastPointerType: null,
   finePointerSeen: false,
   pickSheet: null,
+  // Host (host.js, panel.js): 'astro' while Astro's Dev Toolbar draws the
+  // controls, the panel there, and what to run after each survey.
+  hostMode: null,
+  panel: null,
+  afterSurvey: null,
 };
