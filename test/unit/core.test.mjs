@@ -122,15 +122,12 @@ describe('titan profile', () => {
   test('the v5 fixtures classify as in 2.5.0', () => {
     for (const name of fixtureNames) {
       for (const [address, tier] of fixtures[name]) {
-        // bad--ref breaks the core rule against doubled hyphens, so it is
-        // unclassified in every 3.0 profile. 2.5.0 called it a section.
-        const want = address === 'bad--ref' ? 'unclassified' : tier;
-        assert.equal(classify(address, { profile: 'titan' }), want, name + ': ' + address);
+        assert.equal(classify(address, { profile: 'titan' }), tier, name + ': ' + address);
       }
     }
   });
 
-  test('the raw Titan grammar is exactly the 2.x classifier, bad--ref included', () => {
+  test('the raw Titan grammar is exactly the 2.x classifier', () => {
     for (const name of fixtureNames) {
       for (const [address, tier] of fixtures[name]) assert.equal(classifyTitan(address), tier, address);
     }

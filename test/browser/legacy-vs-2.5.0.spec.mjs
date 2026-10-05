@@ -70,14 +70,10 @@ function onScreen(page) {
 //   void: an <img>, <input> and so on keeps its label in a host beside it.
 //         2.5.0's Level filter matched labels inside the element, so a
 //         void element's label escaped it. Show hides it like any other.
-//   rules: an address that breaks the core rules (bad--ref) is
-//         unclassified in 3.0, where 2.5.0 called it a section, so a
-//         narrowed Show hides it.
 const VOID = new Set(['img', 'video', 'audio', 'iframe', 'canvas', 'input', 'select', 'textarea', 'hr', 'br', 'embed', 'object', 'svg']);
 function explained(entry, call) {
   if (!call.startsWith('setLevelFilter') || call.includes("'all'")) return null;
   if (VOID.has(entry.tag)) return 'void';
-  if (entry.address === 'bad--ref') return 'rules';
   return null;
 }
 

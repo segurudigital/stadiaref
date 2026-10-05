@@ -44,12 +44,12 @@ StadiaRef 3.0.0, built in stages. A new session starts at the first unticked sta
   - [x] `npm run build:wp` still produces a working zip (builds and unpacks with `assets/stadiaref.min.js`, which the plugin now enqueues; not installed in a WordPress, see stage 9)
 - [x] **Stage 3 — Core and profiles.**
   - [x] Unit tests for all three profiles, the core rules, the registry and the throwaway third-party profile (`test/unit/core.test.mjs`; overlay side in `test/browser/profiles.spec.mjs`)
-  - [x] The v5 fixtures classify exactly as before with `profile: 'titan'`, with one exception raised for a decision: `bad--ref` in `mixed.html` breaks the core rule against doubled hyphens, so it is `unclassified` (brief 5.5: invalid addresses are unclassified in every profile), where 2.5.0 said `section`. `classifyDataRef()` still says `section`
+  - [x] The v5 fixtures classify exactly as before with `profile: 'titan'`. (The one exception, the malformed `bad--ref` in `mixed.html`, was removed from the fixture on 2026-10-05: see Resolved decisions)
   - [x] `node -e "import('./dist/core.mjs')"` succeeds
 - [x] **Stage 4 — Show, Auto-address, keys.**
   - [x] Every non-empty tier combination shows what it says, on authored and on automatic-only pages; `setTiers([])` shows no labels (`show-auto-keys.spec.mjs`)
   - [x] Automatic addresses stay valid, unique and unchanged across ten forced surveys
-  - [x] Alias tests pass, including the five Target values and three Level values against 2.5.0 (titan profile): `legacy-vs-2.5.0.spec.mjs` runs the frozen 2.5.0 bundle and the current build on the demo page and the four fixtures and compares which elements show a label. The only differences are the two intended ones it lists: void-element labels now follow the filter, and `bad--ref` is unclassified
+  - [x] Alias tests pass, including the five Target values and three Level values against 2.5.0 (titan profile): `legacy-vs-2.5.0.spec.mjs` runs the frozen 2.5.0 bundle and the current build on the demo page and the four fixtures and compares which elements show a label. The only difference is the intended one it lists: void-element labels now follow the filter
   - [x] Keys rebind, disable, and work with Shift held
 - [x] **Stage 5 — Brand, toolbar and labels.**
   - [x] Screenshots of the toolbar (light, dark, desktop, 390px) and the sample page in each label mode, compared against the wireframe values (`toolbar.spec.mjs` attaches the screenshots to the report and checks the computed values)
@@ -91,14 +91,14 @@ The baseline tests pin what the 2.5.0 code does, not what the README says. Where
 | `sdt:ready` with a deferred script | Fires before `window.seguruDebugToolbar` is assigned | "SDT has booted and the API is callable" | `baseline-config` › deferred script |
 | Events | Also emits `sdt:level-filter-change` `{ levelFilter }` | Not in the event table | `baseline-events` |
 | Level filter | Labels of void elements (`<img>` etc.) live in a sibling host, so the level-filter CSS doesn't hide them | Sections only shows only sections | `baseline-classify` › void-hosted image |
-| `bad--ref` in `mixed.html` | Classifies as `section` (last segment is non-numeric) | Fixture comment says unclassified | `baseline-classify` |
+| `bad--ref` in `mixed.html` | Classifies as `section` (last segment is non-numeric) | Fixture comment says unclassified | `baseline-classify` (removed from the fixture, 2026-10-05) |
 | v4.0 refs | Element only when they carry a page prefix (6+ segments); bare `heading-01-01-primary` is a section | "receive `sdt-ref-class-element`" | `baseline-classify` › edge cases |
 | Address chain row click | `current` in `sdt:dataref-click` is always the last row (loop `var` capture) | Not documented | `baseline-events` › chain row |
 | Labels while hidden | Injected at boot even when hidden | n/a (3.0 rule 1 changes this) | `baseline-config` › labels injected at boot |
 | Automatic address slug | Path-derived, unsanitised: `/test/demo.html` → `test-demo.html-03-section` | n/a (stage 4 sanitises) | `baseline-config`, `baseline-labels` |
 | Tree copy button | Copies, emits no event | n/a (stage 6 adds `source: 'tree'`) | `baseline-events` › Tree row |
 
-For stage 3: `bad--ref` breaks the core rule against doubled hyphens, so under 3.0 it is `unclassified` in every profile, including titan. That is the one fixture address whose class changes. Raise it at stage 3 (brief, decision 2).
+For stage 3: `bad--ref` broke the core rule against doubled hyphens, so under 3.0 it was `unclassified` in every profile. Resolved 2026-10-05 by removing it from the fixture.
 
 Notes from stage 8:
 
@@ -150,6 +150,11 @@ For stage 10: the v5 fixtures use page codes (`hf-`, `mpt-v2-`) that look like t
 | 2026-04-26 | Public API: `setDepth()` / `getDepth()` keep their names even though the UI label is now "Target" | Back-compat — these methods are documented since v1.3.0 and used by external consumers |
 | 2026-04-26 | User-pill avatar uses neutral slate (`#111827` light / `#71717A` dark), not Seguru blue | The badge stays the only Seguru-blue anchor in the toolbar; avatar reads as identity, not brand |
 | 2026-04-26 | Esc is a global one-shot hide, not a 3-step cycle | Simpler mental model — one keystroke, page is clean |
+| 2026-10-05 | The malformed `bad--ref` address is removed from the `mixed.html` fixture; the core rule against doubled hyphens stands in every profile | It added nothing to the fixture, and it was the only address whose tier changed under 3.0 |
+| 2026-10-05 | The colour changes from the wireframes made for contrast (menu hover, active option note, opaque badges and brand tip, dark dialog status line) are approved | Legibility: every text pair passes 4.5:1 |
+| 2026-10-05 | Astro integration supports Astro 7 and later only (`astro >=7`) | Astro 7 is current; 5 is two majors old |
+| 2026-10-05 | No host hooks on the API; the overlay finds its own app canvas in Astro's Dev Toolbar | Site code must not be able to reach into StadiaRef |
+| 2026-10-05 | The Stadia Address core spec (`docs/spec/stadia-address-core.md`) is written in this build, from the core as built | Samuel asked for it to be written rather than supplied |
 
 ---
 

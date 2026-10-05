@@ -1,5 +1,5 @@
 {
-  "_note": "Classification of every data-ref in each fixture as produced by the 2.5.0 classifyDataRef(). Generated from the v2.5.0 code; the titan profile must keep reproducing it. bad--ref is a section in 2.5.0 even though the fixture comment calls it unclassified.",
+  "_note": "Classification of every data-ref in each fixture as produced by the 2.5.0 classifyDataRef(). Generated from the v2.5.0 code; the titan profile must keep reproducing it.",
   "block-bearing-dense": [
     ["hf-services", "section"],
     ["hf-services-card-01", "block"], ["hf-services-heading-01-01-card", "element"],
@@ -33,8 +33,7 @@
     ["hf-about-panel-01", "block"], ["hf-about-heading-01-01-panel", "element"], ["hf-about-text-01-01-body", "element"],
     ["hf-about-panel-02", "block"], ["hf-about-heading-02-01-panel", "element"],
     ["hf-about-panel-03", "block"], ["hf-about-heading-03-01-panel", "element"],
-    ["mpt-v2-hero-wrapper-01-01-hero", "element"], ["mpt-v2-hero-heading-01-01-primary", "element"], ["mpt-v2-hero-text-01-01-body", "element"],
-    ["bad--ref", "section"]
+    ["mpt-v2-hero-wrapper-01-01-hero", "element"], ["mpt-v2-hero-heading-01-01-primary", "element"], ["mpt-v2-hero-text-01-01-body", "element"]
   ],
   "non-block-bearing": [
     ["hf-header", "section"], ["hf-header-heading-01-01-primary", "element"], ["hf-header-cta-01-01-primary", "element"],

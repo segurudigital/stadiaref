@@ -26,9 +26,8 @@ for (const name of FIXTURES) {
     })).then((list) => list.map(([r, c]) => [r, c, tiers[r]]));
     // classifyDataRef() is the raw 2.x grammar: identical to 2.5.0.
     expect(got.map(([r, c]) => [r, c])).toEqual(expected[name]);
-    // The labels use the titan profile, which also applies the 3.0 core
-    // rules: bad--ref (two hyphens in a row) is unclassified, not a section.
-    for (const [r, c, s] of got) expect(s, r).toBe(r === 'bad--ref' ? 'unclassified' : c);
+    // The labels use the titan profile: the same tiers.
+    for (const [r, c, s] of got) expect(s, r).toBe(c);
   });
 }
 
@@ -76,7 +75,6 @@ test('mixed fixture: level filter hides by stamped class', async ({ page }) => {
 test('mixed fixture: the void-hosted image label is filtered like any other (2.5.0 bug, fixed)', async ({ page }) => {
   await open(page, '/test/fixtures/v5-data-ref/mixed.html');
   await page.evaluate(() => { window.seguruDebugToolbar.show(); window.seguruDebugToolbar.setLevelFilter('section'); });
-  // bad--ref was a section in 2.5.0; under the 3.0 core rules it is unclassified.
   // hf-hero-image-01-01-hero escaped the 2.5.0 filter from its void host;
   // since Show (stage 4) each label node carries its tier, so it is hidden.
   expect(await visibleFullLabelRefs(page)).toEqual(['hf-about', 'hf-header', 'hf-hero', 'hf-services']);
@@ -96,8 +94,7 @@ test('dense fixture: block-group collapse badge in All, gone in Sec+Blk', async 
 // 5: the <img> hf-hero-image-01-01-hero mounts its labels in a sibling void
 // host, which the level-filter CSS (a descendant selector) doesn't reach.
 // That is a 2.5.0 bug, recorded in TASKS.md; the baseline pins the code.
-// Since stage 3, bad--ref is unclassified (core rules), so it drops out of
-// Sections and Sec+Blk. Since stage 4 the image label is filtered too.
-// "all" counts labels folded into "+N" badges as shown.
-// 2.5.0 gave all 22, sections 6 and secBlk 17.
-const BASELINE_MIXED_COUNTS = { all: 22, sections: 4, secBlk: 15 };
+// Since stage 4 the image label is filtered too. "all" counts labels folded
+// into "+N" badges as shown. (The fixture's malformed address was removed
+// after stage 8; with it, 2.5.0 gave all 22, sections 6 and secBlk 17.)
+const BASELINE_MIXED_COUNTS = { all: 21, sections: 4, secBlk: 15 };
