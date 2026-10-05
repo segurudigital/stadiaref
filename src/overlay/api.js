@@ -11,6 +11,9 @@ import { getTheme, setTheme } from './theme.js';
 import { applyLevelFilter, setDepth, setLevelFilter } from './tiers.js';
 import { buildTreePanel, toggleTree } from './tree.js';
 import { getUser, setUser } from './user.js';
+import { activeProfile, classifyAddress } from './classify.js';
+import { registerSelected, selectProfile } from './profile.js';
+import { validate as coreValidate } from '../core/index.js';
 import { mapLegacyKeys } from '../compat/aliases.js';
 
 // ─── Public init() ──────────────────────────────────────────
@@ -28,6 +31,7 @@ export function publicInit(opts) {
   if ('labels' in o) setLabels(o.labels);
   if ('outline' in o) setOutline(o.outline);
   if ('levelFilter' in o) setLevelFilter(o.levelFilter);
+  if ('profile' in o) setProfile(o.profile);
   if ('pageSlug' in o) S.config.pageSlug = o.pageSlug;
   if ('classConverter' in o) S.classConverterEnabled = o.classConverter === true || o.classConverter === '1';
   if ('autoRef' in o || 'autoRefDepth' in o) {
@@ -38,6 +42,25 @@ export function publicInit(opts) {
   }
   if ('startHidden' in o && (o.startHidden === false || o.startHidden === '0')) show();
   return api;
+}
+
+// ─── Profiles ───────────────────────────────────────────────
+// Switching profile re-classifies everything on the screen. Not queued:
+// before start it only records the choice, which start then uses.
+export function setProfile(name) {
+  if (typeof name !== 'string' || !name) {
+    if (typeof console !== 'undefined' && console.warn) console.warn('[stadiaref] setProfile expected a profile name, got', name);
+    return;
+  }
+  selectProfile(name);
+  if (S.booted) refresh();
+}
+
+// Not queued: errors (a taken name, a malformed profile) throw to the caller.
+export function registerProfile(profile) {
+  var selected = registerSelected(profile);
+  if (selected && S.booted) refresh();
+  return profile.name;
 }
 
 export function refresh() {
@@ -83,6 +106,11 @@ export const api = {
   setDock: queueable(setDock),
   getDock: function () { return S.position; },
   setUser: queueable(setUser),
-  getUser: getUser
+  getUser: getUser,
+  setProfile: setProfile,
+  getProfile: function () { return S.profile; },
+  registerProfile: registerProfile,
+  classify: classifyAddress,
+  validate: function (address) { return coreValidate(address, { profile: activeProfile() }); }
 };
 api.init = queueable(publicInit, api);

@@ -6,6 +6,9 @@ export const S = {
   queue: [],
   resolveReady: null,
   legacyEmit: null,
+  // Profile: the name selected, and the unregistered names already warned about.
+  profile: 'generic',
+  warnedProfiles: {},
   hostScriptEl: null,
   config: null,
   state: null,

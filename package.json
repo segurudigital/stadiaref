@@ -2,19 +2,21 @@
   "name": "stadiaref",
   "version": "3.0.0-dev",
   "description": "An address for every part of the screen. StadiaRef shows data-ref attributes as labels you can point at and copy. For websites, web apps and PWAs.",
+  "type": "module",
   "main": "dist/stadiaref.min.js",
   "unpkg": "dist/stadiaref.min.js",
   "jsdelivr": "dist/stadiaref.min.js",
   "files": [
     "dist/stadiaref.min.js",
+    "dist/core.mjs",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "esbuild src/overlay/index.js --bundle --minify --outfile=dist/stadiaref.min.js --format=iife",
+    "build": "node scripts/build.mjs",
     "build:wp": "bash scripts/build-wp-zip.sh",
-    "dev": "esbuild src/overlay/index.js --bundle --outfile=dist/stadiaref.js --format=iife --watch",
+    "dev": "node scripts/build.mjs --watch",
     "test": "npm run build && npm run test:unit && npm run test:browser",
     "test:unit": "node --test 'test/unit/**/*.test.mjs'",
     "test:browser": "playwright test",

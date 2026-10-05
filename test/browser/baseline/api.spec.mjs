@@ -11,6 +11,7 @@ const MEMBERS = [
   'version', 'ready', 'init', 'show', 'hide', 'toggle', 'isVisible', 'refresh',
   'setLabels', 'getLabels', 'setOutline', 'getOutline', 'toggleTree',
   'setTheme', 'getTheme', 'setDock', 'getDock', 'setUser', 'getUser',
+  'setProfile', 'getProfile', 'registerProfile', 'classify', 'validate',
 ];
 
 test.beforeEach(async ({ page }) => { await recordEvents(page); });

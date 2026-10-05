@@ -11,7 +11,7 @@
 //   - the old localStorage theme key, moved over once
 import { S } from '../overlay/state.js';
 import { THEME_STORAGE_KEY } from '../overlay/config.js';
-import { classifyDataRef } from '../overlay/classify.js';
+import { classifyTitan } from '../core/profiles/titan.js';
 import { dispatchWindowEvent } from '../overlay/events.js';
 import { setHotkey } from '../overlay/keys.js';
 import { setState } from '../overlay/mode.js';
@@ -95,7 +95,9 @@ export function installAliases(api, queueable) {
   api.getDepth = function () { return S.autoRefEnabled ? S.autoRefDepth : 'off'; };
   api.setLevelFilter = queueable(setLevelFilter);
   api.getLevelFilter = function () { return S.levelFilter; };
-  api.classifyDataRef = classifyDataRef;
+  // Always the Titan grammar, whatever profile is active, as in 2.x. The
+  // core rules aren't applied: an old call returns what it returned in 2.5.0.
+  api.classifyDataRef = classifyTitan;
   api.setHotkey = queueable(setHotkey);
   api.getHotkey = function () { return S.hotkey; };
 

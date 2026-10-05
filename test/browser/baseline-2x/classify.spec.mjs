@@ -4,6 +4,13 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import { open, harness, countVisible, visibleFullLabelRefs } from './helpers.mjs';
 
+// 2.x classified every address with the Titan grammar. 3.0 defaults to the
+// generic profile, so a 2.x page that relies on Titan tiers sets
+// profile: 'titan' (docs: migrating-from-2.x, "The default profile changed").
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => { window.stadiarefConfig = { profile: 'titan' }; });
+});
+
 const expected = JSON.parse(fs.readFileSync(new URL('../../fixtures/v5-data-ref/expected-2.5.0.json', import.meta.url), 'utf8'));
 const FIXTURES = Object.keys(expected).filter((k) => !k.startsWith('_'));
 
@@ -15,8 +22,11 @@ for (const name of FIXTURES) {
       const stamped = (String(e.className).match(/stadiaref-ref-class-(\w+)/) || [])[1];
       return [r, window.seguruDebugToolbar.classifyDataRef(r), stamped];
     }));
+    // classifyDataRef() is the raw 2.x grammar: identical to 2.5.0.
     expect(got.map(([r, c]) => [r, c])).toEqual(expected[name]);
-    for (const [r, c, s] of got) expect(s, r).toBe(c);
+    // The labels use the titan profile, which also applies the 3.0 core
+    // rules: bad--ref (two hyphens in a row) is unclassified, not a section.
+    for (const [r, c, s] of got) expect(s, r).toBe(r === 'bad--ref' ? 'unclassified' : c);
   });
 }
 
@@ -63,7 +73,8 @@ test('mixed fixture: level filter hides by stamped class', async ({ page }) => {
 test('mixed fixture: the void-hosted image label escapes the Sections filter (2.5.0 bug)', async ({ page }) => {
   await open(page, '/test/fixtures/v5-data-ref/mixed.html');
   await page.evaluate(() => { window.seguruDebugToolbar.show(); window.seguruDebugToolbar.setLevelFilter('section'); });
-  expect(await visibleFullLabelRefs(page)).toEqual(['bad--ref', 'hf-about', 'hf-header', 'hf-hero', 'hf-hero-image-01-01-hero', 'hf-services']);
+  // bad--ref was a section in 2.5.0; under the 3.0 core rules it is unclassified.
+  expect(await visibleFullLabelRefs(page)).toEqual(['hf-about', 'hf-header', 'hf-hero', 'hf-hero-image-01-01-hero', 'hf-services']);
 });
 
 test('dense fixture: block-group collapse badge in All, gone in Sec+Blk', async ({ page }) => {
@@ -80,4 +91,6 @@ test('dense fixture: block-group collapse badge in All, gone in Sec+Blk', async 
 // 5: the <img> hf-hero-image-01-01-hero mounts its labels in a sibling void
 // host, which the level-filter CSS (a descendant selector) doesn't reach.
 // That is a 2.5.0 bug, recorded in TASKS.md; the baseline pins the code.
-const BASELINE_MIXED_COUNTS = { all: 22, sections: 6, secBlk: 17 };
+// Since stage 3, bad--ref is unclassified (core rules), so it drops out of
+// Sections and Sec+Blk: 2.5.0 gave sections 6 and secBlk 17.
+const BASELINE_MIXED_COUNTS = { all: 22, sections: 5, secBlk: 16 };

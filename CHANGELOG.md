@@ -15,12 +15,19 @@ Seguru Debug Toolbar becomes **StadiaRef**. Every 2.x name keeps working through
 - **Renamed to StadiaRef.** npm package `stadiaref`, bundle `dist/stadiaref.min.js`, global `window.stadiaref`, config object `window.stadiarefConfig`, events `stadiaref:*`. The 2.x global, config objects, keys, methods and `sdt:*` events still work (see Deprecated).
 - **CSS classes and internal attributes renamed, with no alias.** Classes starting `sdt-` now start `stadiaref-`. `data-sdt-auto` and `data-sdt-auto-level` are `data-stadiaref-auto` and `data-stadiaref-auto-tier`. The shadow host is `#stadiaref-host`, the label stylesheet `#stadiaref-styles`. Update your own CSS or scripts if they touched these. `data-ref` and the `dataref-` class prefix are unchanged.
 - **`init()` takes every config key.** In 2.x it only read `hotkey`, `theme`, `dock` and `user`. `init({ startHidden: false })` after start now shows the toolbar; 2.x key names are accepted and mapped.
+- **The default address profile is `generic`.** 2.x sorted every address with the Titan grammar. 3.0 reads the tier from nesting by default: no addressed ancestor is a section; inside one, with addressed elements inside it, a block; otherwise an element. Labels may land in a different tier, which affects the Level filter (and Show, later). Pages written to the Titan grammar keep their old tiers with `profile: 'titan'`.
+- **Invalid addresses are unclassified in every profile.** The core rules: lower-case letters, digits and hyphens; no leading, trailing or doubled hyphen; at most 160 characters. Under the titan profile, an address such as `bad--ref`, which 2.x read as a section, is now unclassified. `classifyDataRef()` still returns its 2.x answer.
 - **Address events have a new detail.** `stadiaref:address-click`, `-hover` and `-leave` carry `{ address, tier, element }`, and the click adds `source`. `sdt:dataref-*` keep `{ dataRef, element, current }`.
 
 ### Added
 
 - `setLabels('full' | 'icons' | 'off')` / `getLabels()`, the `labels` config key, the `data-labels` script attribute, and `stadiaref:labels-change` `{ labels }`.
 - `stadiaref.ready`, a promise that resolves with the API once StadiaRef has started.
+- **Profiles.** `generic` (default, tiers from nesting), `app` (`[product]-[surface]-[screen]-[part]` for web apps and PWAs, tiers from nesting) and `titan` (the Titan Foundation grammar). Choose one with the `profile` config key, the `data-profile` script attribute, `setProfile()` or `init({ profile })`; `getProfile()` returns it. A name that isn't registered warns once and uses generic until it is.
+- `registerProfile({ name, classify, validate?, parse? })` adds your own profile. Taken names throw, so built-ins can't be replaced.
+- `classify(address)` and `validate(address)` on the API, using the active profile.
+- **`stadiaref/core`** (`dist/core.mjs`): `validate`, `classify`, `parse`, `registerProfile` and `profiles`, with no DOM. It runs in Node, so a CI check uses the same rules as the toolbar. The overlay and the core share one profile registry.
+- Tiers are recomputed on every survey, so an element's tier follows the page as content is added. A duplicated address logs one console warning per survey.
 
 ### Fixed
 

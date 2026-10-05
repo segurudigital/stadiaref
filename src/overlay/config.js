@@ -4,7 +4,7 @@ import { legacyConfigSources, mapLegacyKeys } from '../compat/aliases.js';
 // Config keys read at start. 2.x keys are mapped onto these by
 // mapLegacyKeys(); hotkey, levelFilter, autoRef and autoRefDepth keep their
 // 2.x names until the controls behind them are replaced.
-var CONFIG_KEYS = ['labels', 'outline', 'startHidden', 'theme', 'dock', 'user', 'classConverter',
+var CONFIG_KEYS = ['profile', 'labels', 'outline', 'startHidden', 'theme', 'dock', 'user', 'classConverter',
   'pageSlug', 'hotkey', 'levelFilter', 'autoRef', 'autoRefDepth'];
 
 // Merge config from every source. For each key the first source that sets
@@ -32,7 +32,7 @@ export function readConfig() {
 // Attributes on the <script> tag that loaded StadiaRef.
 function scriptAttrConfig() {
   var out = {};
-  var attrs = { labels: 'data-labels', hotkey: 'data-hotkey', theme: 'data-theme', dock: 'data-dock', position: 'data-position' };
+  var attrs = { profile: 'data-profile', labels: 'data-labels', hotkey: 'data-hotkey', theme: 'data-theme', dock: 'data-dock', position: 'data-position' };
   for (var key in attrs) {
     var v = readScriptAttr(attrs[key]);
     if (typeof v !== 'undefined') out[key] = v;

@@ -8,6 +8,7 @@ import { applyDockPosition, normalizeDock, pickAutoDock } from './dock.js';
 import { closestMatch, forEachNode } from './dom.js';
 import { emitEvent } from './events.js';
 import { attachKeys } from './keys.js';
+import { selectProfile } from './profile.js';
 import { MARKER, injectLabels, resolveLabelOverlaps, syncAllVoidHosts, syncVoidHost } from './labels.js';
 import { applyVisibility } from './lifecycle.js';
 import { LABEL_MODES, applyState, setState } from './mode.js';
@@ -31,6 +32,10 @@ export function boot() {
   S.hostScriptEl = document.currentScript || null;
   S.config = readConfig();
   migrateLegacyStorage();
+
+  // Address profile. An unregistered name falls back to generic until it is
+  // registered (see setProfile()).
+  selectProfile(typeof S.config.profile === 'string' && S.config.profile ? S.config.profile : 'generic');
 
   // Label mode: 0=icons, 1=off, 2=full. Default 2 (Full).
   S.state = Object.prototype.hasOwnProperty.call(LABEL_MODES, S.config.labels) ? LABEL_MODES[S.config.labels] : 2;

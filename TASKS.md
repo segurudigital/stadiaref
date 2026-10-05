@@ -42,10 +42,10 @@ StadiaRef 3.0.0, built in stages. A new session starts at the first unticked sta
   - [x] A page using only 2.x names (`window.seguruDebugConfig`, `seguruDebugToolbar.setDepth()`, `sdt:dataref-click`) works with one console notice
   - [x] No `sdt` or `seguru-debug` string left in `src/` outside `compat/` and history comments (`test/unit/names.test.mjs`)
   - [x] `npm run build:wp` still produces a working zip (builds and unpacks with `assets/stadiaref.min.js`, which the plugin now enqueues; not installed in a WordPress, see stage 9)
-- [ ] **Stage 3 — Core and profiles.**
-  - [ ] Unit tests for all three profiles, the core rules, the registry and the throwaway third-party profile
-  - [ ] The v5 fixtures classify exactly as before with `profile: 'titan'`
-  - [ ] `node -e "import('./dist/core.mjs')"` succeeds
+- [x] **Stage 3 — Core and profiles.**
+  - [x] Unit tests for all three profiles, the core rules, the registry and the throwaway third-party profile (`test/unit/core.test.mjs`; overlay side in `test/browser/profiles.spec.mjs`)
+  - [x] The v5 fixtures classify exactly as before with `profile: 'titan'`, with one exception raised for a decision: `bad--ref` in `mixed.html` breaks the core rule against doubled hyphens, so it is `unclassified` (brief 5.5: invalid addresses are unclassified in every profile), where 2.5.0 said `section`. `classifyDataRef()` still says `section`
+  - [x] `node -e "import('./dist/core.mjs')"` succeeds
 - [ ] **Stage 4 — Show, Auto-address, keys.**
   - [ ] Every non-empty tier combination shows what it says, on authored and on automatic-only pages; `setTiers([])` shows no labels
   - [ ] Automatic addresses stay valid, unique and unchanged across ten forced surveys

@@ -1,5 +1,5 @@
 import { S } from './state.js';
-import { classifyDataRef } from './classify.js';
+import { tierOf } from './classify.js';
 import { copyRef } from './copy.js';
 import { emitAddressEvent } from './events.js';
 
@@ -14,7 +14,7 @@ export function buildRefBreadcrumb(el) {
       chain.unshift({
         el: cur,
         ref: cur.getAttribute('data-ref'),
-        refClass: classifyDataRef(cur.getAttribute('data-ref')),
+        refClass: tierOf(cur),
         current: false
       });
     }
@@ -23,7 +23,7 @@ export function buildRefBreadcrumb(el) {
   chain.push({
     el: el,
     ref: el.getAttribute('data-ref'),
-    refClass: classifyDataRef(el.getAttribute('data-ref')),
+    refClass: tierOf(el),
     current: true
   });
   return chain;

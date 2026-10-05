@@ -1,5 +1,5 @@
 import { S } from './state.js';
-import { classifyDataRef, clearDataRefClass, normalizeRefClass } from './classify.js';
+import { clearDataRefClass, tierOf } from './classify.js';
 import { copyRef } from './copy.js';
 import { forEachNode, rectsOverlap, toArray } from './dom.js';
 import { emitAddressEvent } from './events.js';
@@ -316,11 +316,11 @@ export function injectLabels() {
     // Classify by data-ref v5.0 grammar and stamp the class on the
     // element so CSS level-filter rules and block group collapse can
     // target it without re-running the parser.
-    var refClass = normalizeRefClass(el.getAttribute('data-stadiaref-auto-tier') || classifyDataRef(refValue));
+    var refClass = tierOf(el);
     clearDataRefClass(el);
     el.classList.add('stadiaref-ref-class-' + refClass);
     if (refClass === 'unclassified' && typeof console !== 'undefined' && console.warn) {
-      console.warn('[stadiaref] unclassified data-ref:', refValue);
+      console.warn('[stadiaref] unclassified address:', refValue);
     }
 
     // Adaptive background class
@@ -391,7 +391,30 @@ export function injectLabels() {
     el._stadiarefDepth = getRefDepth(el);
     setLabelOffset(el, getDepthLift(el._stadiarefDepth), el._stadiarefDepth);
   });
+  reclassifyLabels();
   // Mark hidden-ancestor refs and add .stadiaref-ref-hidden to their labels so
   // they don't intercept clicks on visible content beneath them.
   applyLabelVisibilityState();
+}
+
+// Tiers are recomputed on every survey, because nesting changes as content
+// mounts. A duplicated address keeps its normal style and gets one console
+// warning per survey.
+export function reclassifyLabels() {
+  var seen = {};
+  var warned = {};
+  forEachNode(document.querySelectorAll('[data-ref]'), function (el) {
+    var ref = el.getAttribute('data-ref');
+    if (seen[ref] && !warned[ref]) {
+      warned[ref] = true;
+      if (typeof console !== 'undefined' && console.warn) console.warn('[stadiaref] duplicate address on this screen:', ref);
+    }
+    seen[ref] = true;
+    if (!el[MARKER]) return;
+    var tier = tierOf(el);
+    if (!el.classList.contains('stadiaref-ref-class-' + tier)) {
+      clearDataRefClass(el);
+      el.classList.add('stadiaref-ref-class-' + tier);
+    }
+  });
 }
