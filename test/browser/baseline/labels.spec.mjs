@@ -34,7 +34,7 @@ test.describe('demo page label counts', () => {
   });
 
   test('hidden toolbar shows no labels in any mode', async ({ page }) => {
-    await open(page, '/test/demo.html');
+    await open(page, '/test/demo.html?hidden');
     for (const s of ['icons', 'off', 'full']) {
       await page.evaluate((v) => window.stadiaref.setLabels(v), s);
       expect(await countVisible(page, '.stadiaref-ref-icon, .stadiaref-ref-full-label, .stadiaref-ref-tooltip')).toBe(0);
@@ -68,7 +68,7 @@ test.describe('demo page label counts', () => {
     const autos = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.getAttribute('data-ref')));
     // The two unaddressed sections keep the addresses they were given when the
     // page loaded with auto-address on (2.5.0 renumbered them: -03-, -04-).
-    expect(autos).toEqual(['test-demo-html-23-section', 'test-demo-html-26-section']);
+    expect(autos).toEqual(['test-demo-html-25-section', 'test-demo-html-28-section']);
   });
 });
 
@@ -180,4 +180,6 @@ test.describe('label structure', () => {
 // candidate in the selector lists, demo controls included, gets an address.
 // 3.0 numbers them 01–31 from a counter; 2.5.0 used positions in the full
 // candidate list.
-const AUTO_COUNT_DEMO = 31;
+// The demo gained two buttons in stage 10 (31 before); 2.5.0 agrees on
+// the same page (legacy-vs-2.5.0.spec.mjs).
+const AUTO_COUNT_DEMO = 33;

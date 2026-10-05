@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <!--
-  Fixture: non-block-bearing section (§2.1.1 — no block children)
+  Fixture: non-block-bearing section (no block children)
   All refs are section or element class. No block-type refs present.
   Expected behaviour:
     - Each [data-ref] classified: section or element
-    - Level filter "Sections only" → only hf-header and hf-hero visible
-    - Level filter "Sec+Blk" → same (no blocks to show/hide)
+    - Show sections only → only home-header and home-hero visible
+    - Show sections and blocks → same (no blocks to show/hide)
     - No block group collapse badge (no blocks)
     - Active-ref tree for element ref shows 2-row chain: section + element
 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SDT v2.4.0 — Non-block-bearing fixture</title>
+  <title>StadiaRef — Non-block-bearing fixture</title>
   <style>
     body { font-family: sans-serif; margin: 0; }
     [data-ref] { position: relative; padding: 20px; }
@@ -21,21 +21,22 @@
   </style>
 </head>
 <body>
-  <!-- Section refs: 2-segment grammar hf-{section} -->
-  <section class="section" data-ref="hf-header">
-    <h1 class="element" data-ref="hf-header-heading-01-01-primary">Primary heading</h1>
-    <a class="element" data-ref="hf-header-cta-01-01-primary">Get started</a>
+  <!-- Section refs: 2-segment grammar home-{section} -->
+  <section class="section" data-ref="home-header">
+    <h1 class="element" data-ref="home-header-heading-01-01-primary">Primary heading</h1>
+    <a class="element" data-ref="home-header-cta-01-01-primary">Get started</a>
   </section>
 
-  <section class="section" data-ref="hf-hero">
-    <h2 class="element" data-ref="hf-hero-heading-01-01-hero">Hero headline</h2>
-    <p class="element" data-ref="hf-hero-text-01-01-body">Hero body copy lorem ipsum.</p>
-    <img class="element" data-ref="hf-hero-image-01-01-hero" src="" alt="Hero image">
+  <section class="section" data-ref="home-hero">
+    <h2 class="element" data-ref="home-hero-heading-01-01-hero">Hero headline</h2>
+    <p class="element" data-ref="home-hero-text-01-01-body">Hero body copy lorem ipsum.</p>
+    <img class="element" data-ref="home-hero-image-01-01-hero" src="" alt="Hero image">
   </section>
 
   <script>
-    window.seguruDebugConfig = { startHidden: false, defaultMode: 2 };
+    // A page written to the Titan grammar. ?hidden starts StadiaRef hidden.
+    window.stadiarefConfig = { startHidden: /[?&]hidden\b/.test(location.search), labels: 'full', profile: 'titan' };
   </script>
-  <script src="../../../src/seguru-debug-toolbar.js"></script>
+  <script src="../../../dist/stadiaref.min.js"></script>
 </body>
 </html>

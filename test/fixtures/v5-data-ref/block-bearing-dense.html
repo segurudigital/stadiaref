@@ -4,16 +4,16 @@
   Expected behaviour:
     - Section classified as section
     - 8 block refs classified as block
-    - Level filter "All" (default) → block group collapse badge "+8 blocks" on section
-    - Level filter "Sec+Blk" → collapse badge hidden, all 8 blocks visible individually
-    - Level filter "Sections only" → only section label visible
+    - Show all (default) → block group collapse badge "+8 blocks" on section
+    - Show sections and blocks → collapse badge hidden, all 8 blocks visible individually
+    - Show sections only → only section label visible
     - Hover block group badge → popover lists each block ref with type + ref value
-    - Section pill itself is never collapsed (spec §12.4)
+    - Section pill itself is never collapsed
 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SDT v2.4.0 — Block-bearing dense fixture</title>
+  <title>StadiaRef — Block-bearing dense fixture</title>
   <style>
     body { font-family: sans-serif; margin: 0; }
     [data-ref] { position: relative; padding: 12px; }
@@ -24,39 +24,40 @@
   </style>
 </head>
 <body>
-  <!-- Section: hf-services — 8 card blocks (> 6, triggers collapse in All mode) -->
-  <section class="section clearfix" data-ref="hf-services">
+  <!-- Section: home-services — 8 card blocks (> 6, triggers collapse in All mode) -->
+  <section class="section clearfix" data-ref="home-services">
 
-    <div class="block" data-ref="hf-services-card-01">
-      <h3 class="element" data-ref="hf-services-heading-01-01-card">Service 1</h3>
+    <div class="block" data-ref="home-services-card-01">
+      <h3 class="element" data-ref="home-services-heading-01-01-card">Service 1</h3>
     </div>
-    <div class="block" data-ref="hf-services-card-02">
-      <h3 class="element" data-ref="hf-services-heading-02-01-card">Service 2</h3>
+    <div class="block" data-ref="home-services-card-02">
+      <h3 class="element" data-ref="home-services-heading-02-01-card">Service 2</h3>
     </div>
-    <div class="block" data-ref="hf-services-card-03">
-      <h3 class="element" data-ref="hf-services-heading-03-01-card">Service 3</h3>
+    <div class="block" data-ref="home-services-card-03">
+      <h3 class="element" data-ref="home-services-heading-03-01-card">Service 3</h3>
     </div>
-    <div class="block" data-ref="hf-services-card-04">
-      <h3 class="element" data-ref="hf-services-heading-04-01-card">Service 4</h3>
+    <div class="block" data-ref="home-services-card-04">
+      <h3 class="element" data-ref="home-services-heading-04-01-card">Service 4</h3>
     </div>
-    <div class="block" data-ref="hf-services-card-05">
-      <h3 class="element" data-ref="hf-services-heading-05-01-card">Service 5</h3>
+    <div class="block" data-ref="home-services-card-05">
+      <h3 class="element" data-ref="home-services-heading-05-01-card">Service 5</h3>
     </div>
-    <div class="block" data-ref="hf-services-card-06">
-      <h3 class="element" data-ref="hf-services-heading-06-01-card">Service 6</h3>
+    <div class="block" data-ref="home-services-card-06">
+      <h3 class="element" data-ref="home-services-heading-06-01-card">Service 6</h3>
     </div>
-    <div class="block" data-ref="hf-services-card-07">
-      <h3 class="element" data-ref="hf-services-heading-07-01-card">Service 7</h3>
+    <div class="block" data-ref="home-services-card-07">
+      <h3 class="element" data-ref="home-services-heading-07-01-card">Service 7</h3>
     </div>
-    <div class="block" data-ref="hf-services-card-08">
-      <h3 class="element" data-ref="hf-services-heading-08-01-card">Service 8</h3>
+    <div class="block" data-ref="home-services-card-08">
+      <h3 class="element" data-ref="home-services-heading-08-01-card">Service 8</h3>
     </div>
 
   </section>
 
   <script>
-    window.seguruDebugConfig = { startHidden: false, defaultMode: 2 };
+    // A page written to the Titan grammar. ?hidden starts StadiaRef hidden.
+    window.stadiarefConfig = { startHidden: /[?&]hidden\b/.test(location.search), labels: 'full', profile: 'titan' };
   </script>
-  <script src="../../../src/seguru-debug-toolbar.js"></script>
+  <script src="../../../dist/stadiaref.min.js"></script>
 </body>
 </html>

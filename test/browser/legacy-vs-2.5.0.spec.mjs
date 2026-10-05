@@ -33,13 +33,24 @@ async function stampIds(page) {
 async function load(page, url, which) {
   await stampIds(page);
   if (which === 'v250') {
-    await page.route('**/seguru-debug-toolbar.js', (r) => r.fulfill({ body: V250, contentType: 'text/javascript' }));
-  } else {
-    await page.addInitScript(() => { window.stadiarefConfig = { profile: 'titan' }; });
+    await page.route('**/stadiaref.min.js', (r) => r.fulfill({ body: V250, contentType: 'text/javascript' }));
+    // The pages use the 3.0 config name; 2.5.0 reads the same settings
+    // under its own names.
+    await page.addInitScript(() => {
+      Object.defineProperty(window, 'seguruDebugConfig', {
+        configurable: true,
+        get() {
+          const v = window.stadiarefConfig || {};
+          return { classConverter: v.classConverter ? '1' : '0', autoRef: v.autoAddress ? '1' : '0', startHidden: v.startHidden !== false };
+        },
+      });
+    });
   }
   await page.goto(url);
   // 2.5.0 mounts its host at start; 3.0 resolves `ready` and mounts on show.
   await page.waitForFunction(() => window.seguruDebugToolbar && (document.querySelector('#seguru-debug-toolbar-host') || window.seguruDebugToolbar.ready));
+  // 2.5.0 classified with the Titan grammar.
+  if (which !== 'v250') await page.evaluate(() => window.stadiaref.setProfile('titan'));
   await page.evaluate(() => { window.seguruDebugToolbar.show(); window.seguruDebugToolbar.setState(2); });
 }
 

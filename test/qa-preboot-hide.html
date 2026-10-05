@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SDT QA — pre-boot hide()</title>
+  <title>StadiaRef QA — pre-boot hide()</title>
 </head>
 <body style="font-family:system-ui;padding:40px;">
   <h1>Pre-boot hide() test</h1>
@@ -49,7 +49,8 @@
     window.seguruDebugToolbar synchronously, so we can call it on the next line.
     The init() runs on DOMContentLoaded later — the hide() should be applied then.
   -->
-  <script src="../src/seguru-debug-toolbar.js"></script>
+  <!-- This page uses the 2.x names on purpose: it checks they still work. -->
+  <script src="../dist/stadiaref.min.js"></script>
   <script>
     if (window.seguruDebugToolbar) {
       window.QA.preBootApiPresent = true;

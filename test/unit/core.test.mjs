@@ -153,7 +153,7 @@ describe('titan profile', () => {
 
   test('parse', () => {
     assert.deepEqual(parse('home-hero-card-01', { profile: 'titan' }).parts, { tier: 'block', prefix: 'home-hero', blockType: 'card', number: '01' });
-    assert.deepEqual(parse('mpt-v2-hero-heading-01-01-primary', { profile: 'titan' }).parts, { tier: 'element', prefix: 'mpt-v2-hero', element: 'heading', number: '01', instance: '01', role: 'primary' });
+    assert.deepEqual(parse('team-v2-hero-heading-01-01-primary', { profile: 'titan' }).parts, { tier: 'element', prefix: 'team-v2-hero', element: 'heading', number: '01', instance: '01', role: 'primary' });
     assert.deepEqual(parse('home-hero', { profile: 'titan' }).parts, { tier: 'section', segments: ['home', 'hero'] });
     assert.equal(parse('home-01', { profile: 'titan' }).parts, null);
   });

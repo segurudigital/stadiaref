@@ -1,42 +1,42 @@
 {
   "_note": "Classification of every data-ref in each fixture as produced by the 2.5.0 classifyDataRef(). Generated from the v2.5.0 code; the titan profile must keep reproducing it.",
   "block-bearing-dense": [
-    ["hf-services", "section"],
-    ["hf-services-card-01", "block"], ["hf-services-heading-01-01-card", "element"],
-    ["hf-services-card-02", "block"], ["hf-services-heading-02-01-card", "element"],
-    ["hf-services-card-03", "block"], ["hf-services-heading-03-01-card", "element"],
-    ["hf-services-card-04", "block"], ["hf-services-heading-04-01-card", "element"],
-    ["hf-services-card-05", "block"], ["hf-services-heading-05-01-card", "element"],
-    ["hf-services-card-06", "block"], ["hf-services-heading-06-01-card", "element"],
-    ["hf-services-card-07", "block"], ["hf-services-heading-07-01-card", "element"],
-    ["hf-services-card-08", "block"], ["hf-services-heading-08-01-card", "element"]
+    ["home-services", "section"],
+    ["home-services-card-01", "block"], ["home-services-heading-01-01-card", "element"],
+    ["home-services-card-02", "block"], ["home-services-heading-02-01-card", "element"],
+    ["home-services-card-03", "block"], ["home-services-heading-03-01-card", "element"],
+    ["home-services-card-04", "block"], ["home-services-heading-04-01-card", "element"],
+    ["home-services-card-05", "block"], ["home-services-heading-05-01-card", "element"],
+    ["home-services-card-06", "block"], ["home-services-heading-06-01-card", "element"],
+    ["home-services-card-07", "block"], ["home-services-heading-07-01-card", "element"],
+    ["home-services-card-08", "block"], ["home-services-heading-08-01-card", "element"]
   ],
   "block-bearing-small": [
-    ["hf-hero", "section"],
-    ["hf-hero-card-01", "block"], ["hf-hero-heading-01-01-card", "element"], ["hf-hero-text-01-01-body", "element"], ["hf-hero-cta-01-01-primary", "element"],
-    ["hf-hero-card-02", "block"], ["hf-hero-heading-02-01-card", "element"], ["hf-hero-text-02-01-body", "element"],
-    ["hf-hero-card-03", "block"], ["hf-hero-heading-03-01-card", "element"], ["hf-hero-image-03-01-card", "element"]
+    ["home-hero", "section"],
+    ["home-hero-card-01", "block"], ["home-hero-heading-01-01-card", "element"], ["home-hero-text-01-01-body", "element"], ["home-hero-cta-01-01-primary", "element"],
+    ["home-hero-card-02", "block"], ["home-hero-heading-02-01-card", "element"], ["home-hero-text-02-01-body", "element"],
+    ["home-hero-card-03", "block"], ["home-hero-heading-03-01-card", "element"], ["home-hero-image-03-01-card", "element"]
   ],
   "mixed": [
-    ["hf-header", "section"], ["hf-header-link-01-01-nav", "element"], ["hf-header-link-02-01-nav", "element"], ["hf-header-cta-01-01-primary", "element"],
-    ["hf-hero", "section"], ["hf-hero-heading-01-01-primary", "element"], ["hf-hero-text-01-01-body", "element"], ["hf-hero-cta-01-01-primary", "element"], ["hf-hero-image-01-01-hero", "element"],
-    ["hf-services", "section"],
-    ["hf-services-card-01", "block"], ["hf-services-heading-01-01-card", "element"],
-    ["hf-services-card-02", "block"], ["hf-services-heading-02-01-card", "element"],
-    ["hf-services-card-03", "block"], ["hf-services-heading-03-01-card", "element"],
-    ["hf-services-card-04", "block"], ["hf-services-heading-04-01-card", "element"],
-    ["hf-services-card-05", "block"], ["hf-services-heading-05-01-card", "element"],
-    ["hf-services-card-06", "block"], ["hf-services-heading-06-01-card", "element"],
-    ["hf-services-card-07", "block"], ["hf-services-heading-07-01-card", "element"],
-    ["hf-services-card-08", "block"], ["hf-services-heading-08-01-card", "element"],
-    ["hf-about", "section"],
-    ["hf-about-panel-01", "block"], ["hf-about-heading-01-01-panel", "element"], ["hf-about-text-01-01-body", "element"],
-    ["hf-about-panel-02", "block"], ["hf-about-heading-02-01-panel", "element"],
-    ["hf-about-panel-03", "block"], ["hf-about-heading-03-01-panel", "element"],
-    ["mpt-v2-hero-wrapper-01-01-hero", "element"], ["mpt-v2-hero-heading-01-01-primary", "element"], ["mpt-v2-hero-text-01-01-body", "element"]
+    ["home-header", "section"], ["home-header-link-01-01-nav", "element"], ["home-header-link-02-01-nav", "element"], ["home-header-cta-01-01-primary", "element"],
+    ["home-hero", "section"], ["home-hero-heading-01-01-primary", "element"], ["home-hero-text-01-01-body", "element"], ["home-hero-cta-01-01-primary", "element"], ["home-hero-image-01-01-hero", "element"],
+    ["home-services", "section"],
+    ["home-services-card-01", "block"], ["home-services-heading-01-01-card", "element"],
+    ["home-services-card-02", "block"], ["home-services-heading-02-01-card", "element"],
+    ["home-services-card-03", "block"], ["home-services-heading-03-01-card", "element"],
+    ["home-services-card-04", "block"], ["home-services-heading-04-01-card", "element"],
+    ["home-services-card-05", "block"], ["home-services-heading-05-01-card", "element"],
+    ["home-services-card-06", "block"], ["home-services-heading-06-01-card", "element"],
+    ["home-services-card-07", "block"], ["home-services-heading-07-01-card", "element"],
+    ["home-services-card-08", "block"], ["home-services-heading-08-01-card", "element"],
+    ["home-about", "section"],
+    ["home-about-panel-01", "block"], ["home-about-heading-01-01-panel", "element"], ["home-about-text-01-01-body", "element"],
+    ["home-about-panel-02", "block"], ["home-about-heading-02-01-panel", "element"],
+    ["home-about-panel-03", "block"], ["home-about-heading-03-01-panel", "element"],
+    ["team-v2-hero-wrapper-01-01-hero", "element"], ["team-v2-hero-heading-01-01-primary", "element"], ["team-v2-hero-text-01-01-body", "element"]
   ],
   "non-block-bearing": [
-    ["hf-header", "section"], ["hf-header-heading-01-01-primary", "element"], ["hf-header-cta-01-01-primary", "element"],
-    ["hf-hero", "section"], ["hf-hero-heading-01-01-hero", "element"], ["hf-hero-text-01-01-body", "element"], ["hf-hero-image-01-01-hero", "element"]
+    ["home-header", "section"], ["home-header-heading-01-01-primary", "element"], ["home-header-cta-01-01-primary", "element"],
+    ["home-hero", "section"], ["home-hero-heading-01-01-hero", "element"], ["home-hero-text-01-01-body", "element"], ["home-hero-image-01-01-hero", "element"]
   ]
 }

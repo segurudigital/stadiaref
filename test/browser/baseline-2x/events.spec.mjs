@@ -123,10 +123,10 @@ test('dataref-click from a block-group popover row', async ({ page, context }) =
   await page.locator('.stadiaref-block-group-badge').first().hover();
   await page.locator('.stadiaref-block-group-item').nth(2).click();
   const [click] = await eventsSoon(page, 'dataref-click');
-  expect(click.detail.dataRef).toBe('hf-services-card-03');
-  expect(click.detail.element.ref).toBe('hf-services-card-03');
+  expect(click.detail.dataRef).toBe('home-services-card-03');
+  expect(click.detail.element.ref).toBe('home-services-card-03');
   expect(click.detail.current.cls).toBe('stadiaref-block-group-item');
-  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe('hf-services-card-03');
+  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe('home-services-card-03');
 });
 
 test('dataref-click from a "+N" cluster popover row', async ({ page, context }) => {
@@ -148,16 +148,16 @@ test('hovering a label opens the address chain; a chain row click emits dataref-
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, '/test/fixtures/v5-data-ref/block-bearing-small.html');
   await page.evaluate(() => window.seguruDebugToolbar.show());
-  await page.locator('[data-ref="hf-hero-card-02"] > .stadiaref-ref-full-label').hover();
+  await page.locator('[data-ref="home-hero-card-02"] > .stadiaref-ref-full-label').hover();
   const tree = shadow(page, '.stadiaref-active-ref-tree');
   await expect(tree).toHaveClass(/stadiaref-active-ref-tree--open/);
-  await expect(shadow(page, '.stadiaref-active-ref-tree__row-ref')).toHaveText(['hf-hero', 'hf-hero-card-02']);
+  await expect(shadow(page, '.stadiaref-active-ref-tree__row-ref')).toHaveText(['home-hero', 'home-hero-card-02']);
   await clearEvents(page);
   // Click the first (section) row directly; moving the pointer there would close the chain.
   await page.evaluate(() => document.getElementById('stadiaref-host').shadowRoot.querySelector('.stadiaref-active-ref-tree__row').click());
   const [click] = await eventsSoon(page, 'dataref-click');
-  expect(click.detail.dataRef).toBe('hf-hero');
-  expect(click.detail.element.ref).toBe('hf-hero');
+  expect(click.detail.dataRef).toBe('home-hero');
+  expect(click.detail.element.ref).toBe('home-hero');
   // 2.5.0 captured `current` from a loop `var`, so it was always the last
   // row of the chain. Fixed in 3.0: it is the row that was clicked.
   expect(click.detail.current.cls).toBe('stadiaref-active-ref-tree__row');

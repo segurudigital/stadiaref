@@ -8,8 +8,8 @@ const { harness, open } = makeHelpers(NEW);
 const PAGES = [
   harness({ body: 'basic' }),
   harness({ body: 'nesting', page: { autoAddress: true, outline: 'block', tiers: ['section'], labels: 'icons' } }),
-  '/test/demo.html',
-  '/test/demo.html?ar=1',
+  '/test/demo.html?hidden',
+  '/test/demo.html?ar=1&hidden',
   '/test/fixtures/v5-data-ref/mixed.html?hidden',
 ];
 
@@ -33,7 +33,7 @@ for (const url of PAGES) {
     const ctxA = await browser.newContext();
     const without = await ctxA.newPage();
     await without.route(/\/(seguru-debug-toolbar|stadiaref|overlay)(\.min)?\.js$/, (r) => r.fulfill({ body: '', contentType: 'text/javascript' }));
-    // The mixed fixture starts visible; keep it hidden for this test.
+    // The demo and fixtures start visible; ?hidden (above) keeps them hidden.
     await without.addInitScript(() => { window.stadiarefConfig = Object.assign({ startHidden: true }, window.stadiarefConfig || {}); });
     await without.goto(url);
     const a = await domAfterLoad(without);

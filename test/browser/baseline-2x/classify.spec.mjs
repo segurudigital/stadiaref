@@ -75,9 +75,9 @@ test('mixed fixture: level filter hides by stamped class', async ({ page }) => {
 test('mixed fixture: the void-hosted image label is filtered like any other (2.5.0 bug, fixed)', async ({ page }) => {
   await open(page, '/test/fixtures/v5-data-ref/mixed.html');
   await page.evaluate(() => { window.seguruDebugToolbar.show(); window.seguruDebugToolbar.setLevelFilter('section'); });
-  // hf-hero-image-01-01-hero escaped the 2.5.0 filter from its void host;
+  // home-hero-image-01-01-hero escaped the 2.5.0 filter from its void host;
   // since Show (stage 4) each label node carries its tier, so it is hidden.
-  expect(await visibleFullLabelRefs(page)).toEqual(['hf-about', 'hf-header', 'hf-hero', 'hf-services']);
+  expect(await visibleFullLabelRefs(page)).toEqual(['home-about', 'home-header', 'home-hero', 'home-services']);
 });
 
 test('dense fixture: block-group collapse badge in All, gone in Sec+Blk', async ({ page }) => {
@@ -90,8 +90,8 @@ test('dense fixture: block-group collapse badge in All, gone in Sec+Blk', async 
 });
 
 // Measured on 2.5.0. "all" is 38 refs less the 16 collapsed into the
-// hf-services "+8" badge (8 cards and their 8 headings). "sections" is 6, not
-// 5: the <img> hf-hero-image-01-01-hero mounts its labels in a sibling void
+// home-services "+8" badge (8 cards and their 8 headings). "sections" is 6, not
+// 5: the <img> home-hero-image-01-01-hero mounts its labels in a sibling void
 // host, which the level-filter CSS (a descendant selector) doesn't reach.
 // That is a 2.5.0 bug, recorded in TASKS.md; the baseline pins the code.
 // Since stage 4 the image label is filtered too. "all" counts labels folded

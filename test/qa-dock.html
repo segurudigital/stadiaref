@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SDT QA — dock corners</title>
+  <title>StadiaRef QA — dock corners</title>
 </head>
 <body style="font-family:system-ui;padding:40px;min-height:100vh;background:#F9FAFB;">
   <h1>Dock corner test</h1>
@@ -23,6 +23,7 @@
       window.QA.dockResolved = window.seguruDebugToolbar.getDock();
     });
   </script>
-  <script src="../src/seguru-debug-toolbar.js"></script>
+  <!-- This page uses the 2.x names on purpose: it checks they still work. -->
+  <script src="../dist/stadiaref.min.js"></script>
 </body>
 </html>

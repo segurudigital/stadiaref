@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Seguru Debug Toolbar — Demo</title>
+  <title>StadiaRef — Demo</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1F2937; line-height: 1.6; }
@@ -31,15 +31,14 @@
 
   <!-- Demo controls to toggle features -->
   <div class="demo-controls">
-    <h3>Feature Flags</h3>
-    <label><input type="checkbox" id="toggle-cc"> Class Converter</label>
-    <label><input type="checkbox" id="toggle-ar"> Auto-Ref</label>
+    <h3>Settings</h3>
+    <label><input type="checkbox" id="toggle-cc"> Class converter</label>
+    <label><input type="checkbox" id="toggle-ar"> Auto-address</label>
     <hr class="demo-sep">
-    <div>Keys: <strong>L</strong> labels, <strong>T</strong> target, <strong>O</strong> outline, <strong>D</strong> hide, <strong>Esc</strong> close all</div>
-    <div>Use <strong>Outline</strong> for section and block boundaries.</div>
-    <div>Use the toolbar <strong>Tree</strong> button to inspect the label map.</div>
+    <div>Keys: <strong>D</strong> show or hide, <strong>L</strong> labels, <strong>1 2 3</strong> sections, blocks, elements, <strong>P</strong> Pick, <strong>/</strong> Find, <strong>O</strong> outline, <strong>Esc</strong> close</div>
+    <div>Click any label to copy its address.</div>
     <hr class="demo-sep">
-    <h3 style="margin-top:4px">v2.3 API smoke tests</h3>
+    <h3 style="margin-top:4px">API</h3>
     <div style="display:flex;flex-wrap:wrap;gap:4px;">
       <button class="demo-btn" data-act="hide">hide()</button>
       <button class="demo-btn" data-act="show">show()</button>
@@ -50,7 +49,9 @@
       <button class="demo-btn" data-act="user-set">setUser()</button>
       <button class="demo-btn" data-act="user-clear">clear user</button>
       <button class="demo-btn" data-act="dock-cycle">cycle dock</button>
-      <button class="demo-btn" data-act="hotkey-z">hotkey:Z</button>
+      <button class="demo-btn" data-act="pick">pick()</button>
+      <button class="demo-btn" data-act="find">find('home')</button>
+      <button class="demo-btn" data-act="key-z">toggle key: Z</button>
     </div>
     <div id="event-log" style="margin-top:6px;max-height:120px;overflow:auto;font-family:ui-monospace,monospace;font-size:10px;color:#374151;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:3px;padding:4px;"></div>
     <hr class="demo-sep">
@@ -63,55 +64,52 @@
 
   <!-- ─── Standard: explicit data-ref attributes ─── -->
   <section class="hero" data-ref="home-01-hero-standard">
-    <h1>Seguru Debug Toolbar Demo</h1>
-    <p>This section has an explicit <code>data-ref</code> attribute. It always shows up regardless of feature flags.</p>
+    <h1>StadiaRef demo</h1>
+    <p>An address for every part of the screen. This section has a <code>data-ref</code> attribute, so it always has a label. Press <strong>D</strong> to hide or show StadiaRef.</p>
   </section>
 
   <section class="features" data-ref="home-02-features-grid">
-    <h2>Features (explicit data-ref)</h2>
-    <p>Press L to cycle through Icons, Off, and Full modes. Click any label to copy the data-ref value.</p>
+    <h2>Features</h2>
+    <p>Press L to cycle the labels through Off, Icons and Full. Click any label to copy its address. Press P and point at anything to see its address, or / to find one.</p>
   </section>
 
   <!-- ─── Class Converter test: dataref- CSS class, no data-ref attr ─── -->
   <section class="class-converter-section dataref-home-03-testimonials">
     <h2>Testimonials (class converter)</h2>
-    <p>This section has the CSS class <code>dataref-home-03-testimonials</code> but no <code>data-ref</code> attribute. When the class converter is on, the toolbar converts the class to <code>data-ref="home-03-testimonials"</code>.</p>
+    <p>This section has the CSS class <code>dataref-home-03-testimonials</code> but no <code>data-ref</code> attribute. With the class converter on, StadiaRef turns the class into <code>data-ref="home-03-testimonials"</code>.</p>
   </section>
 
-  <!-- ─── Auto-Ref test: plain section with no data-ref and no dataref- class ─── -->
+  <!-- ─── Auto-address: a plain section with no data-ref and no dataref- class ─── -->
   <section class="auto-ref-section">
-    <h2>CTA (auto-ref candidate)</h2>
-    <p>This section has no <code>data-ref</code> attribute and no <code>dataref-</code> class. When auto-ref is on, it should get an auto-generated label based on the page slug and position.</p>
+    <h2>Offer (no address)</h2>
+    <p>This section has no <code>data-ref</code> attribute and no <code>dataref-</code> class. With auto-address on, it gets a temporary address from the page slug and its position, shown with a dashed AUTO label.</p>
   </section>
 
-  <!-- ─── Mixed: explicit data-ref + auto-ref should skip it ─── -->
+  <!-- ─── An authored address: auto-address leaves it alone ─── -->
   <section class="cta" data-ref="home-07-cta-banner">
-    <h2>Call to Action (explicit — auto-ref skips)</h2>
-    <p>This section has an explicit <code>data-ref</code>. Auto-ref should count it in the sequence but not overwrite the value.</p>
+    <h2>Call to action</h2>
+    <p>This section has its own <code>data-ref</code>. Auto-address never changes an authored address.</p>
   </section>
 
   <footer class="footer" data-ref="home-08-footer">
-    <p>Footer section. Toggle dark mode with the button in the top-right corner to test the toolbar's dark theme.</p>
+    <p>Footer. The labels on a dark background switch to their dark versions. The Dark mode button switches the toolbar's theme.</p>
   </footer>
 
   <script>
-    // Read feature flag checkboxes and set seguruDebugConfig before the toolbar loads.
-    // Only set keys we want to override — let SDT use its own defaults otherwise.
+    // Settings from the checkboxes (kept in the URL: ?cc=1, ?ar=1). The demo
+    // starts with the toolbar showing; ?hidden starts it hidden.
     (function () {
       var params = new URLSearchParams(window.location.search);
       var ccParam = params.get('cc');  // null | '0' | '1'
       var arParam = params.get('ar');  // null | '0' | '1'
 
-      window.seguruDebugConfig = {};
-      if (ccParam !== null) window.seguruDebugConfig.classConverter = ccParam === '1' ? '1' : '0';
-      if (arParam !== null) window.seguruDebugConfig.autoRef        = arParam === '1' ? '1' : '0';
+      window.stadiarefConfig = { startHidden: params.has('hidden') };
+      if (ccParam !== null) window.stadiarefConfig.classConverter = ccParam === '1';
+      if (arParam !== null) window.stadiarefConfig.autoAddress = arParam === '1';
 
-      // Sync checkboxes after DOM loads. With no URL param, the checkbox
-      // reflects the SDT default (classConverter=off, autoRef=off as of v2.4.1).
       document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('toggle-cc').checked = ccParam === '1';
-        document.getElementById('toggle-ar').checked = arParam === null ? false : (arParam === '1');
-
+        document.getElementById('toggle-ar').checked = arParam === '1';
         document.getElementById('toggle-cc').addEventListener('change', function () {
           params.set('cc', this.checked ? '1' : '0');
           window.location.search = params.toString();
@@ -123,25 +121,22 @@
       });
     })();
   </script>
-  <script src="../src/seguru-debug-toolbar.js"></script>
+  <!-- Run `npm run build` first when opening this file directly. -->
+  <script src="../dist/stadiaref.min.js"></script>
 
-  <!-- v2.3 API smoke-test wiring -->
   <script>
     (function () {
       var DOCKS = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
       var dockIdx = 0;
 
-      // Top-right "Dark mode" button — drives SDT directly via setTheme() and
-      // also flips html.dark so any host-page styles tied to it follow. Driving
-      // SDT explicitly means the toggle works even if a previous session
-      // persisted a pinned theme to localStorage.
+      // The "Dark mode" button drives the theme with setTheme() and flips
+      // html.dark so the page's own styles follow.
       document.addEventListener('DOMContentLoaded', function () {
         var btn = document.getElementById('toggle-dark-btn');
         if (!btn) return;
         function applyDark(isDark) {
           document.documentElement.classList.toggle('dark', isDark);
-          var sdt = window.seguruDebugToolbar;
-          if (sdt) sdt.setTheme(isDark ? 'dark' : 'light');
+          if (window.stadiaref) window.stadiaref.setTheme(isDark ? 'dark' : 'light');
           btn.textContent = isDark ? 'Light mode' : 'Dark mode';
         }
         btn.addEventListener('click', function () {
@@ -158,48 +153,46 @@
         pane.scrollTop = pane.scrollHeight;
       }
 
-      // Bind action buttons
       document.addEventListener('click', function (e) {
         var btn = e.target.closest && e.target.closest('.demo-btn');
         if (!btn) return;
-        var sdt = window.seguruDebugToolbar;
-        if (!sdt) { log('SDT not ready'); return; }
-        var act = btn.getAttribute('data-act');
-        switch (act) {
-          case 'hide':         sdt.hide(); break;
-          case 'show':         sdt.show(); break;
-          case 'toggle':       sdt.toggle(); break;
-          case 'theme-light':  sdt.setTheme('light'); log('theme: ' + sdt.getTheme()); break;
-          case 'theme-dark':   sdt.setTheme('dark');  log('theme: ' + sdt.getTheme()); break;
-          case 'theme-auto':   sdt.setTheme('auto');  log('theme: ' + sdt.getTheme()); break;
-          case 'user-set':     sdt.setUser({ name: 'Jane Reviewer', role: 'reviewer', id: 'jr' }); break;
-          case 'user-clear':   sdt.setUser(null); break;
+        var api = window.stadiaref;
+        if (!api) { log('StadiaRef is not loaded'); return; }
+        switch (btn.getAttribute('data-act')) {
+          case 'hide':        api.hide(); break;
+          case 'show':        api.show(); break;
+          case 'toggle':      api.toggle(); break;
+          case 'theme-light': api.setTheme('light'); break;
+          case 'theme-dark':  api.setTheme('dark'); break;
+          case 'theme-auto':  api.setTheme('auto'); break;
+          case 'user-set':    api.setUser({ name: 'Jane Reviewer', role: 'reviewer', id: 'jr' }); break;
+          case 'user-clear':  api.setUser(null); break;
+          case 'pick':        api.pick(); break;
+          case 'find':        log('find: ' + api.find('home').join(', ')); break;
           case 'dock-cycle':
             dockIdx = (dockIdx + 1) % DOCKS.length;
-            sdt.setDock(DOCKS[dockIdx]);
+            api.setDock(DOCKS[dockIdx]);
             log('dock: ' + DOCKS[dockIdx]);
             break;
-          case 'hotkey-z':
-            sdt.setHotkey('Z');
-            log('hotkey rebound to Z');
+          case 'key-z':
+            api.setKeys({ toggle: 'Z' });
+            log('toggle key is now Z');
             break;
         }
       });
 
-      // Event log — captures every public sdt:* event
-      ['ready', 'show', 'hide', 'theme-change', 'user-change', 'dataref-click', 'dataref-hover'].forEach(function (name) {
-        window.addEventListener('sdt:' + name, function (e) {
-          var detail = e.detail || {};
-          var summary;
-          if (name === 'dataref-click' || name === 'dataref-hover') {
-            summary = name + ' → ' + detail.dataRef;
-          } else if (name === 'theme-change') {
-            summary = name + ' → ' + detail.theme + ' (mode=' + detail.mode + ')';
-          } else if (name === 'user-change') {
-            summary = name + ' → ' + (detail.user ? detail.user.name : 'null');
-          } else {
-            summary = name;
-          }
+      // Event log: the public stadiaref:* events.
+      ['ready', 'show', 'hide', 'theme-change', 'user-change', 'labels-change', 'tiers-change', 'outline-change', 'address-click', 'address-hover'].forEach(function (name) {
+        window.addEventListener('stadiaref:' + name, function (e) {
+          var d = e.detail || {};
+          var summary = name;
+          if (name === 'address-click') summary += ' → ' + d.address + ' (' + d.tier + ', ' + d.source + (d.copied ? ', copied' : '') + ')';
+          else if (name === 'address-hover') summary += ' → ' + d.address;
+          else if (name === 'theme-change') summary += ' → ' + d.theme + ' (' + d.mode + ')';
+          else if (name === 'user-change') summary += ' → ' + (d.user ? d.user.name : 'none');
+          else if (name === 'labels-change') summary += ' → ' + d.labels;
+          else if (name === 'tiers-change') summary += ' → ' + d.tiers.join(', ');
+          else if (name === 'outline-change') summary += ' → ' + d.outline;
           log(summary);
         });
       });

@@ -1,7 +1,7 @@
 // titan: the Titan Foundation grammar (data-ref v5). The tier is read from
 // the address itself. This is the 2.x classifyDataRef(), unchanged.
 //
-// The page part may contain hyphens (e.g. mpt-v2, mpt-def-110), so segment
+// The page part may contain hyphens (e.g. team-v2, plan-def-110), so segment
 // count alone can't decide the tier. The tail segments are fixed:
 //   Element: segs[-4] ∈ ELEMENT_NOUNS, segs[-3] NN, segs[-2] NN (instance),
 //            segs[-1] non-numeric (role), at least 6 segments
