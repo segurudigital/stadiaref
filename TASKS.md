@@ -1,7 +1,7 @@
 # Tasks
 
 **Project:** Seguru Debug Toolbar
-**Current version:** 2.4.1
+**Current version:** 2.5.0
 
 > **How this file works**
 > TASKS.md is the canonical list of all open and recently-completed work, organised as **Sprints → Phases → subtasks**. Items are ticked off as they ship. At session end, completed items move from this file to **CHANGELOG.md** (the user-facing record) — only the most recent handoff note stays here as a starting point for the next session. **ROADMAP.md** is the forward view. Agent todo trackers (`TodoWrite`) mirror this file for the active session — they're never the source of truth on their own. All three docs (TASKS, CHANGELOG, ROADMAP) must be in sync at the start and end of every session.
@@ -10,33 +10,30 @@
 
 ## Handoff notes
 
-**Last session:** 2026-05-23 (v2.4.1 QA follow-up)
+**Last session:** 2026-10-05 (v2.5.0 close-out)
 
 **What was done:**
 
-- QA focused on the `CHANGELOG.md` v2.4.0/v2.4.1 work: v5 grammar classifier, Level filter, active-ref tree, block group collapse, isolated Target depths, late rescan, and auto-ref default changes.
-- Fixed auto-ref generated nodes being stamped as `sdt-ref-class-section` by adding an internal `data-sdt-auto-level` stamp and clearing stale `sdt-ref-class-*` classes on depth changes.
-- Fixed v5 fixture pages so direct-open QA loads `src/seguru-debug-toolbar.js` and applies `seguruDebugConfig` before the toolbar script.
-- Updated `test/demo.html` so the Auto-ref checkbox reflects the v2.4.1 default-off runtime state.
-- Made toolbar chrome wrap within narrow viewports after the Level control addition.
-- Synced version metadata to 2.4.1 across package, source, WordPress plugin files, AGENTS.md, README, TASKS, ROADMAP, and CHANGELOG.
+- Committed the v2.5.0 source that had been sitting uncommitted since 2026-09-02: void-element label hosts, so refs on `<img>`, `<video>`, `<input>`, `<iframe>` and `<canvas>` are visible. See `CHANGELOG.md [2.5.0]`.
+- Finished the version bump. `package.json` and the source were already at 2.5.0; both WordPress plugin files were still at 2.4.1 and are now 2.5.0 (`Version:` header and `SDT_VERSION`).
+- Rebuilt `dist/seguru-debug-toolbar.min.js` (76,037 bytes) and `dist/seguru-debug-toolbar-wp-v2.5.0.zip`.
 
 **Where things were left:**
 
-- `node --check src/seguru-debug-toolbar.js`, `npm run build`, `npm run build:wp`, `git diff --check`, and the local Playwright QA harness all pass.
-- Build outputs are present: `dist/seguru-debug-toolbar.min.js` (~72.8 KB minified) and `dist/seguru-debug-toolbar-wp-v2.4.1.zip` (~32 KB compressed).
-- Changes are not committed or pushed yet.
+- `node --check src/seguru-debug-toolbar.js`, `npm run build` and `npm run build:wp` pass. The Playwright QA harness was not re-run for this release.
+- Committed to `main`. Not pushed, not tagged, not released.
 
 **Next session should:**
 
-1. Review the v2.4.1 QA fix diff.
-2. Commit/push or cut the GitHub release if this is ready to ship.
+1. Push `main` and publish GitHub release `v2.5.0`. The release workflow attaches the assets and publishes to npm.
+2. Confirm `@segurudigital/seguru-debug-toolbar@2.5.0` is on npm. The publish job is `continue-on-error`, so a bad token fails quietly.
+3. Start 3.0.0, where the project is renamed StadiaRef.
 
 ---
 
 ## Currently in flight
 
-*v2.4.1 QA fixes completed and moved to handoff notes above + CHANGELOG.md [2.4.1]. No open sprint; next sprint not yet scoped.*
+*v2.5.0 committed, release pending. Next sprint is 3.0.0.*
 
 ---
 

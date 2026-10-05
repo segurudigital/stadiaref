@@ -4,6 +4,16 @@
 
 ---
 
+## v2.5.0 — Released
+
+**Goal:** Make refs on images and other void or replaced elements visible. See `CHANGELOG.md [2.5.0]` for shipped details.
+
+- [x] **Void-element label hosts** — labels for `<img>`, `<video>`, `<input>`, `<iframe>`, `<canvas>` and similar tags mount in a sibling host positioned over the element, because those tags never render appended children.
+- [x] **`syncAllVoidHosts()`** — re-measures every host on resize and load.
+- [x] **Packaging** — version metadata synced to 2.5.0 across package, source and both WordPress plugin files; dist and WP zip rebuilt.
+
+---
+
 ## v2.4.1 — Released (QA follow-up)
 
 **Goal:** Stabilise the v2.4 data-ref v5.0 UI after the QA pass: keep isolated Target depths and the new opt-in auto-ref default, while fixing auto-ref Level classification, direct-open fixtures, the demo checkbox state, mobile toolbar wrapping, and release metadata. See `CHANGELOG.md [2.4.1]` for shipped details.

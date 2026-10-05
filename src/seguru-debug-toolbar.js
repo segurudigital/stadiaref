@@ -42,7 +42,7 @@
   // Single source of truth for the bundled version string. Exposed via
   // `seguruDebugToolbar.version` and emitted in the `sdt:ready` event detail.
   // Kept in sync with package.json on release.
-  var SDT_VERSION = '2.4.1';
+  var SDT_VERSION = '2.5.0';
 
   // ─── Configuration ──────────────────────────────────────────
   var ACCENT = '234, 88, 12';        // orange — functional UI accent
@@ -483,6 +483,20 @@
     '.sdt-ref-full-label.sdt-on-dark:hover {',
     '  background: #fff;',
     '  color: #EA580C;',
+    '}',
+
+    // Void-element host: <img>, <video>, <input> etc. cannot render children, so their
+    // label nodes mount in a sibling span that mirrors the element's box (v2.5.0).
+    '.sdt-ref-void-host {',
+    '  all: initial;',
+    '  box-sizing: border-box;',
+    '  position: absolute;',
+    '  pointer-events: none;',
+    '  z-index: 95;',
+    '}',
+    'body.sdt-hide .sdt-ref-void-host,',
+    'body.sdt-presentation .sdt-ref-void-host {',
+    '  display: none !important;',
     '}',
 
     '.sdt-ref-link {',
@@ -2114,6 +2128,7 @@
           el.removeChild(child);
         }
       }
+      removeVoidHost(el);
       delete el[MARKER];
       delete el._sdtIcon;
       delete el._sdtLink;
@@ -2565,6 +2580,59 @@
     ownerEl._sdtClusterBadge = badge;
   }
 
+  // ─── Void-element label hosts (v2.5.0) ──────────────────────
+  // Labels are appended as children of the [data-ref] element. Void and
+  // replaced elements (<img> above all) accept appended nodes in the DOM but
+  // never render them, so image refs were labelled yet invisible. For those
+  // tags the labels mount in a sibling <span class="sdt-ref-void-host"> that
+  // is absolutely positioned over the element's box inside its parent.
+  var VOID_HOST_TAGS = { IMG: 1, VIDEO: 1, AUDIO: 1, IFRAME: 1, CANVAS: 1, INPUT: 1, SELECT: 1, TEXTAREA: 1, HR: 1, BR: 1, EMBED: 1, OBJECT: 1, svg: 1, SVG: 1 };
+
+  function needsVoidHost(el) {
+    return !!VOID_HOST_TAGS[el.tagName];
+  }
+
+  function syncVoidHost(el) {
+    var host = el._sdtHost;
+    if (!host || !host.parentNode) return;
+    host.style.left = el.offsetLeft + 'px';
+    host.style.top = el.offsetTop + 'px';
+    host.style.width = Math.max(el.offsetWidth, 20) + 'px';
+    host.style.height = Math.max(el.offsetHeight, 20) + 'px';
+  }
+
+  function syncAllVoidHosts() {
+    var hosts = document.querySelectorAll('.sdt-ref-void-host');
+    forEachNode(hosts, function (host) {
+      var owner = host._sdtOwner;
+      if (!owner || !owner.parentNode) { if (host.parentNode) host.parentNode.removeChild(host); return; }
+      syncVoidHost(owner);
+    });
+  }
+
+  function labelHostFor(el) {
+    if (!needsVoidHost(el)) return el;
+    if (el._sdtHost && el._sdtHost.parentNode) return el._sdtHost;
+    var parent = el.parentNode;
+    if (!parent || parent.nodeType !== 1) return el;
+    var host = document.createElement('span');
+    host.className = 'sdt-ref-void-host';
+    host.setAttribute('data-sdt-host-for', el.getAttribute('data-ref') || '');
+    host._sdtOwner = el;
+    var pPos = window.getComputedStyle(parent).position;
+    if (pPos === 'static') parent.style.position = 'relative';
+    parent.insertBefore(host, el.nextSibling);
+    el._sdtHost = host;
+    syncVoidHost(el);
+    return host;
+  }
+
+  function removeVoidHost(el) {
+    var host = el._sdtHost;
+    if (host && host.parentNode) host.parentNode.removeChild(host);
+    delete el._sdtHost;
+  }
+
   function injectLabels() {
     var refs = document.querySelectorAll('[data-ref]');
 
@@ -2589,8 +2657,11 @@
       var lum = getEffectiveBgLuminance(el);
       var bgClass = lum < 0.40 ? 'sdt-on-dark' : 'sdt-on-light';
 
-      var pos = window.getComputedStyle(el).position;
-      if (pos === 'static') el.style.position = 'relative';
+      var host = labelHostFor(el);
+      if (host === el) {
+        var pos = window.getComputedStyle(el).position;
+        if (pos === 'static') el.style.position = 'relative';
+      }
 
       var icon = document.createElement('span');
       icon.className = 'sdt-ref-icon ' + bgClass;
@@ -2639,10 +2710,10 @@
       var link = document.createElement('span');
       link.className = 'sdt-ref-link ' + bgClass;
 
-      el.appendChild(link);
-      el.appendChild(icon);
-      el.appendChild(tooltip);
-      el.appendChild(fullLabel);
+      host.appendChild(link);
+      host.appendChild(icon);
+      host.appendChild(tooltip);
+      host.appendChild(fullLabel);
       el._sdtIcon = icon;
       el._sdtLink = link;
       el._sdtTooltip = tooltip;
@@ -3593,8 +3664,14 @@
     });
 
     window.addEventListener('resize', function () {
+      syncAllVoidHosts();
       applyLabelVisibilityState();
       resolveLabelOverlaps();
+    });
+    // Images settle their box after load; keep the void hosts on them.
+    window.addEventListener('load', syncAllVoidHosts);
+    forEachNode(document.querySelectorAll('img'), function (img) {
+      if (!img.complete) img.addEventListener('load', function () { syncVoidHost(img); }, { once: true });
     });
 
     // Live visibility re-check. Mega menus, dropdowns, modals, and tabs flip

@@ -10,6 +10,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 
 ---
 
+## [2.5.0] — 2026-09-02
+
+### Fixed
+
+- **Image (and other void/replaced element) refs were never visible.** `injectLabels()` appended the icon, tooltip, full label and link as *children* of the `[data-ref]` element. `<img>`, `<video>`, `<input>`, `<iframe>`, `<canvas>` and friends accept appended nodes in the DOM but never render them, so every `*-image-*` ref on every screen was labelled and invisible (found on screens where photos had just been converted from CSS backgrounds to real `<img>` elements with refs and still showed nothing). Labels for those tags now mount in a sibling `<span class="sdt-ref-void-host">`, absolutely positioned over the element's box inside its parent (the parent is made `position: relative` if static). Hosts track the element on `resize`, `load` and each image's own `load`; `clearAutoRefs()` removes them; `body.sdt-hide` / `body.sdt-presentation` hide them. Labels inside the host sit at `z-index: 95` in the parent's stacking context, so a photo under a scrim still shows its ref.
+
+### Added
+
+- `syncAllVoidHosts()` re-measures every host (called on resize/load; safe to call from `lateRescan()` consumers).
+
+---
+
 ## [2.4.1] — 2026-05-23
 
 Patch release fixing three regressions introduced in v2.4.0, plus an isolated-depth feature for the Target control and a breaking change to auto-ref defaults.

@@ -1,6 +1,6 @@
 # Seguru Debug Toolbar — Agent Context
 
-**Version:** 2.4.1
+**Version:** 2.5.0
 **Repo:** https://github.com/segurudigital/seguru-debug-toolbar
 **Maintained by:** Seguru Digital (hello@seguru.digital)
 **License:** MIT
@@ -227,7 +227,7 @@ All user-facing documentation is in `docs/`. When changing behaviour, update the
 | Page builder support | `docs/page-builders.md` |
 | Visual/UI changes | `docs/DESIGN.md` |
 | Naming conventions | `docs/naming-conventions.md` |
-| Brand/colour decisions | `docs/DESIGN.md` + `Seguru-Ops/02_Playbook/Seguru-Brand-Handbook.md §10` |
+| Brand/colour decisions | `docs/DESIGN.md` + `Seguru-Ops/00_Core/Seguru/Brand/Seguru-Brand-Handbook.md §10` |
 
 ---
 

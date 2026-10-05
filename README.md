@@ -84,7 +84,7 @@ We use it for wireframe QA, copy review, client revision rounds, and debugging b
 
 ## Install
 
-Current version: **v2.4.1** — see [CHANGELOG.md](CHANGELOG.md) for release notes.
+Current version: **v2.5.0** — see [CHANGELOG.md](CHANGELOG.md) for release notes.
 
 **npm (React, Next, Vue, Svelte, any bundled app):**
 
