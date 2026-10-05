@@ -1,0 +1,23 @@
+
+
+// ─── Version ────────────────────────────────────────────────
+// Single source of truth for the bundled version string. Exposed via
+// `seguruDebugToolbar.version` and emitted in the `sdt:ready` event detail.
+// Kept in sync with package.json on release.
+export const SDT_VERSION = '2.5.0';
+
+// ─── Configuration ──────────────────────────────────────────
+export const ACCENT = '234, 88, 12';      // orange — functional UI accent
+export const ACCENT_ON_DARK = '249, 115, 22';
+export const ACCENT_HEX = '#EA580C';
+export const ACCENT_WASH = 'rgba(234, 88, 12, 0.08)';
+export const SEGURU_BLUE = '#00C0F3';     // brand primary — badge only
+export const FONT_MONO = "'SF Mono', 'Fira Code', 'Cascadia Code', monospace";
+export const FONT_UI = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+
+
+// ─── Mode + depth display labels ─────────────────────────────
+export const MODE_LABELS = { 0: 'Icons', 1: 'Off', 2: 'Full' };
+export const DEPTH_LABELS = { 'off': 'Off', 'section': 'Sections', 'block': 'Blocks', 'element': 'Elements', 'all': 'All' };
+export const OUTLINE_LABELS = { 'off': 'Off', 'section': 'Sections', 'block': 'Blocks' };
+export const LEVEL_LABELS = { 'all': 'All', 'section': 'Sections', 'section-block': 'Sec+Blk' };

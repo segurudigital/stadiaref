@@ -34,9 +34,9 @@ StadiaRef 3.0.0, built in stages. A new session starts at the first unticked sta
   - [x] Baseline tests cover every API member, every config key and script attribute, every emitted event with its detail, the D, L, T, O, F and Esc keys, `classifyDataRef()` against the v5 fixtures, label counts on `test/demo.html` in each mode, click-to-copy, `refresh()`, and `php -l` on the WordPress files
   - [x] `npm test` passes against untouched 2.5.0 source
   - [x] The commit contains only tests, tooling, `AGENTS.md` and `TASKS.md`
-- [ ] **Stage 1 — Modules, no behaviour change.** One state object, one `boot()`, nothing touches the DOM at import.
-  - [ ] Every baseline test passes unchanged
-  - [ ] `dist/` behaves identically on `test/demo.html` and the four v5 fixtures in a real browser
+- [x] **Stage 1 — Modules, no behaviour change.** One state object, one `boot()`, nothing touches the DOM at import.
+  - [x] Every baseline test passes unchanged
+  - [x] `dist/` behaves identically on `test/demo.html` and the four v5 fixtures in a real browser (96 DOM snapshots, page and shadow root, identical to the 2.5.0 release bundle across 16 API states)
 - [ ] **Stage 2 — The rename, with aliases.**
   - [ ] All tests pass under the new names and the old ones
   - [ ] A page using only 2.x names (`window.seguruDebugConfig`, `seguruDebugToolbar.setDepth()`, `sdt:dataref-click`) works with one console notice

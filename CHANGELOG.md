@@ -8,6 +8,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 
 ## [Unreleased]
 
+### Changed
+
+- The source is now ES modules under `src/overlay/`, bundled by esbuild into the same single file. No behaviour change: the built overlay produces the same page and toolbar DOM as 2.5.0 on the demo page and the v5 fixtures.
+
 ---
 
 ## [2.5.0] — 2026-09-02

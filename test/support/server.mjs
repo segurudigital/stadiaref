@@ -28,7 +28,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const PORT = Number(process.env.PORT || 4173);
 const OVERLAY = process.env.OVERLAY || 'src';
 
-const SRC_ENTRY = path.join(ROOT, 'src/seguru-debug-toolbar.js');
+const SRC_ENTRY = path.join(ROOT, 'src/overlay/index.js');
 const DIST_FILE = path.join(ROOT, 'dist/seguru-debug-toolbar.min.js');
 const OVERLAY_NAMES = /\/(seguru-debug-toolbar(\.min)?\.js|overlay\.js)$/;
 
