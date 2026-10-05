@@ -30,10 +30,7 @@ export default function stadiaref(options) {
         });
         params.updateConfig({ vite: { optimizeDeps: OPTIMIZE_DEPS } });
         var root = fileURLToPath(params.config.root);
-        // Ask for the Astro host: the panel replaces the floating toolbar
-        // while Astro's Dev Toolbar is on the page.
-        var before = "var host = stadiaref[Symbol.for('stadiaref.hostMode')]; if (host) host('astro');";
-        params.injectScript('page', loaderCode(opts, root, before));
+        params.injectScript('page', loaderCode(opts, root));
       }
     }
   };

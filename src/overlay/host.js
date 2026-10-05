@@ -1,20 +1,30 @@
-import { S } from './state.js';
-
 // ─── Hosts ──────────────────────────────────────────────────
 // Normally StadiaRef draws its own floating toolbar. In Astro's Dev Toolbar
 // the controls live in a panel instead (panel.js), and the floating toolbar
-// isn't drawn. The host is decided at runtime: the Astro integration asks
-// for the Astro host, and it is used only while Astro's Dev Toolbar is on
-// the page. If the developer has turned the Dev Toolbar off, the floating
-// toolbar is drawn as usual. There is no config key for this.
+// isn't drawn. StadiaRef decides this itself, from the page: the Astro host
+// is used when Astro's Dev Toolbar is there and holds the canvas of the app
+// that the StadiaRef integration registers. Nothing in the page's code, the
+// API or the config can switch it. If the developer has turned the Dev
+// Toolbar off, or loaded StadiaRef without the integration, the floating
+// toolbar is drawn as usual.
+
+var APP_ID = 'stadiaref';
 
 function astroBar() {
   return document.querySelector('astro-dev-toolbar');
 }
 
+// The shadow root of StadiaRef's app canvas in Astro's Dev Toolbar, or null.
+export function astroCanvas() {
+  var bar = astroBar();
+  var root = bar && bar.shadowRoot;
+  var canvas = root && root.querySelector('astro-dev-toolbar-app-canvas[data-app-id="' + APP_ID + '"]');
+  return (canvas && canvas.shadowRoot) || null;
+}
+
 // True while the floating toolbar is replaced by a host's panel.
 export function toolbarHosted() {
-  return S.hostMode === 'astro' && !!astroBar();
+  return !!astroCanvas();
 }
 
 // How far Astro's dev bar reaches up from the bottom of the viewport, so the
@@ -22,16 +32,9 @@ export function toolbarHosted() {
 export function astroBarReach() {
   var el = astroBar();
   var root = el && el.shadowRoot;
-  var bar = root && (root.querySelector('#dev-bar') || root.querySelector('#dev-toolbar-root'));
+  var bar = root && root.querySelector('#dev-bar');
   if (!bar) return 0;
   var r = bar.getBoundingClientRect();
   if (!r.height) return 0;
   return Math.max(0, Math.round(window.innerHeight - r.top));
-}
-
-// Hide the floating toolbar while a host draws the controls.
-export function applyToolbarHost() {
-  if (!S.toolbar) return;
-  var display = toolbarHosted() ? 'none' : '';
-  if (S.toolbar.style.display !== display) S.toolbar.style.display = display;
 }

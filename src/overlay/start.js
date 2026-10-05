@@ -1,7 +1,6 @@
 import { S } from './state.js';
 import { api, queueable } from './api.js';
 import { boot } from './boot.js';
-import { attachAstroHost, setHostMode } from './panel.js';
 import { installAliases, legacyRunning } from '../compat/aliases.js';
 
 // Start-up order:
@@ -20,12 +19,6 @@ function alreadyRunning() {
   return null;
 }
 
-// The hooks a host such as Astro's Dev Toolbar uses. They sit on the API
-// object under registered symbols, so they aren't config, aren't listed by
-// Object.keys() and can't be set from window.stadiarefConfig.
-export const HOST_MODE = Symbol.for('stadiaref.hostMode');
-export const ASTRO_HOST = Symbol.for('stadiaref.astroHost');
-
 // Start the overlay once, in a browser. Returns the API running on the page:
 // this one, or the 3.x copy that was already there. Outside a browser it
 // does nothing and returns undefined.
@@ -41,8 +34,6 @@ export function start() {
   api.ready = new Promise(function (resolve) {
     S.resolveReady = function () { resolve(api); };
   });
-  Object.defineProperty(api, HOST_MODE, { value: setHostMode });
-  Object.defineProperty(api, ASTRO_HOST, { value: attachAstroHost });
   installAliases(api, queueable);
   window.stadiaref = api;
   boot();

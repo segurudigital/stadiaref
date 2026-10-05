@@ -72,27 +72,23 @@ test.describe('dist/index.mjs', () => {
 });
 
 test.describe('the Astro host', () => {
-  // A stand-in for Astro's Dev Toolbar: the element, its bar, and an app
-  // canvas (a shadow root) handed to StadiaRef as the app's init() would.
-  const FAKE_ASTRO = `
+  // A stand-in for Astro's Dev Toolbar: the element, its bar, and the app
+  // canvas the StadiaRef integration registers (id "stadiaref").
+  const fakeAstro = (appId) => `
     var bar = document.createElement('astro-dev-toolbar');
     var root = bar.attachShadow({ mode: 'open' });
     root.innerHTML = '<div id="dev-bar" style="position:fixed;left:40%;bottom:20px;width:200px;height:48px"></div>';
-    var canvas = document.createElement('div');
-    canvas.id = 'fake-canvas';
-    root.appendChild(canvas);
+    var canvas = document.createElement('astro-dev-toolbar-app-canvas');
+    canvas.setAttribute('data-app-id', '${appId}');
     canvas.attachShadow({ mode: 'open' });
+    root.appendChild(canvas);
     document.body.appendChild(bar);
   `;
   const toolbarDisplay = (page) => page.evaluate((id) => getComputedStyle(document.getElementById(id).shadowRoot.querySelector('.stadiaref-toolbar')).display, HOST_ID);
-  const panel = (page) => page.locator('astro-dev-toolbar #fake-canvas .stadiaref-panel');
+  const panel = (page) => page.locator('astro-dev-toolbar astro-dev-toolbar-app-canvas .stadiaref-panel');
 
   test('the panel replaces the floating toolbar and drives StadiaRef', async ({ page }) => {
-    await open(page, harness({ body: 'nesting', page: { startHidden: false }, post: FAKE_ASTRO }));
-    await page.evaluate(() => {
-      window.stadiaref[Symbol.for('stadiaref.hostMode')]('astro');
-      window.stadiaref[Symbol.for('stadiaref.astroHost')](document.querySelector('astro-dev-toolbar').shadowRoot.getElementById('fake-canvas').shadowRoot);
-    });
+    await open(page, harness({ body: 'nesting', page: { startHidden: false }, post: fakeAstro('stadiaref') }));
     expect(await toolbarDisplay(page)).toBe('none');
     const p = panel(page);
     await expect(p).toBeVisible();
@@ -116,24 +112,46 @@ test.describe('the Astro host', () => {
     await page.evaluate(() => window.stadiaref.setAutoAddress(true));
     await expect(p.locator('.stadiaref-panel__auto')).toBeVisible();
 
-    // Find and the Tree open in StadiaRef's own corner, clear of Astro's bar.
+    // Find opens in StadiaRef's own corner.
     await p.getByRole('button', { name: 'Find' }).click();
     await expect(shadow(page, '.stadiaref-find')).toBeVisible();
     await expect(p.getByRole('button', { name: 'Find' })).toHaveAttribute('aria-pressed', 'true');
   });
 
-  test('without Astro\'s Dev Toolbar on the page, the floating toolbar is drawn', async ({ page }) => {
-    await open(page, harness({ body: 'nesting', page: { startHidden: false } }));
-    await page.evaluate(() => window.stadiaref[Symbol.for('stadiaref.hostMode')]('astro'));
-    await settle(page);
-    expect(await toolbarDisplay(page)).not.toBe('none');
+  test('the panel is there while StadiaRef is hidden; using it shows StadiaRef', async ({ page }) => {
+    await open(page, harness({ body: 'nesting', post: fakeAstro('stadiaref') }));
+    const p = panel(page);
+    await expect(p).toBeVisible();
+    expect(await page.evaluate(() => window.stadiaref.isVisible())).toBe(false);
+    await p.getByRole('button', { name: 'Icons' }).click();
+    expect(await page.evaluate(() => [window.stadiaref.isVisible(), window.stadiaref.getLabels()])).toEqual([true, 'icons']);
+    expect(await toolbarDisplay(page)).toBe('none');
   });
 
-  test('the host is not reachable from config', async ({ page }) => {
-    await open(page, harness({ body: 'nesting', page: { startHidden: false, hostMode: 'astro', host: 'astro' }, post: FAKE_ASTRO }));
-    await page.evaluate(() => window.stadiaref.init({ hostMode: 'astro', host: 'astro' }));
+  test('a Dev Toolbar that arrives after StadiaRef has started is picked up when the app starts', async ({ page }) => {
+    await open(page, harness({ body: 'nesting', page: { startHidden: false } }));
+    expect(await toolbarDisplay(page)).not.toBe('none');
+    await page.evaluate(fakeAstro('stadiaref') + "window.dispatchEvent(new Event('stadiaref:astro-app'));");
+    await expect(panel(page)).toBeVisible();
+    expect(await toolbarDisplay(page)).toBe('none');
+  });
+
+  test('Astro\'s Dev Toolbar without the StadiaRef app (no integration): the floating toolbar is drawn', async ({ page }) => {
+    await open(page, harness({ body: 'nesting', page: { startHidden: false }, post: fakeAstro('astro:audit') }));
     await settle(page);
     expect(await toolbarDisplay(page)).not.toBe('none');
-    expect(await page.evaluate(() => Object.keys(window.stadiaref).some((k) => /host/i.test(k)))).toBe(false);
+    await expect(panel(page)).toHaveCount(0);
+  });
+
+  test('page code has no way in: no hooks on the API, nothing in config', async ({ page }) => {
+    await open(page, harness({ body: 'nesting', page: { startHidden: false, hostMode: 'astro', host: 'astro' } }));
+    await page.evaluate(() => window.stadiaref.init({ hostMode: 'astro', host: 'astro' }));
+    await page.evaluate(() => window.dispatchEvent(new Event('stadiaref:astro-app')));
+    await settle(page);
+    expect(await toolbarDisplay(page)).not.toBe('none');
+    expect(await page.evaluate(() => [
+      Object.getOwnPropertySymbols(window.stadiaref).length,
+      Object.keys(window.stadiaref).some((k) => /host|panel/i.test(k)),
+    ])).toEqual([0, false]);
   });
 });

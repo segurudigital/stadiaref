@@ -7,6 +7,7 @@ import { applyDockPosition, normalizeDock, normalizeDockOffset, pickAutoDock } f
 import { closestMatch, forEachNode } from './dom.js';
 import { emitEvent } from './events.js';
 import { attachKeys, defaultKeys, mergeKeys } from './keys.js';
+import { applyHost } from './panel.js';
 import { isPicking, notePointer, stopPick, togglePick } from './pick.js';
 import { closeFind, isFinding, openFind } from './find.js';
 import { isLive, survey } from './mount.js';
@@ -185,6 +186,11 @@ function init() {
   applyState(S.state);
   if (S.outlineMode !== 'off') setOutline(S.outlineMode);
   updateShowControl();
+
+  // Astro's Dev Toolbar may already hold StadiaRef's app canvas; the app
+  // also says when it starts (src/integrations/astro/app.js).
+  applyHost();
+  window.addEventListener('stadiaref:astro-app', applyHost);
 
   // Hidden by default: nothing more is written until the first show. With
   // startHidden: false this mounts StadiaRef and runs the first survey.

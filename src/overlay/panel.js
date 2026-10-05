@@ -9,7 +9,7 @@ import { setOutline } from './outline.js';
 import { isPicking, togglePick } from './pick.js';
 import { getTiers, toggleTier } from './tiers.js';
 import { toggleTree } from './tree.js';
-import { applyToolbarHost } from './host.js';
+import { astroCanvas, toolbarHosted } from './host.js';
 
 // ─── The panel ──────────────────────────────────────────────
 // The toolbar's controls laid out as a panel, for a host that has its own
@@ -17,11 +17,6 @@ import { applyToolbarHost } from './host.js';
 // AUTO chip while auto-address is on, Labels (one of three), Show (three
 // independent toggles), Outline (one of three), the address count, and
 // Pick, Find and Tree. Using a control shows StadiaRef if it is hidden.
-
-export function setHostMode(mode) {
-  S.hostMode = mode === 'astro' ? 'astro' : null;
-  applyToolbarHost();
-}
 
 var PANEL_CSS = [
   ':host { all: initial; }',
@@ -131,7 +126,7 @@ function buildPanel(root) {
   panel.appendChild(head);
   panel.appendChild(grid);
   panel.appendChild(foot);
-  root.appendChild(style);
+  panel.insertBefore(style, panel.firstChild);
   root.appendChild(panel);
   return panel;
 }
@@ -164,14 +159,28 @@ export function syncPanel() {
 
 var EVENTS = ['labels-change', 'tiers-change', 'outline-change', 'auto-address-change', 'show', 'hide'];
 
-// Called by the Astro Dev Toolbar app with its canvas (a shadow root).
-export function attachAstroHost(canvas) {
-  if (!canvas || S.panel) return;
-  S.hostMode = 'astro';
-  S.panel = buildPanel(canvas);
-  S.afterSurvey = syncPanel;
-  EVENTS.forEach(function (name) { window.addEventListener('stadiaref:' + name, syncPanel); });
-  syncPanel();
-  applyToolbarHost();
-  applyDockPosition();
+// Bring the host in line with the page: while StadiaRef's app canvas is in
+// Astro's Dev Toolbar, draw the panel there and hide the floating toolbar;
+// otherwise draw the floating toolbar. Called at start, when the Astro app
+// starts, and on every survey. The panel lives in Astro's own canvas, so it
+// is drawn even while StadiaRef is hidden.
+export function applyHost() {
+  var canvas = astroCanvas();
+  if (canvas && (!S.panel || S.panel.getRootNode() !== canvas)) {
+    if (S.panel && S.panel.parentNode) S.panel.parentNode.removeChild(S.panel);
+    S.panel = buildPanel(canvas);
+    S.afterSurvey = syncPanel;
+    if (!S.panelListening) {
+      S.panelListening = true;
+      EVENTS.forEach(function (name) { window.addEventListener('stadiaref:' + name, syncPanel); });
+    }
+    syncPanel();
+  }
+  if (S.toolbar) {
+    var display = toolbarHosted() ? 'none' : '';
+    if (S.toolbar.style.display !== display) {
+      S.toolbar.style.display = display;
+      applyDockPosition();
+    }
+  }
 }

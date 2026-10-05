@@ -20,15 +20,13 @@ function setupPath(setup, root) {
     return null;
   return path.resolve(root, setup).split(path.sep).join("/");
 }
-function loaderCode(options, root, before) {
+function loaderCode(options, root) {
   var setup = setupPath(options && options.setup, root);
   var lines = ["import stadiaref from 'stadiaref';"];
   if (setup)
     lines.push("import setup from " + JSON.stringify(setup) + ";");
   lines.push("(async function () {");
   lines.push("  if (!stadiaref) return;");
-  if (before)
-    lines.push("  " + before);
   if (setup)
     lines.push("  if (typeof setup === 'function') await setup(stadiaref);");
   lines.push("  stadiaref.init(" + JSON.stringify(initOptions(options)) + ");");
@@ -54,8 +52,7 @@ function stadiaref(options) {
         });
         params.updateConfig({ vite: { optimizeDeps: OPTIMIZE_DEPS } });
         var root = fileURLToPath(params.config.root);
-        var before = "var host = stadiaref[Symbol.for('stadiaref.hostMode')]; if (host) host('astro');";
-        params.injectScript("page", loaderCode(opts, root, before));
+        params.injectScript("page", loaderCode(opts, root));
       }
     }
   };
