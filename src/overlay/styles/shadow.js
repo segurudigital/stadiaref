@@ -448,5 +448,100 @@ ${tierTags()}
 .stadiaref-highlight[hidden] { display: none; }
 .stadiaref-highlight--hover { outline: 2px solid #EA580C; outline-offset: 3px; }
 .stadiaref-highlight--jump { outline: 3px solid rgba(234, 88, 12, 0.92); outline-offset: 4px; box-shadow: 0 0 0 6px rgba(234, 88, 12, 0.16); }
+/* Pick: the chosen level solid, the rest of its chain dashed */
+.stadiaref-highlight--pick-current { outline: 2px solid #EA580C; outline-offset: 2px; }
+[class*="stadiaref-highlight--pick-"]:not(.stadiaref-highlight--pick-current) { outline: 1px dashed rgba(234, 88, 12, 0.7); outline-offset: 4px; }
+/* Find: the match framed, the rest of the page dimmed by this one layer */
+.stadiaref-highlight--find { outline: 2px solid #EA580C; outline-offset: 6px; box-shadow: 0 0 0 100vmax rgba(17, 24, 39, 0.45); }
+
+/* --- Pick chip --- */
+.stadiaref-pick-chip {
+  all: initial;
+  box-sizing: border-box;
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-width: calc(100vw - 16px);
+  padding: 7px 9px;
+  background: #111827;
+  color: #F9FAFB;
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  font-family: ${FONT_MONO};
+  font-size: 11px;
+  line-height: 1.3;
+  pointer-events: none;
+  z-index: 5;
+}
+.stadiaref-pick-chip[hidden] { display: none; }
+.stadiaref-pick-chip__parts { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.stadiaref-pick-chip__sep { color: #9CA3AF; }
+.stadiaref-pick-chip__part { padding: 1px 5px; border: 1px solid transparent; border-radius: 3px; font-weight: 700; white-space: nowrap; }
+.stadiaref-pick-chip__part--section { background: #F97316; color: #111827; border-color: #F97316; }
+.stadiaref-pick-chip__part--block { background: rgba(255, 255, 255, 0.92); color: #111827; border-color: rgba(255, 255, 255, 0.92); }
+.stadiaref-pick-chip__part--element { border-color: rgba(255, 255, 255, 0.7); color: #FFFFFF; }
+.stadiaref-pick-chip__part--unclassified { border-color: #FBBF24; border-style: dashed; color: #FDE68A; }
+.stadiaref-pick-chip__part--current { box-shadow: 0 0 0 2px #111827, 0 0 0 4px #FDBA74; }
+.stadiaref-pick-chip__hint { font-family: ${FONT_UI}; font-size: 11px; color: #D1D5DB; white-space: normal; max-width: 420px; }
+
+/* --- Find --- */
+.stadiaref-find {
+  all: initial;
+  box-sizing: border-box;
+  position: fixed;
+  display: none;
+  flex-direction: column;
+  width: 400px;
+  max-width: calc(100vw - 40px);
+  max-height: min(480px, calc(100vh - 120px));
+  background: var(--sr-barBg);
+  border: 1px solid var(--sr-barBd);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  overflow: hidden;
+  font-family: ${FONT_UI};
+  font-size: 12px;
+  color: var(--sr-fg);
+  pointer-events: auto;
+  z-index: 3;
+}
+.stadiaref-find * { box-sizing: border-box; }
+.stadiaref-find--open { display: flex; }
+.stadiaref-find__label { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; font-size: 11px; font-weight: 600; color: var(--sr-muted); border-bottom: 1px solid var(--sr-barBd); }
+.stadiaref-find__input {
+  height: 32px;
+  padding: 0 10px;
+  border: 2px solid var(--sr-accent);
+  border-radius: 4px;
+  background: var(--sr-barBg);
+  color: var(--sr-fg);
+  font-family: ${FONT_MONO};
+  font-size: 12px;
+  outline: none;
+}
+.stadiaref-find__input:focus-visible { box-shadow: 0 0 0 3px var(--sr-ringGlow); }
+.stadiaref-find__list { display: flex; flex-direction: column; overflow-y: auto; }
+.stadiaref-find__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 6px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--sr-fg);
+  font-family: ${FONT_MONO};
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+.stadiaref-find__row:hover, .stadiaref-find__row[aria-selected="true"] { background: var(--sr-rowHover); color: var(--sr-rowHoverFg); }
+.stadiaref-find__row[aria-selected="true"] { font-weight: 700; }
+.stadiaref-find__row[aria-disabled="true"] { cursor: default; color: var(--sr-muted); background: transparent; }
+.stadiaref-find__address { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stadiaref-find__note { margin-left: auto; padding: 0 6px; border-radius: 999px; background: var(--sr-chipBg); color: var(--sr-chipFg); font-family: ${FONT_UI}; font-size: 10px; font-weight: 600; }
+.stadiaref-find__status { padding: 7px 12px; border-top: 1px solid var(--sr-barBd); font-size: 11px; color: var(--sr-muted); }
+@media (max-width: 479px), (pointer: coarse) { .stadiaref-find__row { min-height: 44px; } .stadiaref-find__input { height: 44px; } }
 `;
 }

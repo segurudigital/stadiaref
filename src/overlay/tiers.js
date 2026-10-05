@@ -1,8 +1,8 @@
 import { S } from './state.js';
 import { hasRecord, rec } from './records.js';
-import { copyRef } from './copy.js';
+import { copyAddress } from './copy.js';
 import { forEachNode, toArray } from './dom.js';
-import { emitAddressEvent, emitEvent } from './events.js';
+import { emitEvent } from './events.js';
 import { getActiveLabel, injectLabels, recordedTier, resolveLabelOverlaps } from './labels.js';
 import { applyOutlineMode } from './outline.js';
 import { autoRefSections, clearAutoRefs, convertClassRefs } from './survey.js';
@@ -213,8 +213,7 @@ export function applyBlockGroupCollapse() {
         rowEl.addEventListener('click', function (e) {
           e.stopPropagation();
           e.preventDefault();
-          copyRef(refVal);
-          emitAddressEvent('click', refEl, refVal, rowEl, { source: 'label' });
+          copyAddress(refEl, refVal, rowEl, 'label');
         });
       }(memberRef, member, row));
       popover.appendChild(row);

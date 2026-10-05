@@ -1,7 +1,7 @@
 import { S } from './state.js';
 import { tierOf } from './classify.js';
-import { copyRef } from './copy.js';
-import { emitAddressEvent } from './events.js';
+import { copyAddress } from './copy.js';
+
 import { tierTag } from './tree.js';
 
 // Active-ref tree panel functions.
@@ -53,8 +53,7 @@ function chainRow(item, depth) {
   row.appendChild(refLabel);
   row.addEventListener('click', function (e) {
     e.stopPropagation();
-    copyRef(item.ref);
-    emitAddressEvent('click', item.el, item.ref, row, { source: 'label' });
+    copyAddress(item.el, item.ref, row, 'label');
   });
   return row;
 }

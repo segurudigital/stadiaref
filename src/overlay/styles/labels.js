@@ -31,6 +31,8 @@ html[data-stadiaref-hidden-tiers~="block"] .stadiaref-tier-block,
 html[data-stadiaref-hidden-tiers~="element"] .stadiaref-tier-element,
 html[data-stadiaref-hidden-tiers] .stadiaref-tier-unclassified { display: none !important; }
 .stadiaref-ref-hidden, .stadiaref-ref-clustered, .stadiaref-collapsed { display: none !important; }
+/* Labels step aside while Pick is on */
+html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important; }
 
 /* --- Full label: a tier tag and the address --- */
 .stadiaref-ref-full-label {

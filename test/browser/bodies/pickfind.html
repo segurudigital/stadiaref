@@ -1,0 +1,19 @@
+<header id="top" style="padding:20px;background:#fff">No address up here</header>
+<section data-ref="shop-grid" style="padding:30px;background:#fff">
+  <h2 data-ref="shop-grid-heading" style="margin:0 0 12px">Products</h2>
+  <article data-ref="shop-grid-card-06" style="padding:20px;margin:10px 0;border:1px solid #ddd;width:360px">
+    <h3 data-ref="shop-grid-card-06-title" style="margin:0">Lamp</h3>
+    <p data-ref="shop-grid-text-02-06-price" id="price" style="margin:6px 0">$40</p>
+    <span id="plain" style="display:inline-block;padding:6px">Plain text inside the card</span>
+    <a id="buy" data-ref="shop-grid-card-06-buy" href="#bought" style="display:inline-block;padding:6px 10px">Buy</a>
+  </article>
+  <article data-ref="shop-grid-card-07" style="padding:20px;margin:10px 0;border:1px solid #ddd;width:360px">
+    <h3 data-ref="shop-grid-card-07-title" style="margin:0">Chair</h3>
+  </article>
+  <div id="menu" style="display:none"><nav data-ref="shop-grid-card-menu">Closed menu</nav></div>
+</section>
+<script>
+  window.__hostClicks = 0;
+  document.getElementById('buy').addEventListener('click', function () { window.__hostClicks++; });
+  document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('#plain')) window.__hostClicks++; });
+</script>

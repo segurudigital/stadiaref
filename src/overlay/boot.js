@@ -7,10 +7,12 @@ import { applyDockPosition, normalizeDock, pickAutoDock } from './dock.js';
 import { closestMatch, forEachNode } from './dom.js';
 import { emitEvent } from './events.js';
 import { attachKeys, defaultKeys, mergeKeys } from './keys.js';
+import { isPicking, stopPick, togglePick } from './pick.js';
+import { closeFind, isFinding, openFind } from './find.js';
 import { isLive } from './mount.js';
 import { selectProfile } from './profile.js';
 import { injectLabels, isLabelled, resolveLabelOverlaps, syncAllVoidHosts, syncVoidHost } from './labels.js';
-import { applyVisibility } from './lifecycle.js';
+import { applyVisibility, show } from './lifecycle.js';
 import { LABEL_MODES, applyState, setState } from './mode.js';
 import { setOutline } from './outline.js';
 import { LABEL_CSS } from './styles/labels.js';
@@ -224,6 +226,24 @@ function init() {
   });
 
   attachMenuKeys();
+
+  // Pick and Find: the toolbar buttons and the P and / keys start them;
+  // Esc leaves whichever is open (keys.js asks S.leaveMode first).
+  S.showToolbar = show;
+  S.toggleTree = toggleTree;
+  S.stopPick = stopPick;
+  S.closeFind = closeFind;
+  S.keyActions = {
+    pick: togglePick,
+    find: function () {
+      if (isFinding()) closeFind(); else openFind();
+    }
+  };
+  S.leaveMode = function () {
+    if (isPicking()) { stopPick(); return true; }
+    if (isFinding()) { closeFind(); return true; }
+    return false;
+  };
 
   // Tree panel toggle
   var treeToggleBtn = S.toolbar.querySelector('[data-stadiaref-toggle-tree]');

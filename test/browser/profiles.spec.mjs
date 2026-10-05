@@ -4,7 +4,7 @@
 import { test, expect } from '@playwright/test';
 import { makeHelpers, NEW, labelTiers as tiers } from './helpers.mjs';
 
-const { harness, open: openHidden, recordEvents, events } = makeHelpers(NEW);
+const { harness, open: openHidden, recordEvents, eventsSoon } = makeHelpers(NEW);
 
 // These tests read the labels, so StadiaRef is shown first.
 async function open(page, url) {
@@ -123,6 +123,6 @@ test('an invalid address is unclassified in its label and its events', async ({ 
   await recordEvents(page);
   await open(page, harness({ body: 'nesting', page: { startHidden: false } }));
   await page.locator('[data-ref="Bad_Address"] > .stadiaref-ref-full-label').click();
-  const [click] = await events(page, 'address-click');
+  const [click] = await eventsSoon(page, 'address-click');
   expect(click.detail).toMatchObject({ address: 'Bad_Address', tier: 'unclassified' });
 });

@@ -82,9 +82,10 @@ function isTypingTarget(target) {
   return false;
 }
 
-// Keyboard shortcuts. Attached once from init().
+// Keyboard shortcuts. Attached once from init(), on window in the capture
+// phase so that Esc reaches Pick and Find before a host dialog's handler.
 export function attachKeys() {
-  document.addEventListener('keydown', function (e) {
+  window.addEventListener('keydown', function (e) {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (isTypingTarget(keyTarget(e))) return;
     var k = S.keys;
@@ -104,6 +105,7 @@ export function attachKeys() {
       if (S.leaveMode && S.leaveMode()) {
         e.preventDefault();
         e.stopPropagation();
+        if (e.stopImmediatePropagation) e.stopImmediatePropagation();
         return;
       }
       if (isHostModalOpen()) return;
@@ -140,5 +142,5 @@ export function attachKeys() {
       if (matches(k.pick, e) && S.keyActions.pick) { e.preventDefault(); S.keyActions.pick(); return; }
       if (matches(k.find, e) && S.keyActions.find) { e.preventDefault(); S.keyActions.find(); return; }
     }
-  });
+  }, true);
 }

@@ -262,6 +262,7 @@ test.describe('2.x events', () => {
     await label.hover();
     await page.mouse.move(5, 890);
     await label.click();
+    await expect.poll(async () => (await all(page)).some((e) => e.type === 'sdt:dataref-click')).toBe(true);
     const log = await all(page);
     for (const kind of ['click', 'hover', 'leave']) {
       const oldEv = log.find((e) => e.type === 'sdt:dataref-' + kind);
@@ -322,7 +323,7 @@ test('a page that uses only 2.x names works, with one console notice', async ({ 
   }));
   await page.waitForFunction(() => window.seguruDebugToolbar && window.seguruDebugToolbar.getDepth() === 'section');
   await page.locator('[data-ref="home-hero"] > .stadiaref-ref-full-label').click();
-  expect(await page.evaluate(() => window.__clicks)).toEqual(['home-hero']);
+  await expect.poll(() => page.evaluate(() => window.__clicks)).toEqual(['home-hero']);
   expect(await page.evaluate(() => document.querySelectorAll('[data-stadiaref-auto-tier="section"]').length)).toBe(1);
   await expect(shadow(page, '.stadiaref-toolbar')).toBeVisible();
   expect(notices).toHaveLength(1);

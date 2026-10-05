@@ -56,10 +56,10 @@ StadiaRef 3.0.0, built in stages. A new session starts at the first unticked sta
   - [x] Every text and background pair at least 4.5:1 by calculation (`test/unit/contrast.test.mjs`, from `src/overlay/styles/tokens.js`; translucent backgrounds over the worst backdrop of their surface). Changes from the wireframes: menu hover is `#F9FAFB` (light) and a 6% white wash (dark) so grey notes stay at 4.5:1 or more; the active option's note uses the accent (the wireframe's grey would be 4.40:1); the cluster and block-group badges are opaque (`#FCE8DD` light, `#27272A` dark) instead of a translucent wash; the brand tip is opaque `#111827`
   - [x] Toolbar fully usable by keyboard, visible focus, accessible names and pressed/expanded state
   - [x] A hidden StadiaRef leaves the page DOM byte-identical (class converter off) — `host-page.spec.mjs`, five pages, including setters called while hidden
-- [ ] **Stage 6 — Pick and Find.**
-  - [ ] Pick: pointer, arrow keys, Esc, an element with no address, clicks don't reach the host
-  - [ ] Find: exact, substring, no match, hidden match, keyboard navigation, shortcut letters typed into the field, dim layer clears on close
-  - [ ] `copied` flag in both outcomes
+- [x] **Stage 6 — Pick and Find.** (`pick-find.spec.mjs`)
+  - [x] Pick: pointer, arrow keys, Esc, an element with no address, clicks don't reach the host
+  - [x] Find: exact, substring, no match, hidden match, keyboard navigation, shortcut letters typed into the field, dim layer clears on close
+  - [x] `copied` flag in both outcomes
 - [ ] **Stage 7 — Apps.**
   - [ ] Route change in a small SPA fixture relabels without `refresh()`
   - [ ] A framework-style text update that wipes a label: label back within two frames

@@ -52,6 +52,7 @@ export function applyDockPosition() {
   applyStyleSnippet(S.toolbar, v + ':' + EDGE + 'px;' + opposite + ':auto;' + side);
   applyStyleSnippet(S.toast, v + ':' + near + 'px;' + opposite + ':auto;' + side);
   applyStyleSnippet(S.treePanel, v + ':' + near + 'px;' + opposite + ':auto;' + side);
+  applyStyleSnippet(S.findPanel, v + ':' + near + 'px;' + opposite + ':auto;' + side);
   applyStyleSnippet(S.activeRefTree, opposite + ':' + EDGE + 'px;' + v + ':auto;' + side);
   if (S.shadowHost) S.shadowHost.setAttribute('data-stadiaref-dock', pos);
 }

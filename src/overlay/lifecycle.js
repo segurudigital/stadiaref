@@ -21,6 +21,8 @@ export function hide() {
   closeAllDropdowns();
   if (S.treeOpen) toggleTree();
   dismissActiveRefTree();
+  if (S.stopPick) S.stopPick();
+  if (S.closeFind) S.closeFind();
   S.presentationMode = true;
   applyVisibility();
   emitEvent('hide', {});

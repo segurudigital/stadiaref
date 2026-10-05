@@ -3,7 +3,7 @@ import { OUTLINE_LABELS } from './constants.js';
 import { tierOf } from './classify.js';
 import { TAGS } from './styles/tokens.js';
 import { showText } from './tiers.js';
-import { copyRef } from './copy.js';
+import { copyAddress } from './copy.js';
 import { forEachNode, setClassState, toArray } from './dom.js';
 import { highlight, placeHighlights, unhighlight } from './highlight.js';
 
@@ -125,7 +125,7 @@ export function buildTreePanel() {
       copyBtn.setAttribute('aria-label', 'Copy ' + address);
       copyBtn.addEventListener('click', function (e) {
         e.stopPropagation();
-        copyRef(address);
+        copyAddress(target, address, copyBtn, 'tree');
       });
       row.appendChild(copyBtn);
 

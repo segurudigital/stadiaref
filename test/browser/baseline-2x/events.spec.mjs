@@ -1,7 +1,7 @@
 // Baseline: every event 2.5.0 passes to emitEvent(), with its detail.
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
-import { harness, open, recordEvents, events, clearEvents, shadow } from './helpers.mjs';
+import { harness, open, recordEvents, events, eventsSoon, clearEvents, shadow } from './helpers.mjs';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../../../package.json', import.meta.url), 'utf8'));
 
@@ -70,7 +70,7 @@ test('dataref-hover, dataref-leave, dataref-click from the full label', async ({
   await label.click();
   const hov = await events(page, 'dataref-hover');
   const leave = await events(page, 'dataref-leave');
-  const click = await events(page, 'dataref-click');
+  const click = await eventsSoon(page, 'dataref-click');
   for (const list of [hov, leave, click]) {
     expect(list.length).toBeGreaterThan(0);
     const d = list[0].detail;
@@ -85,13 +85,15 @@ test('dataref-click from the icon (icons mode)', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, harness({ page: { startHidden: false, defaultMode: 0 } }));
   await page.locator('[data-ref="home-features"] > .stadiaref-ref-icon').click();
-  const click = await events(page, 'dataref-click');
+  const click = await eventsSoon(page, 'dataref-click');
   expect(click).toHaveLength(1);
   expect(click[0].detail.dataRef).toBe('home-features');
   expect(click[0].detail.current.cls).toContain('stadiaref-ref-icon');
 });
 
-test('Tree row copy button copies but emits no event in 2.5.0; row click only jumps', async ({ page, context }) => {
+// 2.5.0's Tree copy button emitted nothing; 3.0 fires address-click with
+// source 'tree', and its 2.x twin with it.
+test('Tree row copy button copies and emits dataref-click; row click only jumps', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, harness({ page: { startHidden: false } }));
   await page.evaluate(() => window.seguruDebugToolbar.toggleTree());
@@ -101,8 +103,11 @@ test('Tree row copy button copies but emits no event in 2.5.0; row click only ju
   await rows.nth(1).locator('.stadiaref-tree-copy').click();
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe('home-features');
   await expect(shadow(page, '.stadiaref-toast')).toHaveText('Copied: home-features');
-  expect(await events(page, 'dataref-click')).toHaveLength(0);
+  const [click] = await eventsSoon(page, 'dataref-click');
+  expect(click.detail.dataRef).toBe('home-features');
+  await clearEvents(page);
   await rows.nth(0).click();
+  await page.waitForTimeout(100);
   expect(await events(page, 'dataref-click')).toHaveLength(0);
   // The jump frame is drawn in StadiaRef's shadow root over the element.
   await expect(shadow(page, '.stadiaref-highlight--jump')).toBeVisible();
@@ -117,7 +122,7 @@ test('dataref-click from a block-group popover row', async ({ page, context }) =
   await page.evaluate(() => window.seguruDebugToolbar.show());
   await page.locator('.stadiaref-block-group-badge').first().hover();
   await page.locator('.stadiaref-block-group-item').nth(2).click();
-  const [click] = await events(page, 'dataref-click');
+  const [click] = await eventsSoon(page, 'dataref-click');
   expect(click.detail.dataRef).toBe('hf-services-card-03');
   expect(click.detail.element.ref).toBe('hf-services-card-03');
   expect(click.detail.current.cls).toBe('stadiaref-block-group-item');
@@ -133,7 +138,7 @@ test('dataref-click from a "+N" cluster popover row', async ({ page, context }) 
   const item = badge.locator('.stadiaref-cluster-item').first();
   const ref = await item.locator('.stadiaref-cluster-item-ref').textContent();
   await item.click();
-  const [click] = await events(page, 'dataref-click');
+  const [click] = await eventsSoon(page, 'dataref-click');
   expect(click.detail.dataRef).toBe(ref);
   expect(click.detail.element.ref).toBe(ref);
   expect(click.detail.current.cls).toBe('stadiaref-cluster-item');
@@ -150,7 +155,7 @@ test('hovering a label opens the address chain; a chain row click emits dataref-
   await clearEvents(page);
   // Click the first (section) row directly; moving the pointer there would close the chain.
   await page.evaluate(() => document.getElementById('stadiaref-host').shadowRoot.querySelector('.stadiaref-active-ref-tree__row').click());
-  const [click] = await events(page, 'dataref-click');
+  const [click] = await eventsSoon(page, 'dataref-click');
   expect(click.detail.dataRef).toBe('hf-hero');
   expect(click.detail.element.ref).toBe('hf-hero');
   // 2.5.0 captured `current` from a loop `var`, so it was always the last

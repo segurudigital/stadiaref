@@ -34,6 +34,8 @@ export function applyRootState() {
   if (S.presentationMode) root.removeAttribute('data-stadiaref-visible');
   else root.setAttribute('data-stadiaref-visible', '');
   root.setAttribute('data-stadiaref-labels', LABEL_NAMES[S.state] || 'full');
+  if (S.pickMode) root.setAttribute('data-stadiaref-mode', 'pick');
+  else root.removeAttribute('data-stadiaref-mode');
   var hidden = TIER_NAMES.filter(function (t) { return !S.tiers[t]; });
   if (hidden.length) root.setAttribute('data-stadiaref-hidden-tiers', hidden.join(' '));
   else root.removeAttribute('data-stadiaref-hidden-tiers');

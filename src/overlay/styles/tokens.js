@@ -158,6 +158,17 @@ export function pairs() {
     out.push(['tier tag ' + tier, TAGS[tier].fg, TAGS[tier].bg, '#FFFFFF']);
   });
   out.push(['icon tooltip', '#FFF7ED', 'rgba(17, 24, 39, 0.92)', 'page-any']);
+  out.push(['pick chip hint', '#D1D5DB', '#111827', '#111827']);
+  out.push(['pick chip section', '#111827', '#F97316', '#111827']);
+  out.push(['pick chip block', '#111827', 'rgba(255, 255, 255, 0.92)', '#111827']);
+  out.push(['pick chip element', '#FFFFFF', '#111827', '#111827']);
+  out.push(['pick chip unclassified', '#FDE68A', '#111827', '#111827']);
+  ['light', 'dark'].forEach(function (theme) {
+    var t = TOOLBAR[theme];
+    out.push([theme + ' find field', t.fg, t.barBg, t.barBg]);
+    out.push([theme + ' find label', t.muted, t.barBg, t.barBg]);
+    out.push([theme + ' find selected row', t.rowHoverFg, t.rowHover, t.barBg]);
+  });
   out.push(['cluster badge on light page', '#9A3412', '#FCE8DD', 'page-light']);
   out.push(['cluster badge on dark page', '#FDBA74', '#27272A', 'page-dark']);
   out.push(['badge hover', '#FFFFFF', '#C2410C', 'page-any']);

@@ -41,6 +41,7 @@ export function makeHelpers(names) {
     if (opts.wp !== undefined) q.set('wp', JSON.stringify(opts.wp));
     if (opts.attrs) q.set('attrs', JSON.stringify(opts.attrs));
     if (opts.pre) q.set('pre', opts.pre);
+    if (opts.post) q.set('post', opts.post);
     if (opts.noscript) q.set('noscript', '1');
     if (opts.defer) q.set('defer', '1');
     return '/__harness?' + q.toString();
@@ -72,6 +73,13 @@ export function makeHelpers(names) {
     return name ? all.filter((e) => e.name === name) : all;
   }
 
+  // Click events fire once the copy has been tried, so they arrive a
+  // moment after the click: wait for at least one.
+  async function eventsSoon(page, name) {
+    await expect.poll(async () => (await events(page, name)).length).toBeGreaterThan(0);
+    return events(page, name);
+  }
+
   async function clearEvents(page) {
     await page.evaluate(() => { window.__ev = []; });
   }
@@ -88,7 +96,7 @@ export function makeHelpers(names) {
     await expect.poll(() => page.evaluate((g) => window[g].isVisible(), names.global)).toBe(visible);
   }
 
-  return { harness, recordEvents, events, clearEvents, open, expectVisible, GLOBAL: names.global, EVENT_PREFIX: names.prefix };
+  return { harness, recordEvents, events, eventsSoon, clearEvents, open, expectVisible, GLOBAL: names.global, EVENT_PREFIX: names.prefix };
 }
 
 // Wait two animation frames so rAF-batched visibility checks have run.

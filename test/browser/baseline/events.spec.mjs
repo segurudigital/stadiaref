@@ -3,7 +3,7 @@
 // baseline-2x/ covers them.
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
-import { harness, open, recordEvents, events, clearEvents, shadow } from './helpers.mjs';
+import { harness, open, recordEvents, events, eventsSoon, clearEvents, shadow } from './helpers.mjs';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('../../../package.json', import.meta.url), 'utf8'));
 
@@ -75,7 +75,7 @@ test('address-hover, address-leave, address-click from the full label', async ({
   await label.click();
   const hov = await events(page, 'address-hover');
   const leave = await events(page, 'address-leave');
-  const click = await events(page, 'address-click');
+  const click = await eventsSoon(page, 'address-click');
   for (const list of [hov, leave, click]) {
     expect(list.length).toBeGreaterThan(0);
     const d = list[0].detail;
@@ -86,6 +86,7 @@ test('address-hover, address-leave, address-click from the full label', async ({
     expect(d).not.toHaveProperty('current');
   }
   expect(click[0].detail.source).toBe('label');
+  expect(click[0].detail.copied).toBe(true);
   expect(hov[0].detail).not.toHaveProperty('source');
 });
 
@@ -93,12 +94,12 @@ test('address-click from the icon (icons mode)', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, harness({ page: { startHidden: false, labels: 'icons' } }));
   await page.locator('[data-ref="home-features"] > .stadiaref-ref-icon').click();
-  const click = await events(page, 'address-click');
+  const click = await eventsSoon(page, 'address-click');
   expect(click).toHaveLength(1);
   expect(click[0].detail).toMatchObject({ address: 'home-features', tier: 'section', source: 'label' });
 });
 
-test('Tree row copy button copies but emits no event yet; row click only jumps', async ({ page, context }) => {
+test('Tree row copy button copies and emits address-click (source tree); row click only jumps', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, harness({ page: { startHidden: false } }));
   await page.evaluate(() => window.stadiaref.toggleTree());
@@ -108,8 +109,11 @@ test('Tree row copy button copies but emits no event yet; row click only jumps',
   await rows.nth(1).locator('.stadiaref-tree-copy').click();
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe('home-features');
   await expect(shadow(page, '.stadiaref-toast')).toHaveText('Copied: home-features');
-  expect(await events(page, 'address-click')).toHaveLength(0);
+  const [click] = await eventsSoon(page, 'address-click');
+  expect(click.detail).toMatchObject({ address: 'home-features', source: 'tree', copied: true });
+  await clearEvents(page);
   await rows.nth(0).click();
+  await page.waitForTimeout(100);
   expect(await events(page, 'address-click')).toHaveLength(0);
   // The jump frame is drawn in StadiaRef's shadow root over the element.
   await expect(shadow(page, '.stadiaref-highlight--jump')).toBeVisible();
@@ -124,7 +128,7 @@ test('address-click from a block-group popover row', async ({ page, context }) =
   await page.evaluate(() => window.stadiaref.show());
   await page.locator('.stadiaref-block-group-badge').first().hover();
   await page.locator('.stadiaref-block-group-item').nth(2).click();
-  const [click] = await events(page, 'address-click');
+  const [click] = await eventsSoon(page, 'address-click');
   // The fixture uses the Titan grammar, which is still the only classifier.
   expect(click.detail).toMatchObject({ address: 'hf-services-card-03', tier: 'block', source: 'label' });
   expect(click.detail.element.ref).toBe('hf-services-card-03');
@@ -140,7 +144,7 @@ test('address-click from a "+N" cluster popover row', async ({ page, context }) 
   const item = badge.locator('.stadiaref-cluster-item').first();
   const ref = await item.locator('.stadiaref-cluster-item-ref').textContent();
   await item.click();
-  const [click] = await events(page, 'address-click');
+  const [click] = await eventsSoon(page, 'address-click');
   expect(click.detail).toMatchObject({ address: ref, tier: 'element', source: 'label' });
   expect(click.detail.element.ref).toBe(ref);
 });
@@ -156,7 +160,7 @@ test('hovering a label opens the address chain; a chain row click emits address-
   await clearEvents(page);
   // Click the first (section) row directly; moving the pointer there would close the chain.
   await page.evaluate(() => document.getElementById('stadiaref-host').shadowRoot.querySelector('.stadiaref-active-ref-tree__row').click());
-  const [click] = await events(page, 'address-click');
+  const [click] = await eventsSoon(page, 'address-click');
   expect(click.detail).toMatchObject({ address: 'hf-hero', tier: 'section', source: 'label' });
   expect(click.detail.element.ref).toBe('hf-hero');
 });

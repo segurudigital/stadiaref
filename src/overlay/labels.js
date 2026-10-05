@@ -1,7 +1,7 @@
 import { S } from './state.js';
 import { forget, hasRecord, rec } from './records.js';
 import { tierOf } from './classify.js';
-import { copyRef } from './copy.js';
+import { copyAddress } from './copy.js';
 import { forEachNode, rectsOverlap, toArray } from './dom.js';
 import { emitAddressEvent } from './events.js';
 import { getElementContext } from './survey.js';
@@ -219,7 +219,7 @@ export function renderClusterBadgeIfNeeded(ownerEl) {
   badge.style.left = (anchorLeft + anchorWidth + 4) + 'px';
 
   // Popover with one row per clustered ref. Row click copies the ref
-  // value to clipboard via copyRef() and emits the same
+  // value to clipboard via copyAddress() and emits the same
   // stadiaref:address-click event that a regular label would.
   var popover = document.createElement('span');
   popover.className = 'stadiaref-cluster-popover';
@@ -241,8 +241,7 @@ export function renderClusterBadgeIfNeeded(ownerEl) {
       row.addEventListener('click', function (e) {
         e.stopPropagation();
         e.preventDefault();
-        copyRef(refValue);
-        emitAddressEvent('click', refEl, refValue, rowEl, { source: 'label' });
+        copyAddress(refEl, refValue, rowEl, 'label');
       });
     }(memberRef, member, row));
     popover.appendChild(row);
@@ -381,8 +380,7 @@ export function injectLabels() {
     icon.addEventListener('click', function (e) {
       e.stopPropagation();
       e.preventDefault();
-      copyRef(refValue);
-      emitAddressEvent('click', el, refValue, icon, { source: 'label' });
+      copyAddress(el, refValue, icon, 'label');
     });
     icon.addEventListener('mouseenter', function () {
       emitAddressEvent('hover', el, refValue, icon);
@@ -397,8 +395,7 @@ export function injectLabels() {
     tooltip.addEventListener('click', function (e) {
       e.stopPropagation();
       e.preventDefault();
-      copyRef(refValue);
-      emitAddressEvent('click', el, refValue, tooltip, { source: 'label' });
+      copyAddress(el, refValue, tooltip, 'label');
     });
 
     var fullLabel = document.createElement('span');
@@ -409,8 +406,7 @@ export function injectLabels() {
     fullLabel.addEventListener('click', function (e) {
       e.stopPropagation();
       e.preventDefault();
-      copyRef(refValue);
-      emitAddressEvent('click', el, refValue, fullLabel, { source: 'label' });
+      copyAddress(el, refValue, fullLabel, 'label');
     });
     fullLabel.addEventListener('mouseenter', function () {
       emitAddressEvent('hover', el, refValue, fullLabel);

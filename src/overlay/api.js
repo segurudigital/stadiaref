@@ -9,6 +9,8 @@ import { survey } from './mount.js';
 import { getTheme, setTheme } from './theme.js';
 import { applyAutoAddress, getAutoAddress, getTiers, setAutoAddress, setTiers } from './tiers.js';
 import { toggleTree } from './tree.js';
+import { startPick, stopPick } from './pick.js';
+import { closeFind, openFind } from './find.js';
 import { getUser, setUser } from './user.js';
 import { activeProfile, classifyAddress } from './classify.js';
 import { registerSelected, selectProfile } from './profile.js';
@@ -64,6 +66,19 @@ export function registerProfile(profile) {
   return profile.name;
 }
 
+// pick() starts Pick, pick(false) stops it.
+export function pick(on) {
+  if (on === false) stopPick(); else startPick();
+}
+
+// find(query) opens Find and returns the matching addresses; find(false)
+// closes it. Before start there is nothing to search: an empty list.
+export function find(query) {
+  if (query === false) { closeFind(); return []; }
+  if (!S.booted) return [];
+  return openFind(typeof query === 'string' ? query : undefined);
+}
+
 export function refresh() {
   survey();
 }
@@ -100,6 +115,8 @@ export const api = {
   setOutline: queueable(setOutline),
   getOutline: function () { return S.outlineMode; },
   toggleTree: queueable(toggleTree),
+  pick: queueable(pick),
+  find: find,
   setTheme: queueable(setTheme),
   getTheme: getTheme,
   setDock: queueable(setDock),

@@ -16,6 +16,7 @@
 //      wp=<json>          assigned to window.sdtConfig (2.x WordPress config)
 //      attrs=<json>       extra attributes on the overlay <script> tag
 //      pre=<js>           inline script run before the overlay loads
+//      post=<js>          inline script run just after it, before start
 //      noscript=1         omit the overlay entirely (for DOM-diff tests)
 //      defer=1            load the overlay with `defer`
 
@@ -73,7 +74,8 @@ function harness(query) {
     for (const k of Object.keys(obj)) attrs += ' ' + k + '="' + escapeAttr(obj[k]) + '"';
   }
   if (query.get('defer') === '1') attrs += ' defer';
-  const script = query.get('noscript') === '1' ? '' : '<script src="/overlay.js"' + attrs + '></script>';
+  let script = query.get('noscript') === '1' ? '' : '<script src="/overlay.js"' + attrs + '></script>';
+  if (query.has('post')) script += '\n<script>' + query.get('post') + '</script>';
   return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>harness</title>\n' +
     '<script>' + parts.join('\n') + '</script>\n</head>\n<body>\n' + body + '\n' + script + '\n</body>\n</html>\n';
 }
