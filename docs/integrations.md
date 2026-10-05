@@ -1,132 +1,121 @@
 # Integrations
 
-The Seguru Debug Toolbar is designed to be a good neighbour to other on-page tools — overlays, sidebars, devtools panels, on-page editors, review and feedback tools. It exposes enough public surface that hosts can sync the toolbar's appearance with their own systems and listen for user interactions, without SDT taking a dependency on any specific consumer.
+StadiaRef is built to sit alongside other tools on the page: review sidebars, feedback widgets, devtools panels. It exposes enough for a host to keep it in step with its own theme and sign-in state, and to hear when someone clicks an address.
 
-This guide covers three common integration patterns. Each one is generic — the [Review Sidebar example](#example--composing-all-three-in-a-review-sidebar) at the end shows one concrete shape of all three composed together, but the patterns work the same way against any host.
+Three patterns cover most cases. Each works against any host. The [API](api.md) has the full reference.
 
-For the full API reference (every method, every event, every config key) see the [README](../README.md). This doc is about *how to compose* SDT with a host's existing systems.
+## 1. Send clicked addresses to your own tool
 
----
-
-## 1. Theme sync with a host theme system
-
-Most hosts already have their own theme system — light / dark mode in the host app, OS preference detection, a custom palette. By default, SDT's `theme: 'auto'` picks up `prefers-color-scheme` and the host's `html.dark` class, so for many hosts there is nothing to do.
-
-If your host has a different signal — a Redux store, a `data-theme` attribute on a wrapper, a Firebase remote config flag — drive SDT explicitly:
+`stadiaref:address-click` fires whenever someone copies an address: from a label, from Pick, from Find or from the Tree.
 
 ```js
-// Pseudocode — replace the source signal with whatever your host already has.
-function syncSDTTheme() {
-  const sdt = window.seguruDebugToolbar;
-  if (!sdt) return;
-  const hostTheme = getHostTheme();    // 'light' | 'dark' | 'auto'
-  sdt.setTheme(hostTheme);
+window.addEventListener('stadiaref:address-click', (event) => {
+  const { address, tier, element, source, copied } = event.detail;
+
+  feedbackPanel.addNote({
+    address,                      // the stable key for the note
+    tier,                         // 'section' | 'block' | 'element' | 'unclassified'
+    url: location.href,
+    preview: element.textContent.trim().slice(0, 120),
+  });
+});
+```
+
+Notes:
+
+- **Key your notes on `address`.** It is stable across reloads, deploys and environments. The `element` reference is only good until the next navigation.
+- **StadiaRef has already tried to copy the address** and shown its toast by the time your listener runs. `copied` tells you whether the clipboard accepted it.
+- **StadiaRef keeps no record of addresses** and never sends one anywhere. Whatever happens next is your listener's job: open a panel, post to your tracker, file a GitHub issue.
+- **Hover works the same way.** `stadiaref:address-hover` and `stadiaref:address-leave` let you preview a note before anyone clicks.
+
+Filing a GitHub issue from a click:
+
+```js
+window.addEventListener('stadiaref:address-click', async ({ detail }) => {
+  const title = `[${detail.address}] `;
+  const body = `Address: \`${detail.address}\`\nPage: ${location.href}\n\n`;
+  const url = new URL('https://github.com/your-org/your-repo/issues/new');
+  url.searchParams.set('title', title);
+  url.searchParams.set('body', body);
+  window.open(url, '_blank', 'noopener');
+});
+```
+
+## 2. Show who is reviewing
+
+If the host knows who is signed in, show it in the toolbar. StadiaRef never reads cookies or tokens. The host tells it.
+
+```js
+function syncUser() {
+  const session = getHostSession();   // your own auth state
+  window.stadiaref?.setUser(
+    session?.user
+      ? { name: session.user.displayName, role: session.user.role, id: session.user.id }
+      : null
+  );
 }
 
-// Initial sync (deferred until SDT is ready)
-window.addEventListener('sdt:ready', syncSDTTheme);
-// And again every time the host's theme changes
-hostThemeStore.subscribe(syncSDTTheme);
+syncUser();                                            // calls made before StadiaRef starts are queued
+window.addEventListener('stadiaref:ready', syncUser);  // in case StadiaRef loads after this code
+hostAuth.subscribe(syncUser);
 ```
 
-If you'd rather have SDT *follow* the OS but inform the rest of your tools when it flips, listen for `sdt:theme-change`:
+Other tools on the page can follow along with `stadiaref:user-change`.
+
+## 3. Keep the theme in step
+
+By default the toolbar follows the operating system and a `dark` class on `<html>`. Most hosts need nothing more.
+
+If your host keeps its theme somewhere else, drive StadiaRef from it:
 
 ```js
-window.addEventListener('sdt:theme-change', (e) => {
-  // e.detail.theme === 'light' | 'dark'
-  // e.detail.mode  === 'auto' | 'light' | 'dark'  (whatever was last set)
-  document.documentElement.setAttribute('data-theme', e.detail.theme);
-});
-```
-
-The toolbar persists the chosen value under `localStorage.getItem('seguru-debug-toolbar:theme')`, so a user's manual override survives a reload.
-
----
-
-## 2. Identity from a host auth system
-
-SDT can render a small "logged in as <Name>" pill in its chrome — useful when a preview is shown to a specific reviewer, internal user, or QA tester. SDT itself never reads cookies or auth tokens; the host calls `setUser()` from its own auth code.
-
-```js
-// Pseudocode — replace the source with your host's auth state.
-function syncSDTUser() {
-  const sdt = window.seguruDebugToolbar;
-  if (!sdt) return;
-  const session = getHostSession();
-  if (session && session.user) {
-    sdt.setUser({
-      name:  session.user.displayName,
-      role:  session.user.role,         // freeform: 'reviewer', 'internal', 'qa', etc
-      id:    session.user.id,           // host-defined token
-      email: session.user.email          // optional
-    });
-  } else {
-    sdt.setUser(null);
-  }
+function syncTheme() {
+  window.stadiaref?.setTheme(getHostTheme());   // 'light' | 'dark' | 'auto'
 }
 
-window.addEventListener('sdt:ready', syncSDTUser);
-hostAuthStore.subscribe(syncSDTUser);
+syncTheme();
+window.addEventListener('stadiaref:ready', syncTheme);
+hostThemeStore.subscribe(syncTheme);
 ```
 
-This works the same against any auth provider — Firebase auth state, a Supabase session, a Cognito user pool, a custom signed cookie. SDT stays auth-agnostic; whatever object you hand to `setUser()` is what gets rendered.
-
-If other tools on the page want to react when the user changes (e.g. swapping out a reviewer-specific UI), they can listen for `sdt:user-change`:
+Or let StadiaRef follow the system and tell everything else when it flips:
 
 ```js
-window.addEventListener('sdt:user-change', (e) => {
-  // e.detail.user — the same object passed to setUser(), or null if cleared
-  reviewerSidebar.setUser(e.detail.user);
+window.addEventListener('stadiaref:theme-change', (event) => {
+  document.documentElement.dataset.theme = event.detail.theme;   // 'light' | 'dark'
 });
 ```
 
----
+The theme setting only affects the toolbar and its panels. Labels on the page choose light or dark on their own, from the background they sit on.
 
-## 3. Listening for `sdt:dataref-click` to wire a custom review or feedback panel
+## Putting it together: a review sidebar
 
-`sdt:dataref-click` fires every time a user clicks an SDT label, icon, or tooltip for a `[data-ref]` element. The event carries:
+A preview page with a docked sidebar where reviewers leave notes uses all three:
 
-- `dataRef` — the value of the clicked element's `data-ref` attribute
-- `element` — the host page element that the label was attached to
-- `current` — the SDT label / icon / tooltip the user actually clicked
+1. The host's theme toggle calls `setTheme()`.
+2. After sign-in the host calls `setUser()`, so the reviewer sees their name next to the tools.
+3. The host listens for `stadiaref:address-click` and adds a note keyed on the address.
 
-This is the primary hook for building a feedback / review / QA tool that uses the same `data-ref` vocabulary the toolbar already surfaces:
+Two more things make it tidy:
+
+- **Move out of the way.** If the sidebar is on the right, start StadiaRef with `dock: 'bottom-left'`.
+- **Hide together.** Call `window.stadiaref?.hide()` from the host's own "hide tools" control so everything clears in one action.
+
+All of this lives in the host, written against the public API and events.
+
+## Where to put this code
+
+StadiaRef isn't in your production build, so code that talks to it has to cope with it being absent.
+
+- **Best:** put it in a [setup module](addressing.md#your-own-profile). The Astro integration and the Vite plugin load that file on the dev server only, and hand it the API.
+- **Otherwise:** guard every call with `window.stadiaref?.`, as the examples above do. Event listeners need no guard. They never fire when StadiaRef isn't there.
+
+## Your own keys
+
+If the host has keyboard shortcuts of its own, rebind StadiaRef's so they don't clash:
 
 ```js
-window.addEventListener('sdt:dataref-click', (e) => {
-  const { dataRef, element } = e.detail;
-
-  // Add a feedback row keyed on the data-ref. Idempotent — if the same ref
-  // is already in the list, focus it instead of duplicating.
-  if (feedbackList.has(dataRef)) {
-    feedbackList.focus(dataRef);
-  } else {
-    feedbackList.add({
-      dataRef,
-      capturedAt: new Date().toISOString(),
-      // Optional: snapshot the visible text of the targeted element
-      preview: element.textContent.trim().slice(0, 120)
-    });
-  }
-});
+window.stadiaref?.init({ keys: { toggle: 'V', outline: false } });
 ```
 
-A few practical notes:
-
-- **Use the canonical `dataRef`, not the element reference, as the row key.** `data-ref` values are stable across reloads and code changes (that's the whole point of the toolbar). The DOM `element` reference changes every navigation.
-- **Don't `preventDefault()` the underlying click.** SDT's own click handler runs first (it copies the ref to clipboard); the event you're listening to is fired *after* that, and it doesn't bubble through the host DOM.
-- **Hover analogue:** `sdt:dataref-hover` fires on icon / full-label `mouseenter`. Useful for previewing a feedback row before commitment.
-
----
-
-## Example — composing all three in a Review Sidebar
-
-A typical "review sidebar" host — a preview page with a docked side panel where reviewers leave per-element feedback — composes all three patterns:
-
-1. **Theme sync** — the host's own light/dark toggle calls `seguruDebugToolbar.setTheme()` so SDT's chrome stays in step with the rest of the host UI.
-2. **Identity** — after the host's auth code resolves the current reviewer (from a session cookie, a token, an SSO callback — whatever the host already uses), it calls `seguruDebugToolbar.setUser({ name, role, id })` so the reviewer sees their identity in SDT's chrome alongside the host's own affordances.
-3. **`sdt:dataref-click` → feedback row** — the host listens for `sdt:dataref-click` and auto-adds a feedback row keyed on the clicked `data-ref`. Reviewers click any element on the preview, get a row, type their note, and the host posts it back keyed on a stable identifier.
-
-The host can also call `seguruDebugToolbar.hide()` from its own Esc fallback when a modal is open, so SDT cooperatively dismisses instead of competing for the corner. If the host already has a fixed sidebar on one side, it should pass `dock: 'bottom-left'` (or the opposite of its sidebar) so SDT doesn't collide.
-
-None of these integrations live in SDT itself — they all live in the host codebase, against the public `seguruDebugToolbar` API and the `sdt:` event surface. Every host can compose them against its own systems.
+See [Keys](api.md#keys).

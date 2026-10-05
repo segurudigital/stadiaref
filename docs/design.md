@@ -1,216 +1,96 @@
-# Design — IA & UI Spec
+# Design
 
-**Version:** 1.5
-**Last updated:** 2026-05-23
+How StadiaRef looks, and why. This is the implementation-level reference for the toolbar, its panels and the labels it draws on the page. The values live in code: colours in [`src/overlay/styles/tokens.js`](../src/overlay/styles/tokens.js), the toolbar and panel CSS in [`src/overlay/styles/shadow.js`](../src/overlay/styles/shadow.js), and the label CSS in [`src/overlay/styles/labels.js`](../src/overlay/styles/labels.js). When this page and the code disagree, the code is right and this page needs fixing.
 
-**Brand authority:** Seguru-Brand-Handbook.md §10 (Product Brand: Seguru Debug Toolbar) — v4.2, April 2026. All colour decisions in this document are formally ratified there. When the handbook and this doc conflict, the handbook wins.
+## Principles
 
----
+- **Orange is functional.** StadiaRef orange marks what you can act on and where you are: the product icon, active controls, section labels, focus rings. Nothing decorative is orange.
+- **The page stays readable.** Labels are small, sit on the element's top-left corner, and step aside (Pick, the overlap solver, `+N` badges) rather than cover content.
+- **Every text pair passes 4.5:1.** `test/unit/contrast.test.mjs` computes every text and background pair in `tokens.js`, including translucent backgrounds over the worst page they can sit on. A colour can't change without passing.
+- **Nothing loads from the network.** The icon and the logotype are inline SVG; the fonts are the system stacks.
+- **The brand is permanent.** The product icon is on screen in whichever chrome is showing, and the logotype sits beside it wherever there is room. No option removes either.
 
-## Information Architecture
+## Type
 
-The toolbar has two jobs: show `data-ref` labels and connect back to Seguru as the maker. The IA keeps these separate so the branding never interferes with the tool's function.
+| Use | Stack | Size |
+|---|---|---|
+| Toolbar, menus, panels | `-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif` | 12px; control keys 10px upper case |
+| Addresses, everywhere | `'SF Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace` | 10–12px |
 
-### Content zones (left to right)
+The logotype is outlined from Barlow Bold (SIL Open Font License 1.1), so no font is loaded.
 
-```text
-┌─────────────────────────────────────────────────────────────────────────────────────────┐
-│ [S] [user?]  [Labels Icons ▾] [Target Off ▾] [Level All ▾]  │  [Outline Off ▾] [⊞ Tree] │
-│      primary controls                                │  utility controls                │
-└─────────────────────────────────────────────────────────────────────────────────────────┘
-```
+## Colour
 
-**Badge zone** — The Seguru S mark (20px circle, always Seguru Primary Blue `#00C0F3`, white mark, symmetric padding) sits at the far left. On hover, a tooltip reads "Powered by Seguru Digital". Clicking opens seguru.digital in a new tab. As of v2.3.0 the badge is paired with an optional **identity pill** to its right (avatar + name + role) rendered when the host calls `setUser()`. The pill avatar uses neutral slate so the S badge stays the only Seguru-blue mark in the chrome.
+### Toolbar and panels
 
-**Labels dropdown** — Controls how labels appear (Icons, Off, Full). Click to open, select an option to apply. Press **L** to cycle. In the refreshed UI, the control reads as a compact value-led pill instead of a separate label plus value cell.
+| Token | Light | Dark |
+|---|---|---|
+| Product orange (icon, dots) | `#EA580C` | `#F97316` |
+| Orange that carries text | `#C2410C` | `#FDBA74` |
+| Background | `#FFFFFF` | `#27272A` |
+| Border | `#E5E7EB` | `#3F3F46` |
+| Text | `#111827` | `#F4F4F5` |
+| Control key text | `#6B7280` | `#A1A1AA` |
+| Active wash | `rgba(234,88,12,0.08)`, border `rgba(234,88,12,0.22)` | `rgba(249,115,22,0.16)`, border `rgba(249,115,22,0.36)` |
+| Menu hover | `#F9FAFB` | `rgba(255,255,255,0.06)` |
+| Toast and dialog status line | `#FFF7ED` background, `#9A3412` text | `#27272A` background, `#FDBA74` text |
 
-**Target dropdown** — Controls auto-ref target depth (Off, Sections, Blocks, Elements). Click to open, select a level. Press **T** to cycle. It sits beside Labels as the second primary control because those two settings define the main working state of the product. (Pre-2.3 builds called this "Depth" and bound it to `D`; the public API still uses `setDepth()` / `getDepth()` for back-compat.)
+White on `#EA580C` is 3.56:1, which fails for small text, so wherever white text sits on orange, or orange is the text on a light surface, it is `#C2410C` (5.18:1 with white).
 
-**Outline dropdown** — Controls optional layout guides (Off, Sections, Blocks). Press **O** to cycle. `Sections` outlines top-level wrappers with a strong orange frame plus a subtle inset wash so the page skeleton reads quickly. `Blocks` keeps those section outlines and adds lighter dashed boundaries for inner containers and blocks, making overlap and spacing relationships visible without needing element-level labels. This lives in the utility zone because it is diagnostic rather than always-primary.
+Changes made for contrast, measured against the wireframes:
 
-**Tree button** — Opens the floating element tree panel for list-based inspection, click-to-jump navigation, and copy actions. This also lives in the utility zone and should visually read as secondary to Labels and Target.
+- Menu hover is `#F9FAFB` in light and a 6% white wash in dark, so the grey notes in menus stay at 4.5:1 or more.
+- The active option's note and key use the accent colour; the wireframe grey measured 4.40:1 on the active wash.
+- The `+N` cluster badge and the block-group badge are opaque (`#FCE8DD` light, `#27272A` dark) instead of a translucent wash.
+- The brand tooltip is opaque `#111827`.
 
-**Level filter dropdown** — Controls which data-ref grammar classes are visible. Three modes: "All" (default — sections, blocks, and elements all shown), "Sec+Blk" (sections and blocks only — element labels hidden), "Sections" (section-level refs only). Independent of Labels, Target, and Outline. Press **F** to cycle. Implemented via `body.sdt-filter-section` / `body.sdt-filter-section-block` CSS classes combined with `sdt-ref-class-{section|block|element|unclassified}` classes stamped on each `[data-ref]` element by `injectLabels()`. Level filter is a third primary control alongside Labels and Target.
+### Labels by tier
 
-**Visibility hotkey** — Press **D** to show / hide the toolbar (default; configurable via `setHotkey()`). **Esc** is a global one-shot hide that closes any open dropdown, the Tree panel, the active-ref tree, and the toolbar in a single press.
+Each label is a bold tag and the address, in mono 10px, line height 1.3, padding 2px 5px, radius 3px, with a light shadow.
 
-### Why the S mark goes on the left
+| Tier | Tag | On a light surface | On a dark surface | Hover |
+|---|---|---|---|---|
+| Section | `SEC` | `#C2410C`, white text | `#F97316`, `#111827` text | `#111827`, white text |
+| Block | `BLK` | `rgba(17,24,39,0.92)`, `#FFF7ED` text | `rgba(255,255,255,0.92)`, `#111827` text | `#C2410C`, white text |
+| Element | `EL` | white, `#111827` text, `#6B7280` border | `rgba(17,24,39,0.72)`, white text, `rgba(255,255,255,0.6)` border | `#C2410C`, white text |
+| Unclassified | `?` | `#FFFBEB`, `#92400E` text, dashed `#B45309` border, no shadow | `rgba(17,24,39,0.72)`, `#FDE68A` text, dashed `#FBBF24` border | `#92400E`, white text |
+| Automatic | `AUTO` | the tier's colours with a dashed border | same | same as the tier |
 
-The brand handbook says the badge "always appears at the bottom of product UIs" and "never competing with the product's primary navigation or content." Placing it at the left edge of the toolbar puts it in the lowest-priority reading position (users scan left-to-right, and the actionable controls are what they reach for). The S mark is small, passive, and out of the way until you want it.
+Whether a label uses its light or dark version comes from the background behind its element: StadiaRef walks up to the first opaque background and uses the dark version below 40% relative luminance.
 
----
+**Icons mode** draws a dot per element carrying the tier's letter (S, B, E, ?) in the tier's colours. The dots are opaque, so the letter keeps its contrast on any page.
 
-## UI Specifications
+## The toolbar
 
-### Toolbar bar
+Order, left to right: the brand (icon and logotype, linking to seguru.digital), the user pill when `setUser()` has been called, **Labels**, **Show**, the **AUTO** chip while auto-address is on, **Pick**, **Find**, a divider, **Outline**, **Tree**.
 
-| Property | Value | Source |
-|----------|-------|--------|
-| Position | Fixed, bottom 20px, right 20px | Existing |
-| Background (light) | `#FFFFFF` | Existing |
-| Background (dark) | `#27272A` | Existing |
-| Border | 1px solid `#E5E7EB` (light) / `#3F3F46` (dark) | Existing |
-| Border radius | 6px | Existing |
-| Shadow | `0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06)` | Existing |
-| Font | System UI stack | Existing |
-| Height | Auto (content-driven, roughly 36px) | Existing |
-| z-index | 99999 | Existing |
+- 6px radius, 4px padding, shadow `0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06)`.
+- Controls are pills with a 10px upper-case key and a 12px value.
+- **Show** reads `Show All ▾`, `Show Sections ▾`, `Show Sec + Blk ▾`, `Show None ▾` and so on, and takes the active wash whenever a tier is hidden. Its menu has a tick box per tier and stays open while you tick.
+- The **AUTO** chip is a status, not a button: a dashed 1px border and mono 10px bold text.
+- **Pick** and **Find** are toggle buttons with an icon and a word; they take the active wash while on.
+- Menus are ARIA menus with arrow-key support; Pick, Find and Tree report their pressed state; every control shows a 2px orange focus ring.
 
-### S mark icon (badge zone)
+### Docking
 
-| Property | Value | Source |
-|----------|-------|--------|
-| Size | 16px diameter circle | Brand handbook: compact badge icon = 16px |
-| Background | `#00C0F3` (Seguru Primary Blue) | Brand handbook §16 |
-| Mark | White S figure (inline SVG) | Brand handbook §16 |
-| Margin | 0 left, 0 right (contained within the badge zone padding) | — |
-| Cursor | Pointer | Clickable |
-| Link target | `https://seguru.digital` (new tab) | Brand handbook §16: badge links to seguru.digital |
-| Hover tooltip | "Powered by Seguru Digital" | Brand handbook §16: compact badge text |
-| Border radius | 50% (circle) | Brand handbook §16 |
+The toolbar sits 20px from the corner set by `dock`, plus the device's safe-area inset. If a fixed or sticky element at least 80% of the viewport wide touches the docked edge, such as an app's tab bar, the toolbar sits clear of it. `dockOffset` adds a distance of your own and replaces the detected bar on any side it sets. The toast, the dialog status line, the Find panel and the Tree open 8px beyond the toolbar; the address chain opens at the opposite edge.
 
-### "data-ref" label
+### Compact layout
 
-| Property | Value | Source |
-|----------|-------|--------|
-| Font size | 0.625rem (10px) | Existing |
-| Font weight | 600 | Existing |
-| Text transform | Uppercase | Existing |
-| Letter spacing | 0.3px | Existing |
-| Color (light) | `#9CA3AF` | Existing |
-| Right border | 1px solid `#E5E7EB` | Existing — divides badge zone from controls |
+Under 480px wide, or with a coarse pointer, the toolbar is at most the viewport width less its margins and wraps onto more rows, key captions shrink to their shortcut letter, and every control is at least 44px tall. Under 480px the logotype is dropped and the icon stays.
 
-### Label overlap handling
+## Panels
 
-When multiple visible labels would collide in the same viewport zone, labels are vertically staggered in 18px steps with a small depth-based horizontal inset so dense nested states form a clearer stepped stack instead of a purely mechanical vertical shove. A thin leader line is drawn back to the original element corner, and full-mode labels clip cleanly at long widths instead of sprawling across dense layouts.
+- **Find**: a 400px panel beside the toolbar with a labelled search field, a list of matches each tagged by tier, and a status line. A jump scrolls to the element, frames it in orange and dims the rest of the page with one fixed layer that takes no clicks.
+- **Pick**: a dark chip (`#111827`, 6px radius) near the pointer with the chain. The section part is on `#F97316`, the block on near-white, the element outlined, separated by `/`, with the shared prefix dropped. A hint line says what a click copies. On touch, a sheet rises from the bottom with the chain, the full address, and Copy address, Parent and Close buttons at least 44px tall.
+- **Tree**: every address in document order, tagged by tier, each with a copy button.
+- **Address chain**: on hover over a label, the label's ancestors, each copyable.
+- **Dialog status line**: "Dialog opened. Showing the N addresses inside it.", above the toolbar, with `role="status"`.
 
-On dense pages where staggering still can't fit every label (typical of tightly nested refs that all anchor to the same top-left — e.g. an `<article data-ref>` containing an `<h3 data-ref>` and `<p data-ref>`), the unplaceable labels collapse into a single `+N` cluster badge appended next to the placed label. The badge uses the same orange-on-light / white-on-dark luminance treatment as the label itself, sits inline at the label's right edge, and expands on hover into a popover listing each clustered ref as `tag · data-ref-value`. Each row is click-to-copy with the standard `sdt:dataref-click` event — semantically identical to clicking the visible label, just routed through the popover. The badge is hidden alongside the labels when the toolbar is dismissed (`body.sdt-hide` / `body.sdt-presentation`).
+## In Astro's Dev Toolbar
 
-### Label visibility under hidden ancestors
+StadiaRef is an app with the product icon. Its panel is dark, to sit with Astro's own: `#13151A` background, `#343841` border, 12px radius. It has the brand row (icon, logotype, version), the AUTO chip while auto-address is on, Labels (one of three), Show (three independent toggles), Outline (one of three), the address count, and Pick, Find and Tree. The selected segment is `#F97316` with `#111827` text. The floating toolbar isn't drawn while the panel is there; everything else is, in StadiaRef's own corner, clear of Astro's bar.
 
-Labels for refs nested inside `display:none`, `visibility:hidden`, or `opacity:0` ancestors (closed mega menus, dropdowns, modals, inactive tabs) are suppressed so their otherwise-invisible icons can't intercept clicks on the visible content beneath them. The check is reactive: a `MutationObserver` on `style` / `class` / `hidden` attributes plus a `transitionend` listener re-evaluates visibility on every container show/hide. Two CSS gates back this up — `.sdt-ref-hidden` (display:none, set when the host fails the visibility check) and `.sdt-visible-host` (the structural belt that opts label nodes back into `pointer-events: auto`, defaulting to `none`). Mid-transition opacity values (`(0, 1)` on an ancestor with a configured opacity transition) are treated as hidden until the transition settles so a fading-out panel can't leave its labels hit-testable during the fade.
+## Motion
 
-### Outline guides
-
-Section outlines are intentionally the loudest structural layer: solid orange, thicker stroke, and a faint inset wash to make the page skeleton legible at a glance. Block outlines must remain lighter, dashed, and more schematic so they reveal internal layout without competing with the section layer. On dark sections, both guide types switch to higher-contrast variants automatically; sections use the approved on-dark orange and blocks pick up a lighter guide treatment so they remain visible.
-
-### Level filter dropdown
-
-The Level filter controls which data-ref grammar classes are displayed. It sits as the third primary control — after Labels and Target — because it filters the *type* of work you're looking at, not just the visibility mode. The three options map directly to the data-ref v5.0 grammar levels (§2.1):
-
-- **All** (default) — all classified refs shown; this is the existing SDT behaviour, no change.
-- **Sec+Blk** — section and block refs only; element labels hidden. Useful during structural QA.
-- **Sections** — only top-level section refs shown. Useful for high-level page map reviews.
-
-The filter is applied via CSS body classes (`body.sdt-filter-section`, `body.sdt-filter-section-block`) so it takes effect instantly without DOM mutation. Each `[data-ref]` element receives a `sdt-ref-class-{section|block|element|unclassified}` class from `injectLabels()` that the CSS selectors target.
-
-v4.0 pages (which have only element-class refs) degrade gracefully: "All" shows everything as before; "Sections only" shows nothing — which is valid — because v4.0 pages use element grammar for everything including section wrappers.
-
-### Active-ref tree panel
-
-A lightweight fixed-corner overlay that appears when the cursor enters any SDT label or icon. It shows the full data-ref breadcrumb chain for the hovered element — outermost ancestor first, current element highlighted — so the operator can read the complete section → block → element context without opening the main Tree panel.
-
-The panel is positioned at the **opposite vertical edge** from the toolbar (toolbar at bottom → tree at top; toolbar at top → tree at bottom) so it never overlaps toolbar controls or the Tree panel. Same horizontal side as the toolbar.
-
-Each row in the chain:
-
-- Shows the grammar class (`section`, `block`, `element`) as a muted label
-- Shows the full `data-ref` value in monospace
-- Is click-to-copy (fires `sdt:dataref-click` with the same semantics as a regular label)
-
-A **pin button** in the panel header locks it open. When unpinned, the panel auto-dismisses when the cursor leaves the label (120ms grace period so moving between icon and full-label variants of the same element doesn't flicker). **Esc** (via global hide) dismisses the panel and clears the pin.
-
-The active-ref tree must **not** conflict with the existing Tree button panel:
-
-- Different DOM element (`.sdt-active-ref-tree` vs `.sdt-tree-panel`)
-- Different trigger mechanism (hover vs explicit button click)
-- Different content (breadcrumb context vs full page tree)
-- Different position (opposite vertical edge vs same side as toolbar)
-
-### Tree panel
-
-The Tree panel should read like an inspection surface, not a raw debug list. The header carries the title plus compact context chips (`ref count`, `Target` *(formerly "Depth")*, `Outline`) and a short hint line. Rows use a stronger indentation rhythm via guide rails, orange context pills, and a warmer hover state. Hover previews the target element; clicking a row jumps the page to that element and briefly intensifies the highlight so the destination is obvious.
-
-### Dropdown triggers
-
-Each dropdown shows the current selection as a compact pill with two text weights: a muted uppercase key (`Labels`, `Target`, `Outline`) and a stronger value (`Icons`, `Blocks`, `Off`). Clicking opens a popover above or below the toolbar (depending on position). Options show a dot indicator, label, and description. A selected control uses a tinted pill treatment; an open control gets an explicit focus halo and rotated caret so its state is visible even before the menu items are read. A hint at the bottom shows the keyboard shortcut.
-
-Utility controls (`Outline`, `Tree`) use the same interaction model, but when active they shift into a more obviously diagnostic treatment so they feel intentionally secondary but clearly enabled.
-
-### Tooltip (S mark hover)
-
-| Property | Value | Source |
-|----------|-------|--------|
-| Text | "Powered by Seguru Digital" | Brand handbook §16: compact badge variant |
-| Font family | Open Sans, 400 | Brand handbook §16 badge spec |
-| Font size | 11px | Proportional to toolbar size |
-| Text color (light bg) | `#FFF7ED` | Matches implemented dark tooltip treatment |
-| Text color (dark bg) | `#B1B3B6` | Brand handbook §6: dark variant |
-| Background | `rgba(17, 24, 39, 0.85)` | Matches existing tooltip style |
-| Border radius | 4px | Brand handbook: badge border radius |
-| Position | Above the S mark, centered | Doesn't overlap toolbar controls |
-| Animation | Fade in 0.15s, translate up 4px | Consistent with label tooltip animation |
-
----
-
-## Visual hierarchy (priority order)
-
-1. **Primary dropdown triggers** — Labels and Target, the thing you click most
-2. **data-ref labels on the page** — the main output of the tool
-3. **Utility controls** — Outline and Tree, available but visually secondary
-4. **S mark** — brand anchor, passive, noticed but not demanding
-5. **Dropdown menus + hover tooltip** — only appear on interaction
-
-The S mark should feel like it belongs there — part of the furniture, not a sticker slapped on top. At 16px on a ~36px tall bar, it's proportional. The blue circle provides just enough color contrast against the neutral toolbar to be identifiable as the Seguru mark without pulling focus from the orange accent used on the actual data-ref labels.
-
----
-
-## Colour separation
-
-The toolbar uses two colour families that never overlap. This rule is formally documented in the brand handbook at §10.
-
-**Orange** (`#EA580C` / `--color-sdt-primary`) — all functional elements. Label dots, ref icon backgrounds, full-mode label text, tree panel row hover highlight, active selection indicator, toast border. This is the working colour.
-
-**Blue** (`#00C0F3`) — Seguru badge only. The S mark circle. Nothing else in the toolbar uses this blue. Per the brand handbook §10, the Seguru endorsement always uses the core brand colours, even inside a product context. This never changes, even in dark mode.
-
-This separation means the badge reads as a brand element instantly, without needing text to explain it.
-
-### SDT Design Tokens (formally defined in brand handbook §20)
-
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--color-sdt-primary` | `#EA580C` | All functional orange elements |
-| `--color-sdt-dark` | `#111827` | Dark mode toolbar bg, tooltip overlays, tree panel |
-| `--color-sdt-wash` | `#F9FAFB` | Product page alt section backgrounds |
-
-### On-dark orange variant
-
-When a label sits over a dark-background element (detected via WCAG relative luminance — threshold 0.40), the `sdt-on-dark` class is applied. The orange label dot shifts to `#F97316` (one step lighter in the orange scale) to maintain contrast. The ref icon also lightens accordingly.
-
-This is the only approved variation of the SDT Orange. Do not use any other orange shade.
-
----
-
-## States
-
-### Toolbar at rest
-S mark visible at the left, optional user pill, followed by the primary control pair (`Labels`, `Target`), then a quieter utility pair (`Outline`, `Tree`). Active controls use a tinted pill treatment rather than relying on text color alone. No dropdowns open, no tooltip.
-
-### Hover on S mark
-Tooltip fades in above the icon: "Powered by Seguru Digital". Cursor changes to pointer. A subtle external-link indicator (small arrow or underline on the tooltip text) signals it's a link.
-
-### Click on S mark
-Opens `https://seguru.digital` in a new tab. No other toolbar state changes.
-
-### Dark mode
-S mark stays `#00C0F3` (brand handbook §10: always Seguru Primary Blue regardless of context — this is a hard rule). Toolbar BG shifts to `#27272A`. Border shifts to `#3F3F46`. SDT Orange (`#EA580C`) stays the same — it passes contrast on the dark toolbar background. Tooltip text switches to `#B1B3B6`. Tree panel background uses `--color-sdt-dark` (`#111827`).
-
----
-
-## Relationship to brand handbook
-
-This document is the implementation-level spec. The brand handbook (§10 Product Brand: Seguru Debug Toolbar) is the brand-level authority. They should always agree. If you find a conflict:
-
-1. The handbook wins on: colour values, S mark rules, badge behaviour, tone, positioning
-2. This doc wins on: pixel dimensions, z-index, exact CSS values, shadow DOM behaviour
-3. When in doubt, raise it and update both
+Short and functional: the toast fades and slides in over 150ms, the brand tooltip fades in 120ms, and the touch sheet rises in 180ms. Menus and panels open without animation. Under `prefers-reduced-motion: reduce` the sheet doesn't animate.
