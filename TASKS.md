@@ -100,6 +100,8 @@ The baseline tests pin what the 2.5.0 code does, not what the README says. Where
 
 For stage 3: `bad--ref` broke the core rule against doubled hyphens, so under 3.0 it was `unclassified` in every profile. Resolved 2026-10-05 by removing it from the fixture.
 
+Core Spec (2026-10-05): written at `docs/spec/stadia-address-core.md` from the core as built (Samuel asked for it rather than supplying it). `test/unit/spec.test.mjs` checks its example table, the titan word lists, the app surfaces, the length limit and the parse shapes against `src/core`. The 3.0 docs already link to that path; stage 10 only needs to check the links resolve once the docs are copied in.
+
 Notes from stage 8:
 
 - **Astro 7 and later only** (Samuel, 2026-10-05: Astro is at v7, no need to support v5). The peer range is `astro >=7`; the integration was also run once on Astro 5.18 before that decision and passed. The 3.0 docs still say "Needs Astro 5 or later" (`install/astro.md`): change that when the docs are copied in at stage 10. Vite's peer range stays `>=5`; tested on Vite 8.3.
