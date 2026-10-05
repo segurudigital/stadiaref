@@ -15,5 +15,7 @@ docs/_internal/
 test-results/
 playwright-report/
 
-# Built plugin zips. Releases attach them; the historical ones stay tracked.
+# Built plugin zips. Releases attach them. The zips for each release are
+# also committed (git add -f) so they can be downloaded from the repo until
+# the plugin is in the WordPress.org directory.
 dist/*.zip
