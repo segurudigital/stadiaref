@@ -60,12 +60,12 @@ StadiaRef 3.0.0, built in stages. A new session starts at the first unticked sta
   - [x] Pick: pointer, arrow keys, Esc, an element with no address, clicks don't reach the host
   - [x] Find: exact, substring, no match, hidden match, keyboard navigation, shortcut letters typed into the field, dim layer clears on close
   - [x] `copied` flag in both outcomes
-- [ ] **Stage 7 — Apps.**
-  - [ ] Route change in a small SPA fixture relabels without `refresh()`
-  - [ ] A framework-style text update that wipes a label: label back within two frames
-  - [ ] `<dialog>` via `showModal()`: toolbar clickable, Find accepts typing; scripted `role="dialog"` with a focus trap; Esc closes the host dialog without hiding StadiaRef
-  - [ ] Touch sheet under mobile emulation; docking above a fixed bottom bar
-  - [ ] `<body>` swap followed by recovery; one survey per frame
+- [x] **Stage 7 — Apps.**
+  - [x] Route change in a small SPA fixture relabels without `refresh()`
+  - [x] A framework-style text update that wipes a label: label back within two frames
+  - [x] `<dialog>` via `showModal()`: toolbar clickable, Find accepts typing; scripted `role="dialog"` with a focus trap; Esc closes the host dialog without hiding StadiaRef
+  - [x] Touch sheet under mobile emulation; docking above a fixed bottom bar
+  - [x] `<body>` swap followed by recovery; one survey per frame
 - [ ] **Stage 8 — Entry points and integrations.**
   - [ ] Astro (5 and current major) and Vite projects: dev server serves StadiaRef; production output has no `data-stadiaref-root`
   - [ ] A `setup` module registers a profile the overlay then uses
@@ -99,6 +99,13 @@ The baseline tests pin what the 2.5.0 code does, not what the README says. Where
 | Tree copy button | Copies, emits no event | n/a (stage 6 adds `source: 'tree'`) | `baseline-events` › Tree row |
 
 For stage 3: `bad--ref` breaks the core rule against doubled hyphens, so under 3.0 it is `unclassified` in every profile, including titan. That is the one fixture address whose class changes. Raise it at stage 3 (brief, decision 2).
+
+Notes from stage 7:
+
+- The baseline test "refresh() picks up nodes added after boot" pinned 2.5.0's lack of a childList observer. It now runs with `watch: false` (the 2.5.0 behaviour), and a twin checks that with watch on the new node is labelled without `refresh()`. Both naming schemes.
+- The old body-only visibility observer and the `load` re-scan's own survey are folded into the one watcher; the `load` re-scan now calls `survey()`.
+- On a phone, a page wider than the viewport widens the layout viewport, and a fixed toolbar sits at the bottom of that, below the visible area. That is how fixed elements behave on such pages, not something StadiaRef can fix; the touch test makes the sample cards fit.
+- Touch: Pick uses the sheet and never needs hover. The icon tooltip and the address chain still open on hover; on touch a tap on a label copies it, as before.
 
 Left for later stages on purpose (stage 4):
 

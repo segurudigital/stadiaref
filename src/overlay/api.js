@@ -1,6 +1,6 @@
 import { S } from './state.js';
 import { VERSION } from './constants.js';
-import { setDock } from './dock.js';
+import { applyDockPosition, normalizeDockOffset, setDock } from './dock.js';
 import { getKeys, setKeys } from './keys.js';
 import { hide, show, toggleVisibility } from './lifecycle.js';
 import { getLabels, setLabels } from './mode.js';
@@ -28,6 +28,11 @@ export function publicInit(opts) {
     setTheme(o.theme);
   }
   if ('dock' in o) setDock(o.dock);
+  if ('dockOffset' in o) {
+    S.dockOffset = normalizeDockOffset(o.dockOffset);
+    applyDockPosition();
+  }
+  if ('watch' in o) S.watch = !(o.watch === false || o.watch === '0');
   if ('user' in o) setUser(o.user);
   if ('labels' in o) setLabels(o.labels);
   if ('outline' in o) setOutline(o.outline);

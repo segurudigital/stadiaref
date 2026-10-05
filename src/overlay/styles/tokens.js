@@ -163,6 +163,9 @@ export function pairs() {
   out.push(['pick chip block', '#111827', 'rgba(255, 255, 255, 0.92)', '#111827']);
   out.push(['pick chip element', '#FFFFFF', '#111827', '#111827']);
   out.push(['pick chip unclassified', '#FDE68A', '#111827', '#111827']);
+  out.push(['pick sheet address', '#E5E7EB', '#111827', '#111827']);
+  out.push(['pick sheet copy button', '#111827', '#F97316', '#111827']);
+  out.push(['pick sheet button', '#F9FAFB', '#111827', '#111827']);
   ['light', 'dark'].forEach(function (theme) {
     var t = TOOLBAR[theme];
     out.push([theme + ' find field', t.fg, t.barBg, t.barBg]);

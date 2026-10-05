@@ -10,6 +10,12 @@ import { applyRootState } from './mount.js';
 // under it. Click copies the highlighted level; up and down arrows move it
 // between the element and its addressed ancestors. Clicks while picking
 // never reach the page. Esc or P leaves.
+//
+// On touch there is no pointer to follow: a tap picks the element and a
+// sheet rises from the bottom with the chain, the full address and three
+// buttons, Copy address, Parent and Close. An interaction is touch when
+// its pointerType is touch, or when the pointer is coarse and no fine
+// pointer has been seen.
 
 var TIER_WORDS = { section: 'section', block: 'block', element: 'element', unclassified: 'address' };
 
@@ -43,6 +49,22 @@ export function shortPart(address, prev) {
   return n ? a.slice(n).join('-') : address;
 }
 
+// Called for every pointer event (boot.js): remembers what kind of pointer
+// is in use.
+export function notePointer(e) {
+  if (!e || !e.pointerType) return;
+  S.lastPointerType = e.pointerType;
+  if (e.pointerType === 'mouse' || e.pointerType === 'pen') S.finePointerSeen = true;
+}
+
+export function isTouch() {
+  if (S.lastPointerType === 'touch') return true;
+  if (S.lastPointerType === 'mouse' || S.lastPointerType === 'pen') return false;
+  var coarse = false;
+  try { coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches; } catch (e) { /* ignore */ }
+  return coarse && !S.finePointerSeen;
+}
+
 function ensureChip() {
   if (S.pickChip) return S.pickChip;
   var chip = document.createElement('div');
@@ -55,34 +77,45 @@ function ensureChip() {
   return chip;
 }
 
+// The chain as parts: section / block / element, shared prefixes dropped.
+function chainParts() {
+  var p = S.pickState;
+  var parts = document.createElement('div');
+  parts.className = 'stadiaref-pick-chip__parts';
+  var prev = null;
+  for (var i = 0; i < p.chain.length; i++) {
+    if (i) {
+      var sep = document.createElement('span');
+      sep.className = 'stadiaref-pick-chip__sep';
+      sep.setAttribute('aria-hidden', 'true');
+      sep.textContent = '/';
+      parts.appendChild(sep);
+    }
+    var address = p.chain[i].getAttribute('data-ref');
+    var part = document.createElement('span');
+    part.className = 'stadiaref-pick-chip__part stadiaref-pick-chip__part--' + tierOf(p.chain[i]) + (i === p.level ? ' stadiaref-pick-chip__part--current' : '');
+    part.textContent = shortPart(address, prev);
+    parts.appendChild(part);
+    prev = address;
+  }
+  return parts;
+}
+
 function renderChip() {
   var chip = ensureChip();
   var p = S.pickState;
+  if (p.touch) { chip.hidden = true; return; }
   chip.innerHTML = '';
-  var parts = document.createElement('div');
-  parts.className = 'stadiaref-pick-chip__parts';
+  var parts;
   var hint = document.createElement('div');
   hint.className = 'stadiaref-pick-chip__hint';
   if (!p.chain.length) {
+    parts = document.createElement('div');
+    parts.className = 'stadiaref-pick-chip__parts';
     parts.textContent = 'No address here';
     hint.textContent = 'Point at something with an address. Esc leaves pick mode.';
   } else {
-    var prev = null;
-    for (var i = 0; i < p.chain.length; i++) {
-      if (i) {
-        var sep = document.createElement('span');
-        sep.className = 'stadiaref-pick-chip__sep';
-        sep.setAttribute('aria-hidden', 'true');
-        sep.textContent = '/';
-        parts.appendChild(sep);
-      }
-      var address = p.chain[i].getAttribute('data-ref');
-      var part = document.createElement('span');
-      part.className = 'stadiaref-pick-chip__part stadiaref-pick-chip__part--' + tierOf(p.chain[i]) + (i === p.level ? ' stadiaref-pick-chip__part--current' : '');
-      part.textContent = shortPart(address, prev);
-      parts.appendChild(part);
-      prev = address;
-    }
+    parts = chainParts();
     var chosen = p.chain[p.level];
     var moves = [];
     if (p.level > 0) moves.push('up arrow selects the ' + TIER_WORDS[tierOf(p.chain[p.level - 1])]);
@@ -95,6 +128,68 @@ function renderChip() {
   chip.appendChild(hint);
   chip.hidden = false;
   placeChip();
+}
+
+// ─── The sheet (touch) ──────────────────────────────────────
+function sheetButton(cls, text, onTap) {
+  var b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'stadiaref-pick-sheet__btn' + (cls ? ' stadiaref-pick-sheet__btn--' + cls : '');
+  b.textContent = text;
+  b.addEventListener('click', function (e) {
+    e.stopPropagation();
+    onTap(b);
+  });
+  return b;
+}
+
+function ensureSheet() {
+  if (S.pickSheet) return S.pickSheet;
+  var sheet = document.createElement('div');
+  sheet.className = 'stadiaref-pick-sheet';
+  sheet.setAttribute('role', 'dialog');
+  sheet.setAttribute('aria-label', 'Picked address');
+  sheet.hidden = true;
+  S.shadowRoot.appendChild(sheet);
+  S.pickSheet = sheet;
+  return sheet;
+}
+
+function renderSheet() {
+  var p = S.pickState;
+  var sheet = ensureSheet();
+  var el = p.chain[p.level];
+  if (!el) { sheet.hidden = true; return; }
+  sheet.innerHTML = '';
+  sheet.appendChild(chainParts());
+  var address = document.createElement('div');
+  address.className = 'stadiaref-pick-sheet__address';
+  address.textContent = el.getAttribute('data-ref');
+  sheet.appendChild(address);
+  var actions = document.createElement('div');
+  actions.className = 'stadiaref-pick-sheet__actions';
+  actions.appendChild(sheetButton('copy', 'Copy address', function (b) {
+    var chosen = S.pickState.chain[S.pickState.level];
+    if (chosen) copyAddress(chosen, chosen.getAttribute('data-ref'), b, 'pick');
+  }));
+  var parent = sheetButton('', 'Parent', function () {
+    if (S.pickState.level > 0) {
+      S.pickState.level--;
+      renderSheet();
+      drawFrames();
+    }
+  });
+  if (p.level <= 0) parent.disabled = true;
+  actions.appendChild(parent);
+  actions.appendChild(sheetButton('', 'Close', closeSheet));
+  sheet.appendChild(actions);
+  sheet.hidden = false;
+}
+
+function closeSheet() {
+  if (S.pickSheet) S.pickSheet.hidden = true;
+  for (var i = 0; i < 6; i++) unhighlight('pick-' + i);
+  unhighlight('pick-current');
 }
 
 function placeChip() {
@@ -134,6 +229,8 @@ function setTarget(el) {
 
 function onMove(e) {
   var p = S.pickState;
+  if (e.pointerType === 'touch') return;
+  if (p.touch) { p.touch = false; closeSheet(); }
   p.x = e.clientX;
   p.y = e.clientY;
   var t = pointTarget(e);
@@ -154,7 +251,9 @@ function onClick(e) {
   swallow(e);
   // Touch and keyboard clicks come without a move first; take the target
   // from the click (the level is kept when the chain is the same).
+  S.pickState.touch = isTouch();
   setTarget(pointTarget(e));
+  if (S.pickState.touch) { renderSheet(); return; }
   var el = S.pickState.chain[S.pickState.level];
   if (el) copyAddress(el, el.getAttribute('data-ref'), S.pickChip, 'pick');
 }
@@ -168,6 +267,7 @@ function onKey(e) {
   e.preventDefault();
   e.stopPropagation();
   renderChip();
+  if (p.touch && S.pickSheet && !S.pickSheet.hidden) renderSheet();
   drawFrames();
 }
 
@@ -189,7 +289,7 @@ export function startPick() {
   if (isPicking()) return;
   if (S.closeFind) S.closeFind();
   if (S.presentationMode && S.showToolbar) S.showToolbar();
-  S.pickState = { active: true, chain: [], level: -1, x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  S.pickState = { active: true, touch: isTouch(), chain: [], level: -1, x: window.innerWidth / 2, y: window.innerHeight / 2 };
   S.pickMode = true;
   applyRootState();
   for (var i = 0; i < LISTENERS.length; i++) window.addEventListener(LISTENERS[i][0], LISTENERS[i][1], true);
@@ -207,6 +307,7 @@ export function stopPick() {
   for (var j = 0; j < 6; j++) unhighlight('pick-' + j);
   unhighlight('pick-current');
   if (S.pickChip) S.pickChip.hidden = true;
+  if (S.pickSheet) S.pickSheet.hidden = true;
   setPressed(false);
   applyRootState();
 }

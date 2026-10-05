@@ -49,6 +49,13 @@ Seguru Debug Toolbar becomes **StadiaRef**. Every 2.x name keeps working through
 - `classify(address)` and `validate(address)` on the API, using the active profile.
 - **`stadiaref/core`** (`dist/core.mjs`): `validate`, `classify`, `parse`, `registerProfile` and `profiles`, with no DOM. It runs in Node, so a CI check uses the same rules as the toolbar. The overlay and the core share one profile registry.
 - Tiers are recomputed on every survey, so an element's tier follows the page as content is added. A duplicated address logs one console warning per survey.
+- **Watching the page** (`watch`, default on). StadiaRef re-surveys when the page changes: a route change in a single-page app, content mounted after a fetch, an address changed on a reused element, a late `dataref-` class. Labels for content that has gone go with it. Changes are batched to at most one survey per frame. `refresh()` still works; `watch: false` turns the watching off.
+- **Labels put back.** A label that a framework re-render deletes is put back on the next frame.
+- **Self-repair.** If a client router swaps `<body>`, or the label stylesheet or StadiaRef's `<html>` attributes are removed, StadiaRef puts them back and re-surveys. It also listens for Astro's `astro:after-swap` and `astro:page-load`, and its host is marked `data-astro-transition-persist`.
+- **Dialogs.** While a host modal is open (a `<dialog>` opened with `showModal()`, or `role="dialog"` / `alertdialog` with `aria-modal="true"`), only the labels inside it show, a status line says how many there are, and the toolbar moves into the modal so it can still be clicked and typed into. Esc is left to the dialog. Find searches inside the dialog only.
+- **Pick on touch.** Tap an element and a sheet rises with its chain, the full address, and Copy address, Parent and Close buttons at least 44px tall.
+- **Safe areas and fixed bars.** The toolbar and its panels keep clear of the device's safe-area insets and of a full-width bar fixed to the edge they dock on. `dockOffset: { top, right, bottom, left }` sets the distance yourself; a side it sets replaces the detected bar.
+- StadiaRef never starts twice. If a copy of StadiaRef, or a 2.x Seguru Debug Toolbar, is already running on the page, a second copy logs one warning and doesn't start.
 
 ### Fixed
 

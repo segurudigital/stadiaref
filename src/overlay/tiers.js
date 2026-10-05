@@ -1,5 +1,5 @@
 import { S } from './state.js';
-import { hasRecord, rec } from './records.js';
+import { hasRecord, rec, removeOwn } from './records.js';
 import { copyAddress } from './copy.js';
 import { forEachNode, toArray } from './dom.js';
 import { emitEvent } from './events.js';
@@ -150,7 +150,7 @@ export function getDirectBlockRefs(sectionEl) {
 export function clearBlockGroupCollapse() {
   forEachNode(document.querySelectorAll('.stadiaref-collapsed'), function (n) { n.classList.remove('stadiaref-collapsed'); });
   var badges = document.querySelectorAll('.stadiaref-block-group-badge');
-  forEachNode(badges, function (b) { b.parentNode && b.parentNode.removeChild(b); });
+  forEachNode(badges, removeOwn);
   forEachNode(document.querySelectorAll('[data-ref]'), function (el) {
     if (!hasRecord(el)) return;
     rec(el).blockGroupMember = false;

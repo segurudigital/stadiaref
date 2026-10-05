@@ -199,3 +199,9 @@ export function installAliases(api, queueable) {
     window[OLD_GLOBAL] = api;
   }
 }
+
+// True when a 2.x copy of the overlay is already running on the page: it
+// sets the old global (index.js then doesn't start a second overlay).
+export function legacyRunning() {
+  return !!window[OLD_GLOBAL];
+}

@@ -1,5 +1,6 @@
 import { S } from './state.js';
 import { closeAllDropdowns } from './toolbar.js';
+import { isLive } from './mount.js';
 
 // ─── Position config ────────────────────────────────────────
 // `dock` is the canonical name; `position` is the legacy alias kept for back-compat.
@@ -36,10 +37,72 @@ export function applyStyleSnippet(el, snippet) {
   }
 }
 
-// Place the toolbar in its corner; the toast and the Tree open beside it,
-// clear of its measured height (the compact toolbar wraps onto more rows);
-// the address chain opens at the opposite edge so it never covers the
-// toolbar.
+// The dock offsets: the device's safe-area inset on every side, plus either
+// the configured dockOffset for that side or, failing that, the height of a
+// full-width fixed bar on the edge the toolbar is docked on.
+var SIDES = ['top', 'right', 'bottom', 'left'];
+
+export function normalizeDockOffset(value) {
+  if (!value || typeof value !== 'object') return null;
+  var out = {};
+  var any = false;
+  for (var i = 0; i < SIDES.length; i++) {
+    var n = Number(value[SIDES[i]]);
+    if (typeof value[SIDES[i]] !== 'undefined' && isFinite(n)) { out[SIDES[i]] = n; any = true; }
+  }
+  return any ? out : null;
+}
+
+function isOwnNode(el) {
+  return !!S.shadowHost && (el === S.shadowHost || S.shadowHost.contains(el));
+}
+
+// A fixed or sticky element at least 80% of the viewport wide that touches
+// `edge` (top or bottom): how far it reaches into the viewport, or 0.
+// Sampled with elementsFromPoint along that edge, so only what is actually
+// there is measured.
+export function fixedBarOffset(edge) {
+  var w = window.innerWidth || document.documentElement.clientWidth;
+  var h = window.innerHeight || document.documentElement.clientHeight;
+  if (!w || !h || typeof document.elementsFromPoint !== 'function') return 0;
+  var y = edge === 'top' ? 1 : h - 2;
+  var best = 0;
+  var seen = [];
+  var xs = [0.1, 0.5, 0.9];
+  for (var i = 0; i < xs.length; i++) {
+    var stack = document.elementsFromPoint(Math.round(w * xs[i]), y);
+    for (var j = 0; j < stack.length; j++) {
+      for (var el = stack[j]; el && el.nodeType === 1 && el !== document.body && el !== document.documentElement; el = el.parentElement) {
+        if (seen.indexOf(el) !== -1 || isOwnNode(el)) continue;
+        seen.push(el);
+        var cs = window.getComputedStyle(el);
+        if (cs.position !== 'fixed' && cs.position !== 'sticky') continue;
+        var r = el.getBoundingClientRect();
+        if (r.width < w * 0.8) continue;
+        var reach = edge === 'top' ? (r.top <= 1 ? r.bottom : 0) : (r.bottom >= h - 1 ? h - r.top : 0);
+        if (reach > best && reach < h / 2) best = reach;
+      }
+    }
+  }
+  return Math.round(best);
+}
+
+// The CSS length of the gap between the viewport edge `side` and StadiaRef's
+// docked pieces, before the base EDGE distance.
+function sideOffset(side, dockedV) {
+  var set = S.dockOffset && typeof S.dockOffset[side] === 'number';
+  var extra = set ? S.dockOffset[side] : (side === dockedV && isLive() ? fixedBarOffset(side) : 0);
+  return 'env(safe-area-inset-' + side + ', 0px) + ' + extra + 'px';
+}
+
+function at(px, side, dockedV) {
+  return 'calc(' + px + 'px + ' + sideOffset(side, dockedV) + ')';
+}
+
+// Place the toolbar in its corner; the dialog status line, the toast and the
+// panels open beside it, clear of its measured height (the compact toolbar
+// wraps onto more rows); the address chain opens at the opposite edge so it
+// never covers the toolbar.
 export function applyDockPosition() {
   var pos = DOCK_VALUES[S.position] ? S.position : 'bottom-right';
   var parts = pos.split('-');
@@ -48,13 +111,15 @@ export function applyDockPosition() {
   var opposite = v === 'top' ? 'bottom' : 'top';
   var barHeight = (S.toolbar && S.toolbar.offsetHeight) || 40;
   var near = EDGE + barHeight + GAP;
-  var side = h + ':' + EDGE + 'px;' + (h === 'left' ? 'right:auto;' : 'left:auto;');
-  applyStyleSnippet(S.toolbar, v + ':' + EDGE + 'px;' + opposite + ':auto;' + side);
-  applyStyleSnippet(S.toast, v + ':' + near + 'px;' + opposite + ':auto;' + side);
-  applyStyleSnippet(S.treePanel, v + ':' + near + 'px;' + opposite + ':auto;' + side);
-  applyStyleSnippet(S.findPanel, v + ':' + near + 'px;' + opposite + ':auto;' + side);
-  applyStyleSnippet(S.activeRefTree, opposite + ':' + EDGE + 'px;' + v + ':auto;' + side);
-  if (S.shadowHost) S.shadowHost.setAttribute('data-stadiaref-dock', pos);
+  var status = S.dialogStatus && !S.dialogStatus.hidden ? S.dialogStatus.offsetHeight + GAP : 0;
+  var side = h + ':' + at(EDGE, h, v) + ';' + (h === 'left' ? 'right:auto;' : 'left:auto;');
+  applyStyleSnippet(S.toolbar, v + ':' + at(EDGE, v, v) + ';' + opposite + ':auto;' + side);
+  applyStyleSnippet(S.dialogStatus, v + ':' + at(near, v, v) + ';' + opposite + ':auto;' + side);
+  applyStyleSnippet(S.toast, v + ':' + at(near + status, v, v) + ';' + opposite + ':auto;' + side);
+  applyStyleSnippet(S.treePanel, v + ':' + at(near + status, v, v) + ';' + opposite + ':auto;' + side);
+  applyStyleSnippet(S.findPanel, v + ':' + at(near + status, v, v) + ';' + opposite + ':auto;' + side);
+  applyStyleSnippet(S.activeRefTree, opposite + ':' + at(EDGE, opposite, v) + ';' + v + ':auto;' + side);
+  if (S.shadowHost && S.shadowHost.getAttribute('data-stadiaref-dock') !== pos) S.shadowHost.setAttribute('data-stadiaref-dock', pos);
 }
 
 // Heuristic for `dock: 'auto'` — pick the corner least likely to collide

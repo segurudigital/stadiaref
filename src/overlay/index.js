@@ -20,12 +20,29 @@
 import { S } from './state.js';
 import { api, queueable } from './api.js';
 import { boot } from './boot.js';
-import { installAliases } from '../compat/aliases.js';
+import { installAliases, legacyRunning } from '../compat/aliases.js';
 
-api.ready = new Promise(function (resolve) {
-  S.resolveReady = function () { resolve(api); };
-});
-installAliases(api, queueable);
-window.stadiaref = api;
+// Never boot twice: if StadiaRef 3.x, or a 2.x copy loaded by an old
+// plugin or script tag, is already running on the page, this copy doesn't
+// start (rule 7).
+function alreadyRunning() {
+  if (window.stadiaref && typeof window.stadiaref === 'object' && window.stadiaref.version) return 'StadiaRef ' + window.stadiaref.version;
+  if (legacyRunning()) return 'Seguru Debug Toolbar 2.x';
+  if (document.querySelector('[data-stadiaref-root]')) return 'StadiaRef';
+  return null;
+}
 
-boot();
+var running = alreadyRunning();
+if (running) {
+  if (typeof console !== 'undefined' && console.warn) {
+    console.warn('[stadiaref] ' + running + ' is already running on this page; this copy did not start.');
+  }
+} else {
+  api.ready = new Promise(function (resolve) {
+    S.resolveReady = function () { resolve(api); };
+  });
+  installAliases(api, queueable);
+  window.stadiaref = api;
+
+  boot();
+}

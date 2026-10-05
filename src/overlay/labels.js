@@ -1,5 +1,5 @@
 import { S } from './state.js';
-import { forget, hasRecord, rec } from './records.js';
+import { forget, hasRecord, rec, removeOwn } from './records.js';
 import { tierOf } from './classify.js';
 import { copyAddress } from './copy.js';
 import { forEachNode, rectsOverlap, toArray } from './dom.js';
@@ -174,7 +174,7 @@ export function clearClusters() {
   var clustered = document.querySelectorAll('.stadiaref-ref-clustered');
   forEachNode(clustered, function (n) { n.classList.remove('stadiaref-ref-clustered'); });
   var badges = document.querySelectorAll('.stadiaref-cluster-badge');
-  forEachNode(badges, function (b) { b.parentNode && b.parentNode.removeChild(b); });
+  forEachNode(badges, removeOwn);
   // Clear per-owner cluster lists from the previous resolution pass.
   var refs = document.querySelectorAll('[data-ref]');
   forEachNode(refs, function (el) {
@@ -278,7 +278,7 @@ export function syncAllVoidHosts() {
   var hosts = document.querySelectorAll('.stadiaref-ref-void-host');
   forEachNode(hosts, function (host) {
     var owner = rec(host).owner;
-    if (!owner || !owner.parentNode) { if (host.parentNode) host.parentNode.removeChild(host); return; }
+    if (!owner || !owner.isConnected) { removeOwn(host); return; }
     syncVoidHost(owner);
   });
 }
@@ -302,7 +302,7 @@ export function labelHostFor(el) {
 
 export function removeVoidHost(el) {
   var host = rec(el).host;
-  if (host && host.parentNode) host.parentNode.removeChild(host);
+  removeOwn(host);
   rec(el).host = null;
 }
 
@@ -312,7 +312,7 @@ export function removeVoidHost(el) {
 export function isLabelled(el) {
   if (!hasRecord(el)) return false;
   var r = rec(el);
-  return !!(r.fullLabel && r.fullLabel.isConnected && r.address === el.getAttribute('data-ref'));
+  return !!(r.fullLabel && r.fullLabel.isConnected && r.icon && r.icon.isConnected && r.address === el.getAttribute('data-ref'));
 }
 
 // Remove an element's label nodes and forget everything about it.
@@ -321,7 +321,7 @@ export function unlabel(el) {
   var r = rec(el);
   var nodes = [r.link, r.icon, r.tooltip, r.fullLabel, r.clusterBadge, r.groupBadge];
   for (var i = 0; i < nodes.length; i++) {
-    if (nodes[i] && nodes[i].parentNode) nodes[i].parentNode.removeChild(nodes[i]);
+    removeOwn(nodes[i]);
   }
   removeVoidHost(el);
   forget(el);

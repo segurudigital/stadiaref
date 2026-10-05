@@ -454,6 +454,73 @@ ${tierTags()}
 /* Find: the match framed, the rest of the page dimmed by this one layer */
 .stadiaref-highlight--find { outline: 2px solid #EA580C; outline-offset: 6px; box-shadow: 0 0 0 100vmax rgba(17, 24, 39, 0.45); }
 
+/* --- Dialog status line --- */
+.stadiaref-dialog-status {
+  all: initial;
+  box-sizing: border-box;
+  position: fixed;
+  max-width: calc(100vw - 40px);
+  padding: 7px 11px;
+  background: var(--sr-statusBg);
+  color: var(--sr-statusFg);
+  border: 1px solid var(--sr-toastBd);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  font-family: ${FONT_UI};
+  font-size: 12px;
+  line-height: 1.4;
+  pointer-events: none;
+  z-index: 4;
+}
+.stadiaref-dialog-status[hidden] { display: none; }
+
+/* --- Pick sheet (touch) --- */
+.stadiaref-pick-sheet {
+  all: initial;
+  box-sizing: border-box;
+  position: fixed;
+  left: calc(12px + env(safe-area-inset-left, 0px));
+  right: calc(12px + env(safe-area-inset-right, 0px));
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: #111827;
+  color: #F9FAFB;
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  font-family: ${FONT_UI};
+  pointer-events: auto;
+  z-index: 6;
+  animation: stadiaref-sheet-in 0.18s ease-out;
+}
+.stadiaref-pick-sheet[hidden] { display: none; }
+@keyframes stadiaref-sheet-in { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .stadiaref-pick-sheet { animation: none; } }
+.stadiaref-pick-sheet .stadiaref-pick-chip__parts { font-family: ${FONT_MONO}; font-size: 12px; }
+.stadiaref-pick-sheet__address { font-family: ${FONT_MONO}; font-size: 12px; color: #E5E7EB; overflow-wrap: anywhere; }
+.stadiaref-pick-sheet__actions { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; }
+.stadiaref-pick-sheet__btn {
+  all: initial;
+  box-sizing: border-box;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #6B7280;
+  border-radius: 8px;
+  color: #F9FAFB;
+  font-family: ${FONT_UI};
+  font-size: 14px;
+  cursor: pointer;
+}
+.stadiaref-pick-sheet__btn--copy { border-color: #F97316; background: #F97316; color: #111827; font-weight: 700; }
+.stadiaref-pick-sheet__btn:focus-visible { outline: 2px solid #FDBA74; outline-offset: 2px; }
+.stadiaref-pick-sheet__btn[disabled] { opacity: 0.5; cursor: default; }
+
 /* --- Pick chip --- */
 .stadiaref-pick-chip {
   all: initial;

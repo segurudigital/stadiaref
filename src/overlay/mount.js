@@ -1,11 +1,13 @@
 import { S } from './state.js';
-import { injectLabels, resolveLabelOverlaps } from './labels.js';
+import { injectLabels, resolveLabelOverlaps, syncAllVoidHosts } from './labels.js';
 import { applyOutlineMode } from './outline.js';
 import { autoRefSections, clearAutoRefs, convertClassRefs } from './survey.js';
 import { TIER_NAMES } from './tiers.js';
 import { buildTreePanel } from './tree.js';
 import { LABEL_NAMES } from './mode.js';
 import { applyDockPosition } from './dock.js';
+import { applyDialogScope } from './dialogs.js';
+import { markSurvey, quiet, startWatching } from './watch.js';
 
 // ─── Nothing is written to the page while StadiaRef is hidden ─────
 // Until the toolbar is first shown, StadiaRef keeps everything in memory:
@@ -25,20 +27,27 @@ function mount() {
   document.head.appendChild(S.labelCss);
   document.body.appendChild(S.shadowHost);
   S.mounted = true;
+  startWatching();
+}
+
+function setRootAttr(root, name, value) {
+  if (value === null) {
+    if (root.hasAttribute(name)) root.removeAttribute(name);
+  } else if (root.getAttribute(name) !== value) {
+    root.setAttribute(name, value);
+  }
 }
 
 // Global state as attributes on <html>, read by the label stylesheet.
 export function applyRootState() {
   if (!S.mounted) return;
+  // Compared before set, so re-asserting them (watch.js) causes no change.
   var root = document.documentElement;
-  if (S.presentationMode) root.removeAttribute('data-stadiaref-visible');
-  else root.setAttribute('data-stadiaref-visible', '');
-  root.setAttribute('data-stadiaref-labels', LABEL_NAMES[S.state] || 'full');
-  if (S.pickMode) root.setAttribute('data-stadiaref-mode', 'pick');
-  else root.removeAttribute('data-stadiaref-mode');
   var hidden = TIER_NAMES.filter(function (t) { return !S.tiers[t]; });
-  if (hidden.length) root.setAttribute('data-stadiaref-hidden-tiers', hidden.join(' '));
-  else root.removeAttribute('data-stadiaref-hidden-tiers');
+  setRootAttr(root, 'data-stadiaref-visible', S.presentationMode ? null : '');
+  setRootAttr(root, 'data-stadiaref-labels', LABEL_NAMES[S.state] || 'full');
+  setRootAttr(root, 'data-stadiaref-mode', S.pickMode ? 'pick' : null);
+  setRootAttr(root, 'data-stadiaref-hidden-tiers', hidden.length ? hidden.join(' ') : null);
 }
 
 // One survey: automatic addresses, labels, tiers, overlaps, outlines.
@@ -51,6 +60,12 @@ export function survey() {
   resolveLabelOverlaps();
   applyOutlineMode();
   if (S.treeOpen) buildTreePanel();
+  syncAllVoidHosts();
+  applyDialogScope();
+  applyDockPosition();
+  markSurvey();
+  // The page changes made by this survey are StadiaRef's own.
+  quiet();
 }
 
 // Show: mount on first use, then bring the page up to date with the state.
@@ -66,4 +81,5 @@ export function goHidden() {
   if (!S.mounted) return;
   S.shadowHost.style.display = 'none';
   applyRootState();
+  applyDialogScope();
 }

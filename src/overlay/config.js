@@ -5,7 +5,7 @@ import { legacyConfigSources, mapLegacyKeys } from '../compat/aliases.js';
 // mapLegacyKeys(). autoRefDepth has no 3.0 key: it is the 2.x single-tier
 // auto-address state, kept for pages that still set it.
 var CONFIG_KEYS = ['profile', 'labels', 'tiers', 'autoAddress', 'outline', 'startHidden', 'theme', 'dock',
-  'keys', 'user', 'classConverter', 'pageSlug', 'autoRefDepth'];
+  'keys', 'user', 'classConverter', 'pageSlug', 'autoRefDepth', 'watch', 'dockOffset'];
 
 // Merge config from every source. For each key the first source that sets
 // it wins: window.stadiarefConfig, then the 2.x objects (per-page before

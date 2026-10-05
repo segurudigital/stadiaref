@@ -41,6 +41,8 @@ export const S = {
   mounted: false,
   // Per-element records (records.js).
   records: new WeakMap(),
+  // StadiaRef's own nodes it has removed itself (records.js removeOwn).
+  selfRemoved: new WeakSet(),
   shadowCss: null,
   toolbar: null,
   toast: null,
@@ -57,4 +59,20 @@ export const S = {
   activeRefTreeHideTimer: null,
   activeRefTree: null,
   htmlClassObserver: null,
+  // Watching the page (watch.js): the one observer, the work gathered for
+  // the next frame, and whether the navigation listeners are attached.
+  watch: true,
+  observer: null,
+  pendingWork: null,
+  workScheduled: false,
+  navListening: false,
+  // The host modal StadiaRef is narrowed to and its status line (dialogs.js).
+  scopeModal: null,
+  dialogStatus: null,
+  // Docking (dock.js): extra offsets from config, per side.
+  dockOffset: null,
+  // Pointer seen last, for touch Pick (pick.js).
+  lastPointerType: null,
+  finePointerSeen: false,
+  pickSheet: null,
 };

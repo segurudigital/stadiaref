@@ -237,8 +237,10 @@ test('classifyDataRef is exposed', async ({ page }) => {
   expect(await page.evaluate(() => window.seguruDebugToolbar.classifyDataRef('home-hero'))).toBe('section');
 });
 
-test('refresh() picks up nodes added after boot', async ({ page }) => {
-  await open(page, harness({ page: { startHidden: false } }));
+test('refresh() picks up nodes added after boot (with watch off)', async ({ page }) => {
+  // 2.5.0 had no childList observer and needed refresh() here. 3.0 watches
+  // the page (stage 7); with watch: false the 2.5.0 behaviour remains.
+  await open(page, harness({ page: { startHidden: false, watch: false } }));
   expect(await countVisible(page, '.stadiaref-ref-full-label')).toBe(2);
   await page.evaluate(() => {
     const s = document.createElement('section');
@@ -246,12 +248,24 @@ test('refresh() picks up nodes added after boot', async ({ page }) => {
     s.textContent = 'late';
     document.querySelector('main').appendChild(s);
   });
-  // 2.5.0 has no childList observer: nothing happens until refresh()
   await page.waitForTimeout(100);
   expect(await countVisible(page, '.stadiaref-ref-full-label')).toBe(2);
   await page.evaluate(() => window.seguruDebugToolbar.refresh());
   expect(await countVisible(page, '.stadiaref-ref-full-label')).toBe(3);
   // refresh is idempotent: no double injection
+  await page.evaluate(() => window.seguruDebugToolbar.refresh());
+  expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-ref-full-label').length)).toBe(3);
+});
+
+test('nodes added after boot are labelled without refresh() (watch on)', async ({ page }) => {
+  await open(page, harness({ page: { startHidden: false } }));
+  await page.evaluate(() => {
+    const s = document.createElement('section');
+    s.setAttribute('data-ref', 'home-late');
+    s.textContent = 'late';
+    document.querySelector('main').appendChild(s);
+  });
+  await expect.poll(() => countVisible(page, '.stadiaref-ref-full-label')).toBe(3);
   await page.evaluate(() => window.seguruDebugToolbar.refresh());
   expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-ref-full-label').length)).toBe(3);
 });

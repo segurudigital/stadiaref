@@ -1,0 +1,35 @@
+<nav id="nav" style="padding:12px;background:#fff">
+  <a href="/jobs" id="to-jobs">Jobs</a>
+  <a href="/settings" id="to-settings">Settings</a>
+</nav>
+<div id="app"></div>
+<script>
+  // A small single-page app: a history router that re-renders #app the way
+  // a framework does, with no reload and no call to StadiaRef.
+  var screens = {
+    jobs: '<main data-ref="ops-app-jobs" style="padding:30px;background:#fff">' +
+      '<article data-ref="ops-app-jobs-card-01" style="padding:20px;width:320px;border:1px solid #ddd">' +
+      '<span data-ref="ops-app-jobs-card-01-status" id="status" class="status">In progress</span></article></main>',
+    settings: '<main data-ref="ops-app-settings" style="padding:30px;background:#fff">' +
+      '<form data-ref="ops-app-settings-users" style="padding:20px;width:320px;border:1px solid #ddd">' +
+      '<label data-ref="ops-app-settings-users-role">Role</label></form></main>'
+  };
+  function render() {
+    var name = location.search.indexOf('screen=settings') !== -1 ? 'settings' : 'jobs';
+    document.getElementById('app').innerHTML = screens[name];
+  }
+  window.__go = function (name) {
+    var q = new URLSearchParams(location.search);
+    q.set('screen', name);
+    history.pushState({}, '', location.pathname + '?' + q.toString());
+    render();
+  };
+  window.addEventListener('popstate', render);
+  document.getElementById('nav').addEventListener('click', function (e) {
+    var a = e.target.closest('a');
+    if (!a) return;
+    e.preventDefault();
+    window.__go(a.id === 'to-settings' ? 'settings' : 'jobs');
+  });
+  render();
+</script>

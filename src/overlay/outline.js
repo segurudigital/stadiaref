@@ -2,6 +2,7 @@ import { S } from './state.js';
 import { OUTLINE_LABELS } from './constants.js';
 import { arrayContainsNode, forEachNode } from './dom.js';
 import { isLive } from './mount.js';
+import { removeOwn } from './records.js';
 import { emitEvent } from './events.js';
 import { collectTargetsByDepth } from './survey.js';
 import { updateDropdown } from './toolbar.js';
@@ -11,7 +12,7 @@ import { getEffectiveBgLuminance } from './visibility.js';
 // or block, so nothing is added to the page's own classes.
 export function clearOutlines() {
   forEachNode(document.querySelectorAll('.stadiaref-outline'), function (o) {
-    if (o.parentNode) o.parentNode.removeChild(o);
+    removeOwn(o);
   });
 }
 

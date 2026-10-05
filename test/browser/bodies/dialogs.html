@@ -1,0 +1,32 @@
+<main data-ref="ops-app-jobs" style="padding:30px;background:#fff">
+  <article data-ref="ops-app-jobs-card-01" style="padding:20px;width:320px;border:1px solid #ddd">Card</article>
+  <button id="open-dialog" type="button">Edit</button>
+  <button id="open-scripted" type="button">Edit (scripted)</button>
+</main>
+<dialog id="dlg" data-ref="ops-app-jobs-dialog-edit" style="width:360px;padding:24px">
+  <label data-ref="ops-app-jobs-dialog-edit-field-customer">Customer <input id="customer"></label>
+  <button data-ref="ops-app-jobs-dialog-edit-save" type="button" id="save">Save</button>
+</dialog>
+<div id="scripted" role="dialog" aria-modal="true" data-ref="ops-app-jobs-dialog-scripted" hidden
+     style="position:fixed;top:120px;left:120px;width:360px;padding:24px;background:#fff;border:1px solid #333">
+  <label data-ref="ops-app-jobs-dialog-scripted-field">Name <input id="scripted-field"></label>
+  <button type="button" id="scripted-close">Close</button>
+</div>
+<script>
+  var dlg = document.getElementById('dlg');
+  var scripted = document.getElementById('scripted');
+  document.getElementById('open-dialog').addEventListener('click', function () { dlg.showModal(); });
+  document.getElementById('open-scripted').addEventListener('click', function () {
+    scripted.hidden = false;
+    document.getElementById('scripted-field').focus();
+  });
+  document.getElementById('scripted-close').addEventListener('click', function () { scripted.hidden = true; });
+  // A focus trap, as dialog libraries do: focus that leaves the dialog is
+  // pulled back to its first field.
+  document.addEventListener('focusin', function (e) {
+    if (!scripted.hidden && !scripted.contains(e.target)) document.getElementById('scripted-field').focus();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !scripted.hidden) scripted.hidden = true;
+  });
+</script>

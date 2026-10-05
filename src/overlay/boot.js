@@ -3,27 +3,27 @@ import { hideActiveRefTree, showActiveRefTree } from './chain.js';
 import { readConfig, readPersistedTheme } from './config.js';
 import { migrateLegacyStorage } from '../compat/aliases.js';
 import { VERSION } from './constants.js';
-import { applyDockPosition, normalizeDock, pickAutoDock } from './dock.js';
+import { applyDockPosition, normalizeDock, normalizeDockOffset, pickAutoDock } from './dock.js';
 import { closestMatch, forEachNode } from './dom.js';
 import { emitEvent } from './events.js';
 import { attachKeys, defaultKeys, mergeKeys } from './keys.js';
-import { isPicking, stopPick, togglePick } from './pick.js';
+import { isPicking, notePointer, stopPick, togglePick } from './pick.js';
 import { closeFind, isFinding, openFind } from './find.js';
-import { isLive } from './mount.js';
+import { isLive, survey } from './mount.js';
 import { selectProfile } from './profile.js';
-import { injectLabels, isLabelled, resolveLabelOverlaps, syncAllVoidHosts, syncVoidHost } from './labels.js';
+import { isLabelled, resolveLabelOverlaps, syncAllVoidHosts, syncVoidHost } from './labels.js';
 import { applyVisibility, show } from './lifecycle.js';
 import { LABEL_MODES, applyState, setState } from './mode.js';
 import { setOutline } from './outline.js';
 import { LABEL_CSS } from './styles/labels.js';
 import { buildShadowCss } from './styles/shadow.js';
-import { autoRefSections, convertClassRefs } from './survey.js';
+import { convertClassRefs } from './survey.js';
 import { applyTheme, setupHtmlClassObserver, setupThemeMediaListener } from './theme.js';
 import { parseTiers, toggleTier } from './tiers.js';
 import { attachMenuKeys, closeAllDropdowns, toggleDropdown, toolbarHtml, updateAutoChip, updateKeyHints, updateShowControl } from './toolbar.js';
-import { buildTreePanel, toggleTree } from './tree.js';
+import { toggleTree } from './tree.js';
 import { renderUser, snapshotUser } from './user.js';
-import { applyLabelVisibilityState, eagerHideDescendantLabels, scheduleVisibilityRecheck } from './visibility.js';
+import { applyLabelVisibilityState, scheduleVisibilityRecheck } from './visibility.js';
 
 export function boot() {
 
@@ -78,6 +78,9 @@ export function boot() {
     ? 'auto'
     : normalizeDock(S.config.dock);
   S.position = S._initialDock === 'auto' ? 'bottom-right' : (S._initialDock || 'bottom-right');
+  S.dockOffset = normalizeDockOffset(S.config.dockOffset);
+  // Watch the page for changes once shown (watch.js). Default on.
+  S.watch = !(S.config.watch === false || S.config.watch === '0');
 
   // ─── Label CSS ──────────────────────────────────────────────
   // Built now, added to the page's <head> on first show (see mount.js).
@@ -92,6 +95,8 @@ export function boot() {
   S.shadowHost = document.createElement('div');
   S.shadowHost.id = 'stadiaref-host';
   S.shadowHost.setAttribute('data-stadiaref-root', '');
+  // Astro's client router keeps an element with this attribute across a swap.
+  S.shadowHost.setAttribute('data-astro-transition-persist', 'stadiaref');
   S.shadowHost.style.cssText = 'all:initial;position:fixed;top:0;left:0;width:0;height:0;overflow:visible;z-index:99999;pointer-events:none;';
   S.shadowCss = buildShadowCss();
   S.shadowRoot = S.shadowHost.attachShadow({ mode: 'open' });
@@ -293,43 +298,17 @@ function init() {
   forEachNode(document.querySelectorAll('img'), function (img) {
     if (!img.complete) img.addEventListener('load', function () { if (isLive()) syncVoidHost(img); }, { once: true });
   });
+  // The pointer in use decides whether Pick shows its sheet (touch) or
+  // the chip that follows the pointer. Reading events writes nothing.
+  window.addEventListener('pointerdown', notePointer, true);
+  window.addEventListener('pointermove', notePointer, { capture: true, passive: true });
 
-  // Live visibility re-check. Mega menus, dropdowns, modals, and tabs flip
-  // between hidden/visible via class or inline-style mutations on
-  // ancestors — usually with opacity or display transitions. Watch the
-  // body for style/class changes (debounced via rAF) and re-check on
-  // transitionend for opacity/visibility transitions so labels appear
-  // exactly when their container does.
-  if (typeof window.MutationObserver === 'function') {
-    var visibilityObserver = new window.MutationObserver(function (mutations) {
-      if (!isLive()) return;
-      var sawHostMutation = false;
-      for (var i = 0; i < mutations.length; i++) {
-        var t = mutations[i].target;
-        // Ignore mutations on StadiaRef's own label nodes (toggling
-        // .stadiaref-ref-hidden / .stadiaref-visible-host would otherwise loop).
-        if (t && t.classList && (
-          t.classList.contains('stadiaref-ref-icon') ||
-          t.classList.contains('stadiaref-ref-tooltip') ||
-          t.classList.contains('stadiaref-ref-full-label') ||
-          t.classList.contains('stadiaref-ref-link')
-        )) continue;
-        sawHostMutation = true;
-        // Eager-hide all [data-ref] descendants of the mutated node
-        // before rAF schedules. This closes the ~16ms window between
-        // the mutation firing and applyLabelVisibilityState running
-        // where labels would otherwise still be pointer-events:auto.
-        eagerHideDescendantLabels(t);
-      }
-      if (sawHostMutation) scheduleVisibilityRecheck();
-    });
-    visibilityObserver.observe(document.body, {
-      attributes: true,
-      attributeFilter: ['style', 'class', 'hidden'],
-      subtree: true
-    });
-  }
-
+  // Live visibility re-check. Mega menus, dropdowns, modals and tabs flip
+  // between hidden and visible via class or inline-style changes on
+  // ancestors, usually with an opacity or display transition. The watcher
+  // (watch.js) sees the class and style changes; transitionend re-checks
+  // once a transition settles, so labels appear exactly when their
+  // container does.
   document.addEventListener('transitionend', function (e) {
     if (e.propertyName === 'opacity' || e.propertyName === 'visibility' || e.propertyName === 'display') {
       scheduleVisibilityRecheck();
@@ -348,17 +327,11 @@ function init() {
   // synchronous post-init stamps are caught.
   function lateRescan() {
     if (!isLive()) return;
-    var refs = document.querySelectorAll('[data-ref]');
     var hasNew = false;
-    forEachNode(refs, function (el) {
+    forEachNode(document.querySelectorAll('[data-ref]'), function (el) {
       if (!isLabelled(el)) hasNew = true;
     });
-    if (!hasNew) return;
-    convertClassRefs();
-    if (S.autoRefEnabled) autoRefSections();
-    injectLabels();
-    resolveLabelOverlaps();
-    if (S.treeOpen) buildTreePanel();
+    if (hasNew) survey();
   }
   if (document.readyState === 'complete') {
     var _lateRaf = window.requestAnimationFrame || function (cb) { setTimeout(cb, 0); };
