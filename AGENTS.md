@@ -104,7 +104,7 @@ For reference; the maintainer does this.
 
 1. Bump the version in every location above, commit, push to `main`.
 2. Publish a GitHub release tagged `v<version>` (it must match `package.json`), with the notes in `RELEASE_NOTES.md`.
-3. `.github/workflows/release-assets.yml` builds and attaches `stadiaref.min.js`, `stadiaref-wp-v<version>.zip` and the bridge `seguru-debug-toolbar-wp-v2.5.1.zip`, then publishes `stadiaref` to npm with provenance, using the `NPM_TOKEN` secret. A missing token or failed publish fails the job.
+3. `.github/workflows/release-assets.yml` builds and attaches `stadiaref.min.js`, `stadiaref-wp-v<version>.zip` and the bridge `seguru-debug-toolbar-wp-v2.5.1.zip`, then publishes `stadiaref` to npm through npm trusted publishing (no stored token; the trusted publisher on npmjs.com names this workflow), with provenance. A failed publish fails the job.
 4. Re-run for an existing tag with `gh workflow run release-assets.yml -f tag=v<version>`.
 
 WordPress installs see a new release when the `stadiaref_github_release` transient expires (six hours).

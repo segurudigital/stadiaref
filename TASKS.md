@@ -10,25 +10,22 @@
 
 ## Handoff notes
 
-**Last session:** 2026-10-05 (3.0.0 build, stages 0 to 10)
+**Last session:** 2026-10-06 (3.0.0 released)
 
-**State:** all ten stages done; 3.0.0 is a release candidate on `main`, not pushed, tagged or published. The release notes for the GitHub release are in `RELEASE_NOTES.md`.
+**State:** 3.0.0 is released (2026-10-06): GitHub release `v3.0.0` with its three assets, `stadiaref@3.0.0` on npm, the demo on GitHub Pages. Done since: `@segurudigital/seguru-debug-toolbar` deprecated on npm pointing at `stadiaref`; a ruleset on `main` blocks deletion and force-pushes; npm trusted publishing set up (publish directly; dist-tags not allowed), and the release workflow publishes through it with no stored token; a Buy Me a Coffee link (unreleased: it reaches npm and the plugin readme with the next release); brand assets and the GitHub social preview in `assets/`.
 
 **Release zips are committed again** (2026-10-06, Samuel): `dist/stadiaref-wp-v<version>.zip` and the 2.5.1 bridge zip are force-added (`git add -f`) for each release, so they can be downloaded from the repo until the plugin is in the WordPress.org directory.
 
-**Next, for the maintainer** (none of this is done by an agent):
-- Review, then push `main`.
-- Rename the GitHub repo to `stadiaref` if not done yet (the 3.0 plugin's updater and the docs point at `segurudigital/stadiaref`).
-- Publish the GitHub release `v3.0.0` with `RELEASE_NOTES.md`. The release workflow attaches `stadiaref.min.js`, `stadiaref-wp-v3.0.0.zip` and `seguru-debug-toolbar-wp-v2.5.1.zip`, then publishes `stadiaref` to npm (needs the `NPM_TOKEN` secret).
-- Deprecate `@segurudigital/seguru-debug-toolbar` on npm, pointing at `stadiaref`.
-- Turn on GitHub Pages with GitHub Actions as the source (the demo page workflow), branch protection, and npm trusted publishing once the package exists.
+**Next, for the maintainer:**
+- Upload `assets/github-social-preview.png` under Settings → Social preview, if not done yet.
+- After the next release publishes through trusted publishing, delete the `NPM_TOKEN` repository secret and revoke that token on npmjs.com.
 - Move the notes in this file to GitHub Issues.
 
 ---
 
 ## Currently in flight
 
-*Nothing. 3.0.0 is waiting for review and release.*
+*Nothing in flight. Next scope is 3.1 (see ROADMAP.md).*
 
 ---
 
