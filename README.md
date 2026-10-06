@@ -1,4 +1,9 @@
-# StadiaRef
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/stadiaref-logotype-on-dark.svg">
+    <img src="assets/stadiaref-logotype.svg" alt="StadiaRef" height="48">
+  </picture>
+</h1>
 
 **An address for every part of the screen.**
 
