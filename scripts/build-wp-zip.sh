@@ -30,6 +30,7 @@ cp "$ROOT_DIR/NOTICE" "$PLUGIN_DIR/"
 cat > "$PLUGIN_DIR/readme.txt" << 'EOF'
 === StadiaRef ===
 Contributors: segurudigital
+Donate link: https://buymeacoffee.com/segurudigital
 Tags: data-ref, overlay, qa, design review, developer tools
 Requires at least: 5.8
 Tested up to: 7.1

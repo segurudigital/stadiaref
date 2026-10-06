@@ -69,6 +69,10 @@
   "bugs": {
     "url": "https://github.com/segurudigital/stadiaref/issues"
   },
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://buymeacoffee.com/segurudigital"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/segurudigital/stadiaref.git"

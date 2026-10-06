@@ -155,6 +155,8 @@ npm run dev        # watch mode
 
 Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first. Security reports go through [SECURITY.md](SECURITY.md).
 
+If StadiaRef saves you time, you can [buy us a coffee](https://buymeacoffee.com/segurudigital).
+
 ## License
 
 MIT. Free for personal and commercial use.
