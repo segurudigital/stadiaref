@@ -12,12 +12,11 @@
 
 **Last session:** 2026-10-06 (3.0.0 released)
 
-**State:** 3.0.0 is released (2026-10-06): GitHub release `v3.0.0` with its three assets, `stadiaref@3.0.0` on npm, the demo on GitHub Pages. Done since: `@segurudigital/seguru-debug-toolbar` deprecated on npm pointing at `stadiaref`; a ruleset on `main` blocks deletion and force-pushes; npm trusted publishing set up (publish directly; dist-tags not allowed), and the release workflow publishes through it with no stored token; a Buy Me a Coffee link (unreleased: it reaches npm and the plugin readme with the next release); brand assets and the GitHub social preview in `assets/`.
+**State:** 3.0.0 is released (2026-10-06): GitHub release `v3.0.0` with its three assets, `stadiaref@3.0.0` on npm, the demo on GitHub Pages. Done since: `@segurudigital/seguru-debug-toolbar` deprecated on npm pointing at `stadiaref`; a ruleset on `main` blocks deletion and force-pushes; npm trusted publishing set up (publish directly; dist-tags not allowed), and the release workflow publishes through it with no stored token; a Buy Me a Coffee link (unreleased: it reaches npm and the plugin readme with the next release); brand assets in `assets/`, and the GitHub social preview uploaded.
 
 **Release zips are committed again** (2026-10-06, Samuel): `dist/stadiaref-wp-v<version>.zip` and the 2.5.1 bridge zip are force-added (`git add -f`) for each release, so they can be downloaded from the repo until the plugin is in the WordPress.org directory.
 
 **Next, for the maintainer:**
-- Upload `assets/github-social-preview.png` under Settings → Social preview, if not done yet.
 - After the next release publishes through trusted publishing, delete the `NPM_TOKEN` repository secret and revoke that token on npmjs.com.
 - Move the notes in this file to GitHub Issues.
 
