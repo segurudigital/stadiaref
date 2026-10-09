@@ -16,16 +16,21 @@ Seguru Debug Toolbar becomes **StadiaRef**, and gains what it needs to work in a
 - [x] **WordPress.** The plugin renamed to StadiaRef, with 2.x settings carried over and an Address profile setting, and a final 2.5.1 release of the old plugin that points sites to StadiaRef.
 - [x] **Release pack.** New docs, CI, community files, the demo page on GitHub Pages.
 
-## 3.1 — safe inside any app, and one address fast
+## 3.1.0 — Signal Lime
 
-- **One overlay layer for labels.** In 3.0 labels are drawn inside the page's own elements, which a framework re-render can disturb. 3.1 draws them in one layer of StadiaRef's own, positioned from each element's box, so StadiaRef changes nothing in the page at all. This removes the void-element workaround and the label re-mounting after re-renders.
+- [x] **StadiaRef's own colour.** The icon, labels, toolbar, panels, the WordPress settings page and the brand graphics move from orange to Signal Lime `#A3E635`, with black text on lime and Lime Ink `#3F6212` where lime would be text on a light surface. Focus rings use Seguru's focus colours. Every pair still passes 4.5:1.
+- [x] **WordPress.org graphics:** the plugin icon and banner, ready for the directory listing.
+
+## 3.2 — safe inside any app, and one address fast
+
+- **One overlay layer for labels.** In 3.0 labels are drawn inside the page's own elements, which a framework re-render can disturb. 3.2 draws them in one layer of StadiaRef's own, positioned from each element's box, so StadiaRef changes nothing in the page at all. This removes the void-element workaround and the label re-mounting after re-renders.
 - **Problems in the Tree:** duplicated addresses, unclassified addresses and gaps in numbering, in their own tab.
 - **Tree search and filter.**
 - **Copy for a developer or an agent:** the address, its tier, the page URL, the chain of addresses around it and the element's tag, as one block of text.
 - **An `onAddress(address, context)` hook,** with examples for GitHub Issues and Linear. StadiaRef still stores nothing itself.
 - **Drill-down:** narrow the view to one section or block, with a breadcrumb of where you are. Built on the overlay layer, behind a config flag first.
 
-## 3.2 — reach
+## 3.3 — reach
 
 - **`npx stadiaref audit <path or URL>`:** the address inventory, duplicates and grammar check from the command line, for CI.
 - **A browser extension,** so StadiaRef can run on any page, including production sites with no plugin and screens with no build change.

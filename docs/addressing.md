@@ -21,7 +21,7 @@ Rule 3 is the one that pays off. An address written in the wireframe should be t
 
 | Tier | What it is | Label |
 |---|---|---|
-| **Section** | A major band of the screen: hero, pricing, footer. In an app, the screen itself | Solid orange |
+| **Section** | A major band of the screen: hero, pricing, footer. In an app, the screen itself | Solid lime |
 | **Block** | A self-contained unit inside a section: a card, a row, a form | Dark |
 | **Element** | A single thing: a heading, a button, an image, a field | Light |
 

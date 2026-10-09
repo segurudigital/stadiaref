@@ -1,7 +1,7 @@
 # Tasks
 
 **Project:** StadiaRef (was Seguru Debug Toolbar)
-**Current version:** 3.0.0 (release candidate, not yet released)
+**Current version:** 3.1.0 (prepared 2026-10-09, not yet released)
 
 > **How this file works**
 > TASKS.md is the canonical list of all open and recently-completed work, organised as **Sprints → Phases → subtasks**. Items are ticked off as they ship. At session end, completed items move from this file to **CHANGELOG.md** (the user-facing record) — only the most recent handoff note stays here as a starting point for the next session. **ROADMAP.md** is the forward view. Agent todo trackers (`TodoWrite`) mirror this file for the active session — they're never the source of truth on their own. All three docs (TASKS, CHANGELOG, ROADMAP) must be in sync at the start and end of every session.
@@ -10,7 +10,11 @@
 
 ## Handoff notes
 
-**Last session:** 2026-10-06 (3.0.0 released)
+**Last session:** 2026-10-09 (3.1.0, Signal Lime, prepared)
+
+**3.1.0 is committed, not released.** StadiaRef is Signal Lime `#A3E635` (Brand Handbook 4.12). Release it as usual: push, then publish `v3.1.0` with `RELEASE_NOTES.md`; the workflow builds the assets and publishes to npm. Before the release, force-add `dist/stadiaref-wp-v3.1.0.zip` (`npm run build:wp`) if the zips stay committed. Upload `assets/wordpress-org/` to the directory's SVN `assets/` when the plugin is listed. Upload the re-rendered `assets/github-social-preview.png` in the repository settings.
+
+**Before 3.1.0:**
 
 **State:** 3.0.0 is released (2026-10-06): GitHub release `v3.0.0` with its three assets, `stadiaref@3.0.0` on npm, the demo on GitHub Pages. Done since: `@segurudigital/seguru-debug-toolbar` deprecated on npm pointing at `stadiaref`; a ruleset on `main` blocks deletion and force-pushes; npm trusted publishing set up (publish directly; dist-tags not allowed), and the release workflow publishes through it with no stored token; a Buy Me a Coffee link (unreleased: it reaches npm and the plugin readme with the next release); brand assets in `assets/`, and the GitHub social preview uploaded.
 
@@ -24,7 +28,19 @@
 
 ## Currently in flight
 
-*Nothing in flight. Next scope is 3.1 (see ROADMAP.md).*
+*Nothing in flight. Next scope is 3.2 (see ROADMAP.md).*
+
+### 3.1.0 — Signal Lime (Brand Handbook 4.12, 2026-10-09) — done
+
+StadiaRef moves from orange to Signal Lime `#A3E635` so it has a colour of its own in the Seguru family. The overlay-layer release moves to 3.2.
+
+- [x] Toolbar, labels, outlines, frames, Pick, Find and the Astro panel recoloured; token names kept (values only)
+- [x] Focus rings follow the Seguru anchor (Deep Teal on light, Primary Blue on dark)
+- [x] WordPress admin icon and pill; the plugin icon
+- [x] Brand SVGs from the lime masters; the social preview, WordPress.org icons and banners rendered
+- [x] Demo page and fixtures (fixtures to neutral grey)
+- [x] Contrast checked for every changed pair; docs and README updated
+- [x] Version 3.1.0 in every location; CHANGELOG, ROADMAP renumbered
 
 ---
 
@@ -181,6 +197,11 @@ For stage 10: the v5 fixtures' page codes looked like they came from a real proj
 | 2026-10-05 | Astro integration supports Astro 7 and later only (`astro >=7`) | Astro 7 is current; 5 is two majors old |
 | 2026-10-05 | No host hooks on the API; the overlay finds its own app canvas in Astro's Dev Toolbar | Site code must not be able to reach into StadiaRef |
 | 2026-10-05 | The Stadia Address core spec (`docs/spec/stadia-address-core.md`) is written in this build, from the core as built | Samuel asked for it to be written rather than supplied |
+| 2026-10-09 | Signal Lime `#A3E635` replaces orange; black text on lime, Lime Ink `#3F6212` where lime would be text or a thin line on a light surface, `#BEF264` for labels on a dark page | Brand Handbook 4.12 (Samuel): StadiaRef gets a colour of its own. Supersedes the 2026-04-10 orange row |
+| 2026-10-09 | Section labels on a light page: lime fill, black text, Lime Ink border | Lime alone is 1.51:1 against white; the border keeps the label visible (Samuel) |
+| 2026-10-09 | Focus rings are Seguru's (Deep Teal + white halo on light, Primary Blue + black halo on dark), not lime | Brand Handbook, the Seguru Anchor, rule 3 (Samuel) |
+| 2026-10-09 | The colour change is 3.1.0; the overlay-layer release becomes 3.2, reach 3.3 | A colour change is a minor bump (Samuel) |
+| 2026-10-09 | Titan fixture pages use neutral grey for their own styling | They stand in for a host page and shouldn't carry StadiaRef's colour (Samuel) |
 
 ---
 

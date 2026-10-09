@@ -24,9 +24,9 @@ var PANEL_CSS = [
   '.stadiaref-panel__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }',
   '.stadiaref-panel__brand { display: flex; align-items: center; gap: 8px; }',
   '.stadiaref-panel__brand .stadiaref-brand__icon { width: 22px; height: 22px; }',
-  '.stadiaref-brand__disc { fill: #F97316; }',
+  '.stadiaref-brand__disc { fill: #A3E635; }',
   '.stadiaref-brand__stadia { fill: #F4F4F5; }',
-  '.stadiaref-brand__ref { fill: #FDBA74; }',
+  '.stadiaref-brand__ref { fill: #A3E635; }',
   '.stadiaref-panel__brand .stadiaref-brand__logotype { width: 74px; height: 13px; }',
   '.stadiaref-panel__version { font-size: 11px; color: #A1A1AA; }',
   '.stadiaref-panel__auto { padding: 1px 6px; border: 1px dashed #A1A1AA; border-radius: 4px; color: #E4E4E7; font-family: ui-monospace, monospace; font-size: 10px; font-weight: 700; }',
@@ -36,13 +36,13 @@ var PANEL_CSS = [
   '.stadiaref-panel__seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; padding: 2px; background: #25272E; border-radius: 8px; }',
   '.stadiaref-panel button { font-family: inherit; font-size: 12px; cursor: pointer; }',
   '.stadiaref-panel__seg button { min-height: 32px; border: 0; border-radius: 6px; background: transparent; color: #E4E4E7; }',
-  '.stadiaref-panel__seg button[aria-pressed="true"] { background: #F97316; color: #111827; font-weight: 700; }',
+  '.stadiaref-panel__seg button[aria-pressed="true"] { background: #A3E635; color: #000000; font-weight: 700; }',
   '.stadiaref-panel__foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 12px; border-top: 1px solid #343841; }',
   '.stadiaref-panel__count { color: #D4D4D8; }',
   '.stadiaref-panel__actions { display: flex; gap: 6px; }',
   '.stadiaref-panel__actions button { min-height: 32px; padding: 0 10px; border: 1px solid #52525B; border-radius: 6px; background: transparent; color: #F4F4F5; font-weight: 600; }',
-  '.stadiaref-panel__actions button[aria-pressed="true"] { border-color: #F97316; color: #FDBA74; }',
-  '.stadiaref-panel button:focus-visible { outline: 2px solid #FDBA74; outline-offset: 2px; }'
+  '.stadiaref-panel__actions button[aria-pressed="true"] { border-color: #A3E635; color: #A3E635; }',
+  '.stadiaref-panel button:focus-visible { outline: 2px solid #00C0F3; outline-offset: 2px; box-shadow: 0 0 0 2px #000000; }'
 ].join('\n');
 
 var LABEL_ROWS = [['full', 'Full'], ['icons', 'Icons'], ['off', 'Off']];

@@ -13,7 +13,7 @@ import { OPTIMIZE_DEPS, loaderCode } from '../loader.js';
 var ICON = ICON_SVG
   .replace(' width="20" height="20"', '')
   .replace(' class="stadiaref-brand__icon"', '')
-  .replace('class="stadiaref-brand__disc"', 'fill="#F97316"');
+  .replace('class="stadiaref-brand__disc"', 'fill="#A3E635"');
 
 export default function stadiaref(options) {
   var opts = options || {};

@@ -74,7 +74,7 @@ StadiaRef starts hidden. Nothing shows until someone presses **D**, so screensho
 
 Click any label to copy its address.
 
-Labels are colour-coded by tier: sections are solid orange, blocks are dark, elements are light. On a dense page, use **Show** to cut down to one tier, **Pick** when you can see the thing you want, and **Find** when you already have its address.
+Labels are colour-coded by tier: sections are solid lime, blocks are dark, elements are light. On a dense page, use **Show** to cut down to one tier, **Pick** when you can see the thing you want, and **Find** when you already have its address.
 
 Full details: [Using the toolbar](docs/using-the-toolbar.md).
 

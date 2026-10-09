@@ -1,6 +1,6 @@
 # StadiaRef — agent context
 
-**Version:** 3.0.0
+**Version:** 3.1.0
 **Repo:** https://github.com/segurudigital/stadiaref
 **Maintained by:** Seguru Digital (hello@seguru.digital)
 **License:** MIT (see `LICENSE` and `NOTICE`)
@@ -132,7 +132,7 @@ npm run build:wp-bridge   # dist/seguru-debug-toolbar-wp-v2.5.1.zip
 - **No runtime dependencies, no network requests.** The overlay ships as one file. Source may use modules and modern syntax; esbuild bundles it.
 - **Nothing is written to the page while StadiaRef is hidden** (class converter aside). The host and the label stylesheet are created on first show.
 - **No state on the page's own elements.** Per-element state lives in a `WeakMap` (`records.js`) and on StadiaRef's own nodes; global state is `data-stadiaref-*` attributes on `<html>`. Exceptions: `position: relative` on a static element that gets labels, and an automatic address's `data-ref` with its `data-stadiaref-auto` markers.
-- **Shadow DOM split.** The toolbar, panels and toast are in a shadow root; labels are in the page's DOM (moving them to an overlay layer is planned for 3.1, not before).
+- **Shadow DOM split.** The toolbar, panels and toast are in a shadow root; labels are in the page's DOM (moving them to an overlay layer is planned for 3.2, not before).
 - **The shadow host carries `data-stadiaref-root`**, the marker a production build is searched for. It appears in the overlay builds and nowhere else.
 - **Config merge order, per key:** `init()` and the setters, then `window.stadiarefConfig`, then the 2.x objects (`seguruDebugConfig`, then `sdtConfig`), then script-tag attributes, then defaults. See `readConfig()` in `src/overlay/config.js`.
 - **2.x names live in `src/compat/aliases.js` only**, each with a test. `test/unit/names.test.mjs` fails if one appears elsewhere in `src/`.

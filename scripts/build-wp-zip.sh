@@ -85,6 +85,9 @@ Yes. Keys set in `window.stadiarefConfig` on the page win over the settings.
 
 == Changelog ==
 
+= 3.1.0 =
+* StadiaRef is now Signal Lime: the icon, labels, toolbar and settings page. Focus rings use Seguru's focus colours.
+
 = 3.0.0 =
 * Seguru Debug Toolbar is now StadiaRef. Settings from 2.x are copied over once when StadiaRef is activated.
 * New toolbar with Labels, Show, Pick, Find, Outline and Tree. Labels coded by tier.

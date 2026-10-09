@@ -84,18 +84,18 @@ html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important;
   text-overflow: ellipsis;
 }
 
-/* Section: solid orange */
-.stadiaref-ref-full-label.stadiaref-tier-section.stadiaref-on-light { background: #C2410C; color: #FFFFFF; border-color: #C2410C; }
-.stadiaref-ref-full-label.stadiaref-tier-section.stadiaref-on-dark { background: #F97316; color: #111827; border-color: #F97316; }
+/* Section: solid lime, black text, edged in Lime Ink */
+.stadiaref-ref-full-label.stadiaref-tier-section.stadiaref-on-light { background: #A3E635; color: #000000; border-color: #3F6212; }
+.stadiaref-ref-full-label.stadiaref-tier-section.stadiaref-on-dark { background: #BEF264; color: #000000; border-color: #BEF264; }
 .stadiaref-ref-full-label.stadiaref-tier-section:hover { background: #111827; color: #FFFFFF; border-color: #111827; }
 /* Block: dark */
-.stadiaref-ref-full-label.stadiaref-tier-block.stadiaref-on-light { background: rgba(17, 24, 39, 0.92); color: #FFF7ED; border-color: rgba(17, 24, 39, 0.92); }
+.stadiaref-ref-full-label.stadiaref-tier-block.stadiaref-on-light { background: rgba(17, 24, 39, 0.92); color: #F7FEE7; border-color: rgba(17, 24, 39, 0.92); }
 .stadiaref-ref-full-label.stadiaref-tier-block.stadiaref-on-dark { background: rgba(255, 255, 255, 0.92); color: #111827; border-color: rgba(255, 255, 255, 0.92); }
 /* Element: light, with a border */
 .stadiaref-ref-full-label.stadiaref-tier-element.stadiaref-on-light { background: #FFFFFF; color: #111827; border-color: #6B7280; }
 .stadiaref-ref-full-label.stadiaref-tier-element.stadiaref-on-dark { background: rgba(17, 24, 39, 0.72); color: #FFFFFF; border-color: rgba(255, 255, 255, 0.6); }
 .stadiaref-ref-full-label.stadiaref-tier-block:hover,
-.stadiaref-ref-full-label.stadiaref-tier-element:hover { background: #C2410C; color: #FFFFFF; border-color: #C2410C; }
+.stadiaref-ref-full-label.stadiaref-tier-element:hover { background: #A3E635; color: #000000; border-color: #3F6212; }
 /* Unclassified: dashed amber, no shadow */
 .stadiaref-ref-full-label.stadiaref-tier-unclassified { box-shadow: none; border-style: dashed; }
 .stadiaref-ref-full-label.stadiaref-tier-unclassified.stadiaref-on-light { background: #FFFBEB; color: #92400E; border-color: #B45309; }
@@ -128,9 +128,9 @@ html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important;
   pointer-events: none;
   user-select: none;
 }
-.stadiaref-ref-icon.stadiaref-tier-section.stadiaref-on-light { background: #C2410C; color: #FFFFFF; border-color: #C2410C; }
-.stadiaref-ref-icon.stadiaref-tier-section.stadiaref-on-dark { background: #F97316; color: #111827; border-color: #F97316; }
-.stadiaref-ref-icon.stadiaref-tier-block.stadiaref-on-light { background: #111827; color: #FFF7ED; border-color: #111827; }
+.stadiaref-ref-icon.stadiaref-tier-section.stadiaref-on-light { background: #A3E635; color: #000000; border-color: #3F6212; }
+.stadiaref-ref-icon.stadiaref-tier-section.stadiaref-on-dark { background: #BEF264; color: #000000; border-color: #BEF264; }
+.stadiaref-ref-icon.stadiaref-tier-block.stadiaref-on-light { background: #111827; color: #F7FEE7; border-color: #111827; }
 .stadiaref-ref-icon.stadiaref-tier-block.stadiaref-on-dark { background: #FFFFFF; color: #111827; border-color: #FFFFFF; }
 .stadiaref-ref-icon.stadiaref-tier-element.stadiaref-on-light { background: #FFFFFF; color: #111827; border-color: #6B7280; }
 .stadiaref-ref-icon.stadiaref-tier-element.stadiaref-on-dark { background: #111827; color: #FFFFFF; border-color: rgba(255, 255, 255, 0.6); }
@@ -140,7 +140,7 @@ html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important;
 .stadiaref-ref-icon.stadiaref-auto { border-style: dashed; }
 .stadiaref-ref-icon.stadiaref-auto.stadiaref-tier-section,
 .stadiaref-ref-icon.stadiaref-auto.stadiaref-tier-block { border-color: currentColor; }
-.stadiaref-ref-icon:hover { box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.35); }
+.stadiaref-ref-icon:hover { box-shadow: 0 0 0 2px rgba(63, 98, 18, 0.45); }
 
 /* The address beside a dot, on hover or keyboard focus. */
 .stadiaref-ref-tooltip {
@@ -151,7 +151,7 @@ html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important;
   left: 22px;
   padding: 4px 7px;
   background: rgba(17, 24, 39, 0.92);
-  color: #FFF7ED;
+  color: #F7FEE7;
   border-radius: 3px;
   font-family: ${FONT_MONO};
   font-size: 10px;
@@ -186,12 +186,12 @@ html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important;
   left: 9px;
   width: 1px;
   height: 0;
-  background: #C2410C;
+  background: #3F6212;
   z-index: 89;
   pointer-events: none;
   opacity: 0;
 }
-.stadiaref-ref-link.stadiaref-on-dark { background: #FDBA74; }
+.stadiaref-ref-link.stadiaref-on-dark { background: #BEF264; }
 
 /* --- Void elements: labels mount in a host over the element's box --- */
 .stadiaref-ref-void-host {
@@ -214,10 +214,10 @@ html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important;
   pointer-events: none;
   z-index: 88;
 }
-.stadiaref-outline--section { border: 2px solid rgba(234, 88, 12, 0.9); box-shadow: inset 0 0 0 1px rgba(234, 88, 12, 0.2), inset 0 14px 0 0 rgba(234, 88, 12, 0.08); }
-.stadiaref-outline--section.stadiaref-on-dark { border-color: rgba(249, 115, 22, 0.98); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14), inset 0 14px 0 0 rgba(249, 115, 22, 0.12); }
-.stadiaref-outline--block { border: 1px dashed rgba(234, 88, 12, 0.6); box-shadow: inset 0 0 0 1px rgba(234, 88, 12, 0.08); }
-.stadiaref-outline--block.stadiaref-on-dark { border-color: rgba(255, 255, 255, 0.36); box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.14); }
+.stadiaref-outline--section { border: 2px solid rgba(63, 98, 18, 0.9); box-shadow: inset 0 0 0 1px rgba(163, 230, 53, 0.6), inset 0 14px 0 0 rgba(163, 230, 53, 0.16); }
+.stadiaref-outline--section.stadiaref-on-dark { border-color: rgba(190, 242, 100, 0.98); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14), inset 0 14px 0 0 rgba(190, 242, 100, 0.14); }
+.stadiaref-outline--block { border: 1px dashed rgba(63, 98, 18, 0.6); box-shadow: inset 0 0 0 1px rgba(163, 230, 53, 0.2); }
+.stadiaref-outline--block.stadiaref-on-dark { border-color: rgba(255, 255, 255, 0.36); box-shadow: inset 0 0 0 1px rgba(190, 242, 100, 0.16); }
 
 /* --- "+N" cluster badge and its list --- */
 .stadiaref-cluster-badge {
@@ -225,9 +225,9 @@ html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important;
   box-sizing: border-box;
   position: absolute;
   padding: 2px 6px;
-  background: #FCE8DD;
-  color: #9A3412;
-  border: 1px solid rgba(234, 88, 12, 0.5);
+  background: #ECFCCB;
+  color: #3F6212;
+  border: 1px solid rgba(63, 98, 18, 0.5);
   border-radius: 10px;
   font-family: ${FONT_MONO};
   font-size: 10px;
@@ -239,8 +239,8 @@ html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important;
   pointer-events: auto;
   user-select: none;
 }
-.stadiaref-cluster-badge.stadiaref-on-dark { background: #27272A; color: #FDBA74; border-color: rgba(249, 115, 22, 0.5); }
-.stadiaref-cluster-badge:hover { background: #C2410C; color: #FFFFFF; border-color: #C2410C; }
+.stadiaref-cluster-badge.stadiaref-on-dark { background: #27272A; color: #A3E635; border-color: rgba(163, 230, 53, 0.5); }
+.stadiaref-cluster-badge:hover { background: #A3E635; color: #000000; border-color: #3F6212; }
 
 /* --- "+N blocks" block group badge and its list --- */
 .stadiaref-block-group-badge {
@@ -248,8 +248,8 @@ html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important;
   box-sizing: border-box;
   position: absolute;
   padding: 3px 7px;
-  background: #FCE8DD;
-  color: #9A3412;
+  background: #ECFCCB;
+  color: #3F6212;
   border-radius: 999px;
   font-family: ${FONT_MONO};
   font-size: 10px;
@@ -261,7 +261,7 @@ html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important;
   pointer-events: auto;
   user-select: none;
 }
-.stadiaref-block-group-badge.stadiaref-on-dark { background: #27272A; color: #FDBA74; }
+.stadiaref-block-group-badge.stadiaref-on-dark { background: #27272A; color: #A3E635; }
 
 .stadiaref-cluster-popover,
 .stadiaref-block-group-popover {
@@ -299,12 +299,12 @@ html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important;
   font-family: ${FONT_MONO};
   font-size: 10px;
   line-height: 1.3;
-  color: #FFF7ED;
+  color: #F7FEE7;
   white-space: nowrap;
   cursor: pointer;
 }
 .stadiaref-cluster-item:hover,
-.stadiaref-block-group-item:hover { background: #C2410C; color: #FFFFFF; }
+.stadiaref-block-group-item:hover { background: #A3E635; color: #000000; }
 .stadiaref-cluster-item-tag,
 .stadiaref-block-group-item-type {
   all: initial;

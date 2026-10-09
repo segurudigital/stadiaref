@@ -155,13 +155,14 @@ test('the toolbar is usable from the keyboard, with a visible focus ring', async
     if (f && !seen.includes(f) && (f.startsWith('StadiaRef') || ['mode', 'show', 'Pick', 'Find', 'outline', 'Tree'].includes(f))) seen.push(f);
   }
   expect(seen).toEqual(['StadiaRef by Seguru Digital', 'mode', 'show', 'Pick', 'Find', 'outline', 'Tree']);
-  // Focus ring: 2px solid orange on :focus-visible.
+  // Focus ring: 2px, Seguru's focus colour (Deep Teal in the light theme)
+  // with a white halo, never the product colour.
   const ring = await page.evaluate(() => {
     const b = document.getElementById('stadiaref-host').shadowRoot.activeElement;
     const cs = getComputedStyle(b);
-    return [cs.outlineStyle, cs.outlineWidth];
+    return [cs.outlineStyle, cs.outlineWidth, cs.outlineColor, cs.boxShadow];
   });
-  expect(ring).toEqual(['solid', '2px']);
+  expect(ring).toEqual(['solid', '2px', 'rgb(0, 112, 126)', 'rgb(255, 255, 255) 0px 0px 0px 2px']);
   // Shift+Tab back to Show, open it with Enter: focus goes to the first row.
   for (let i = 0; i < 4; i++) await page.keyboard.press('Shift+Tab');
   expect(await focusedLabel()).toBe('show');

@@ -167,8 +167,8 @@ The old plugin doesn't turn into StadiaRef. It gets one last update that keeps i
 
 ## What looks different
 
-- The toolbar carries the StadiaRef name and an orange mark.
-- Labels are coded by tier: sections solid orange, blocks dark, elements light. In 2.x every label looked the same.
+- The toolbar carries the StadiaRef name and its Signal Lime mark (orange in 3.0.x).
+- Labels are coded by tier: sections solid lime, blocks dark, elements light. In 2.x every label looked the same.
 - **Pick** and **Find** are new.
 - The Target and Level menus are gone. **Show** takes their place.
 - Under `astro dev`, StadiaRef lives inside Astro's Dev Toolbar.

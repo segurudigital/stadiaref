@@ -1,6 +1,6 @@
 {
   "name": "stadiaref",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "An address for every part of the screen. StadiaRef shows data-ref attributes as labels you can point at and copy. For websites, web apps and PWAs.",
   "type": "module",
   "main": "./dist/index.mjs",

@@ -54,6 +54,7 @@ export function buildShadowCss() {
 :is(.stadiaref-toolbar, .stadiaref-tree-panel, .stadiaref-active-ref-tree) :is(a, button, [tabindex]):focus-visible {
   outline: 2px solid var(--sr-focus);
   outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--sr-focusHalo);
 }
 
 /* Brand: icon and logotype, always present */
@@ -176,7 +177,7 @@ export function buildShadowCss() {
 .stadiaref-toolbar__select--utility .stadiaref-toolbar__key { color: var(--sr-key); }
 .stadiaref-toolbar__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sr-dotOff); flex-shrink: 0; }
 .stadiaref-toolbar__select--active .stadiaref-toolbar__dot,
-.stadiaref-toolbar__select[aria-pressed="true"] .stadiaref-toolbar__dot { background: var(--sr-dot); }
+.stadiaref-toolbar__select[aria-pressed="true"] .stadiaref-toolbar__dot { background: var(--sr-dot); box-shadow: 0 0 0 1px var(--sr-dotRing); }
 
 /* AUTO chip: a status, not a button. Present only while auto-address is on */
 .stadiaref-toolbar__auto {
@@ -446,13 +447,15 @@ ${tierTags()}
   border-radius: 2px;
 }
 .stadiaref-highlight[hidden] { display: none; }
-.stadiaref-highlight--hover { outline: 2px solid #EA580C; outline-offset: 3px; }
-.stadiaref-highlight--jump { outline: 3px solid rgba(234, 88, 12, 0.92); outline-offset: 4px; box-shadow: 0 0 0 6px rgba(234, 88, 12, 0.16); }
+/* Frames are a lime band edged in Lime Ink: the ink carries it on light
+   pages, the lime on dark ones (lime alone is 1.4:1 on white). */
+.stadiaref-highlight--hover { outline: 2px solid #3F6212; outline-offset: 3px; box-shadow: 0 0 0 3px #A3E635; }
+.stadiaref-highlight--jump { outline: 3px solid #3F6212; outline-offset: 4px; box-shadow: 0 0 0 4px #A3E635; }
 /* Pick: the chosen level solid, the rest of its chain dashed */
-.stadiaref-highlight--pick-current { outline: 2px solid #EA580C; outline-offset: 2px; }
-[class*="stadiaref-highlight--pick-"]:not(.stadiaref-highlight--pick-current) { outline: 1px dashed rgba(234, 88, 12, 0.7); outline-offset: 4px; }
+.stadiaref-highlight--pick-current { outline: 2px solid #3F6212; outline-offset: 2px; box-shadow: 0 0 0 2px #A3E635; }
+[class*="stadiaref-highlight--pick-"]:not(.stadiaref-highlight--pick-current) { outline: 1px dashed #3F6212; outline-offset: 4px; box-shadow: 0 0 0 4px rgba(163, 230, 53, 0.35); }
 /* Find: the match framed, the rest of the page dimmed by this one layer */
-.stadiaref-highlight--find { outline: 2px solid #EA580C; outline-offset: 6px; box-shadow: 0 0 0 100vmax rgba(17, 24, 39, 0.45); }
+.stadiaref-highlight--find { outline: 2px solid #3F6212; outline-offset: 6px; box-shadow: 0 0 0 6px #A3E635, 0 0 0 100vmax rgba(17, 24, 39, 0.45); }
 
 /* --- Dialog status line --- */
 .stadiaref-dialog-status {
@@ -517,8 +520,8 @@ ${tierTags()}
   font-size: 14px;
   cursor: pointer;
 }
-.stadiaref-pick-sheet__btn--copy { border-color: #F97316; background: #F97316; color: #111827; font-weight: 700; }
-.stadiaref-pick-sheet__btn:focus-visible { outline: 2px solid #FDBA74; outline-offset: 2px; }
+.stadiaref-pick-sheet__btn--copy { border-color: #A3E635; background: #A3E635; color: #000000; font-weight: 700; }
+.stadiaref-pick-sheet__btn:focus-visible { outline: 2px solid #00C0F3; outline-offset: 2px; box-shadow: 0 0 0 2px #000000; }
 .stadiaref-pick-sheet__btn[disabled] { opacity: 0.5; cursor: default; }
 
 /* --- Pick chip --- */
@@ -545,11 +548,11 @@ ${tierTags()}
 .stadiaref-pick-chip__parts { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
 .stadiaref-pick-chip__sep { color: #9CA3AF; }
 .stadiaref-pick-chip__part { padding: 1px 5px; border: 1px solid transparent; border-radius: 3px; font-weight: 700; white-space: nowrap; }
-.stadiaref-pick-chip__part--section { background: #F97316; color: #111827; border-color: #F97316; }
+.stadiaref-pick-chip__part--section { background: #A3E635; color: #000000; border-color: #A3E635; }
 .stadiaref-pick-chip__part--block { background: rgba(255, 255, 255, 0.92); color: #111827; border-color: rgba(255, 255, 255, 0.92); }
 .stadiaref-pick-chip__part--element { border-color: rgba(255, 255, 255, 0.7); color: #FFFFFF; }
 .stadiaref-pick-chip__part--unclassified { border-color: #FBBF24; border-style: dashed; color: #FDE68A; }
-.stadiaref-pick-chip__part--current { box-shadow: 0 0 0 2px #111827, 0 0 0 4px #FDBA74; }
+.stadiaref-pick-chip__part--current { box-shadow: 0 0 0 2px #111827, 0 0 0 4px #A3E635; }
 .stadiaref-pick-chip__hint { font-family: ${FONT_UI}; font-size: 11px; color: #D1D5DB; white-space: normal; max-width: 420px; }
 
 /* --- Find --- */
@@ -587,7 +590,7 @@ ${tierTags()}
   font-size: 12px;
   outline: none;
 }
-.stadiaref-find__input:focus-visible { box-shadow: 0 0 0 3px var(--sr-ringGlow); }
+.stadiaref-find__input:focus-visible { outline: 2px solid var(--sr-focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--sr-focusHalo); }
 .stadiaref-find__list { display: flex; flex-direction: column; overflow-y: auto; }
 .stadiaref-find__row {
   display: flex;

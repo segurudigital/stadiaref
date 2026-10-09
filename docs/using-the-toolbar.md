@@ -39,7 +39,7 @@ Labels are coded by tier so you can tell them apart at a glance:
 
 | Tier | Label |
 |---|---|
-| Section | Solid orange, marked **SEC** |
+| Section | Solid lime, marked **SEC** |
 | Block | Dark, marked **BLK** |
 | Element | Light with a border, marked **EL** |
 | Temporary (auto-address) | Dashed border, marked **AUTO** |
@@ -61,7 +61,7 @@ The Show button opens a menu with a tick box for each tier: sections, blocks, el
 - **2** switches blocks.
 - **3** switches elements.
 
-The button turns orange whenever a tier is hidden, so you can see at a glance that you aren't looking at everything. With nothing ticked, no labels show and the button reads None.
+The button turns lime whenever a tier is hidden, so you can see at a glance that you aren't looking at everything. With nothing ticked, no labels show and the button reads None.
 
 Some useful settings:
 
@@ -99,7 +99,7 @@ Find searches every address on the screen, including tiers that Show is hiding. 
 | Mode | What you see |
 |---|---|
 | **Off** | No guides |
-| **Sections** | An orange frame around each section wrapper |
+| **Sections** | A lime frame, edged in dark green, around each section wrapper |
 | **Blocks** | Section frames, plus a lighter dashed guide around each block container |
 
 Outline frames the page's structure, whether or not it has addresses: section wrappers are `<section>` elements directly inside `<body>`, `<main>` or the content area, and page-builder sections (Elementor, Bricks, Oxygen, Breakdance); block containers are `<article>`, `<aside>`, `<nav>`, Gutenberg blocks and page-builder columns and widgets. [Page builders](page-builders.md#auto-address) lists them.

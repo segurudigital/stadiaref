@@ -8,8 +8,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 
 ## [Unreleased]
 
+## [3.1.0] — 2026-10-09
+
+StadiaRef's colour is now **Signal Lime** `#A3E635`, replacing orange `#EA580C`, under the Seguru Brand Handbook 4.12 (2026-10-09). Nothing else about how StadiaRef works has changed.
+
+### Changed
+
+- **Signal Lime everywhere StadiaRef had orange:** the product icon (now a black S mark on lime), section labels and dots, the Show and Outline active states, ticks, the toolbar's pressed dot, the Pick chip and sheet, the Astro Dev Toolbar panel and its icon, and the WordPress settings page icon and "new" pill.
+- **Text on lime is black; lime is never text on a light surface.** Where lime would be text, a line or a thin edge on a light surface it is Lime Ink `#3F6212` (7.08:1 on white): the active control text, the tree, toast and dialog status line, the "Ref" in the logotype, leader lines, Outline guides, and the border on section labels. On a dark surface lime itself is the text. Labels on a dark page use `#BEF264`. Washes are `#F7FEE7`.
+- **Section labels on a light page** are lime with black text and a Lime Ink border (13.93:1), in place of dark orange with white text. Block and element hover is the same.
+- **The Pick, Find and jump frames** are a lime band edged with Lime Ink, so they read on light and dark pages alike.
+- **Focus rings are Seguru's on every surface:** Deep Teal `#00707E` with a white halo on the light toolbar, Primary Blue `#00C0F3` with a black halo on the dark toolbar, the Pick sheet and the Astro panel. They were orange.
+- **Brand assets** (`assets/`) are the lime versions. The GitHub social preview is re-rendered, with the parent Seguru mark (white S on Primary Blue) in its "by Seguru Digital" line.
+- The Titan fixture pages in `test/fixtures/` use neutral grey for their own block styling instead of orange.
+
 ### Added
 
+- **WordPress.org graphics** in `assets/wordpress-org/`: the plugin icon (128 and 256) and banner (772 × 250 and 1544 × 500, dark navy `#0F172A` with lime), rendered from `assets/src/` by `node scripts/render-graphics.mjs`.
 - A Buy Me a Coffee link (https://buymeacoffee.com/segurudigital): the GitHub Sponsor button (`.github/FUNDING.yml`), `npm fund` (the `funding` field in `package.json`), the README and the WordPress plugin readme's Donate link.
 
 ## [3.0.0] — 2026-10-06

@@ -40,7 +40,7 @@ Rules for the value:
 
 StadiaRef starts hidden. Press **D** and the toolbar appears in the bottom-right corner, with a label on each of your three elements.
 
-- The outer one is a **section** (solid orange label).
+- The outer one is a **section** (solid lime label).
 - The middle one is a **block** (dark label).
 - The inner one is an **element** (light label).
 
