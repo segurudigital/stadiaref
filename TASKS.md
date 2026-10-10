@@ -10,9 +10,14 @@
 
 ## Handoff notes
 
-**Last session:** 2026-10-09 (3.1.0, Signal Lime, prepared)
+**Last session:** 2026-10-10 (3.1.0 released)
 
-**3.1.0 is committed, not released.** StadiaRef is Signal Lime `#A3E635` (Brand Handbook 4.12). Release it as usual: push, then publish `v3.1.0` with `RELEASE_NOTES.md`; the workflow builds the assets and publishes to npm. Before the release, force-add `dist/stadiaref-wp-v3.1.0.zip` (`npm run build:wp`) if the zips stay committed. Upload `assets/wordpress-org/` to the directory's SVN `assets/` when the plugin is listed. Upload the re-rendered `assets/github-social-preview.png` in the repository settings.
+**3.1.0 is released** (2026-10-10): GitHub release `v3.1.0` with its three assets, and `stadiaref@3.1.0` on npm as `latest`, with provenance. It is the first publish through npm trusted publishing: the first two runs failed with `ENEEDAUTH` until the trusted publisher entry on npmjs.com was corrected, then the re-run published. StadiaRef is Signal Lime `#A3E635` (Brand Handbook 4.12).
+
+**Next, for the maintainer:**
+- Delete the `NPM_TOKEN` repository secret and revoke that token on npmjs.com (trusted publishing now works).
+- Upload the re-rendered `assets/github-social-preview.png` in the repository settings.
+- Upload `assets/wordpress-org/` to the directory's SVN `assets/` when the plugin is listed.
 
 **Before 3.1.0:**
 
@@ -20,9 +25,7 @@
 
 **Release zips are committed again** (2026-10-06, Samuel): `dist/stadiaref-wp-v<version>.zip` and the 2.5.1 bridge zip are force-added (`git add -f`) for each release, so they can be downloaded from the repo until the plugin is in the WordPress.org directory.
 
-**Next, for the maintainer:**
-- After the next release publishes through trusted publishing, delete the `NPM_TOKEN` repository secret and revoke that token on npmjs.com.
-- Move the notes in this file to GitHub Issues.
+**Still open:** move the notes in this file to GitHub Issues.
 
 ---
 
