@@ -12,11 +12,10 @@
 
 **Last session:** 2026-10-10 (3.1.0 released)
 
-**3.1.0 is released** (2026-10-10): GitHub release `v3.1.0` with its three assets, and `stadiaref@3.1.0` on npm as `latest`, with provenance. It is the first publish through npm trusted publishing: the first two runs failed with `ENEEDAUTH` until the trusted publisher entry on npmjs.com was corrected, then the re-run published. StadiaRef is Signal Lime `#A3E635` (Brand Handbook 4.12).
+**3.1.0 is released** (2026-10-10): GitHub release `v3.1.0` with its three assets, and `stadiaref@3.1.0` on npm as `latest`, with provenance; the lime social preview is uploaded. It is the first publish through npm trusted publishing: the first two runs failed with `ENEEDAUTH` until the trusted publisher entry on npmjs.com was corrected, then the re-run published. StadiaRef is Signal Lime `#A3E635` (Brand Handbook 4.12).
 
 **Next, for the maintainer:**
 - Delete the `NPM_TOKEN` repository secret and revoke that token on npmjs.com (trusted publishing now works).
-- Upload the re-rendered `assets/github-social-preview.png` in the repository settings.
 - Upload `assets/wordpress-org/` to the directory's SVN `assets/` when the plugin is listed.
 
 **Before 3.1.0:**
