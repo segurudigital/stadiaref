@@ -15,7 +15,11 @@ Use the guide for your stack if you have one:
 Or try it on any HTML file right now:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/stadiaref@3/dist/stadiaref.min.js" defer></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/stadiaref@3.1.0/dist/stadiaref.min.js"
+  integrity="sha384-If8zpv95RMVTbF+dDj3YI4QApgqpTJqLPF+krLX7IiEwWTQXzo327sFpAZ0nF9rg"
+  crossorigin="anonymous"
+  defer></script>
 ```
 
 ## 2. Add three addresses
@@ -77,7 +81,11 @@ Turn on **auto-address** and StadiaRef gives every section, block and element a 
 <script>
   window.stadiarefConfig = { autoAddress: true };
 </script>
-<script src="https://cdn.jsdelivr.net/npm/stadiaref@3/dist/stadiaref.min.js" defer></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/stadiaref@3.1.0/dist/stadiaref.min.js"
+  integrity="sha384-If8zpv95RMVTbF+dDj3YI4QApgqpTJqLPF+krLX7IiEwWTQXzo327sFpAZ0nF9rg"
+  crossorigin="anonymous"
+  defer></script>
 ```
 
 Temporary addresses show with a dashed label marked **AUTO**. They are worked out from the page slug and position, so they change when the page changes. Use them to explore. Write real `data-ref` attributes for anything you'll refer to more than once.

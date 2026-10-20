@@ -61,6 +61,18 @@ test('the class converter is the one thing that runs while hidden', async ({ pag
   expect(await page.evaluate(() => !!document.querySelector('[data-stadiaref-root], #stadiaref-styles'))).toBe(false);
 });
 
+test('the class converter handles SVG and other non-string className values', async ({ page }) => {
+  await open(page, harness({
+    body: 'namespaces',
+    page: { classConverter: true, startHidden: false },
+  }));
+  expect(await page.evaluate(() => ({
+    svg: document.querySelector('svg').getAttribute('data-ref'),
+    math: document.querySelector('math').getAttribute('data-ref'),
+    visible: window.stadiaref.isVisible(),
+  }))).toEqual({ svg: 'home-icon', math: 'home-equation', visible: true });
+});
+
 test('no classes or state on the page\'s own elements', async ({ page }) => {
   await open(page, '/test/fixtures/v5-data-ref/block-bearing-dense.html');
   const snapshot = () => page.evaluate(() => {

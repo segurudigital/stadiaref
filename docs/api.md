@@ -33,7 +33,7 @@ Every way of loading StadiaRef takes the same keys. (The WordPress settings page
 | `dock` | `'bottom-right'`, `'bottom-left'`, `'top-right'`, `'top-left'`, `'auto'` | `'bottom-right'` | Which corner |
 | `dockOffset` | `{ top, right, bottom, left }` in pixels | none | Extra distance from the edges, on top of the device's safe area |
 | `keys` | See [Keys](#keys) | See below | Shortcut keys |
-| `user` | `{ name, role, id, email }` or `null` | `null` | The identity pill |
+| `user` | `{ name, role }` or `null` | `null` | The display-only identity pill. Other fields are discarded |
 | `classConverter` | `true`, `false` | `false` | Turn `dataref-` classes into `data-ref` attributes |
 | `pageSlug` | A string | From the URL | The slug auto-address builds on |
 
@@ -138,6 +138,12 @@ stadiaref.setTiers([]);            // no labels
 | `setDock(corner)` / `getDock()` | Move the toolbar |
 | `setKeys(keys)` / `getKeys()` | Change shortcut keys |
 | `setUser(user)` / `getUser()` | Set or clear the identity pill |
+
+The identity is deliberately display-only. StadiaRef retains only `name` and
+`role`; identifiers, email addresses, tokens and other fields are discarded.
+The display fields are also visible to other scripts on the page through
+`getUser()` and the `stadiaref:user-change` event, so pass a pseudonym when a
+real name is unnecessary.
 
 ### Addresses and profiles
 

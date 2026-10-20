@@ -129,6 +129,49 @@ describe('plugin', { skip }, () => {
     assert.deepEqual(mu.scripts, {});
     assert.doesNotMatch(wp(PLUGIN, { ...on, run: ['admin_notices'] }).notices, /still active/);
   });
+
+  test('the updater accepts only the exact release asset with a GitHub SHA-256 digest', () => {
+    const digest = 'a'.repeat(64);
+    const release = {
+      assets: [{
+        name: 'stadiaref-wp-v3.2.0.zip',
+        browser_download_url: 'https://github.com/segurudigital/stadiaref/releases/download/v3.2.0/stadiaref-wp-v3.2.0.zip',
+        digest: 'sha256:' + digest,
+      }],
+    };
+    assert.deepEqual(wp(PLUGIN, { call: { name: 'release_asset', release, version: '3.2.0' } }).call, {
+      url: release.assets[0].browser_download_url,
+      sha256: digest,
+    });
+    assert.equal(wp(PLUGIN, { call: { name: 'release_asset', release, version: '3.2.1' } }).call, '');
+    release.assets[0].browser_download_url = 'https://github.com/segurudigital/stadiaref/releases/download/v9.9.9/stadiaref-wp-v3.2.0.zip';
+    assert.equal(wp(PLUGIN, { call: { name: 'release_asset', release, version: '3.2.0' } }).call, '');
+    release.assets[0].browser_download_url = 'https://example.test/stadiaref-wp-v3.2.0.zip';
+    assert.equal(wp(PLUGIN, { call: { name: 'release_asset', release, version: '3.2.0' } }).call, '');
+    release.assets[0].browser_download_url = 'https://github.com/segurudigital/stadiaref/releases/download/v3.2.0/stadiaref-wp-v3.2.0.zip';
+    delete release.assets[0].digest;
+    assert.equal(wp(PLUGIN, { call: { name: 'release_asset', release, version: '3.2.0' } }).call, '');
+  });
+
+  test('the updater verifies the downloaded package digest and fails closed', () => {
+    const body = 'verified WordPress package';
+    const packageUrl = 'https://github.com/segurudigital/stadiaref/releases/download/v3.2.0/stadiaref-wp-v3.2.0.zip';
+    const scenario = (sha256) => ({
+      download_body: body,
+      site_transients: {
+        update_plugins: {
+          response: {
+            'stadiaref/stadiaref.php': { package: packageUrl, stadiaref_sha256: sha256 },
+          },
+        },
+      },
+      call: { name: 'verify_download', package: packageUrl },
+    });
+    const digest = crypto.createHash('sha256').update(body).digest('hex');
+    assert.deepEqual(wp(PLUGIN, scenario(digest)).call, { body });
+    assert.equal(wp(PLUGIN, scenario('0'.repeat(64))).call.error, 'stadiaref_update_checksum');
+    assert.equal(wp(PLUGIN, scenario('')).call.error, 'stadiaref_update_unverified');
+  });
 });
 
 describe('mu-plugin', { skip }, () => {
@@ -170,7 +213,8 @@ describe('files', () => {
     assert.match(read('wordpress/stadiaref.php'), new RegExp('Version:\\s+' + pkg.version.replace(/\./g, '\\.') + '\\n'));
     assert.ok(src.includes("'stadiaref_github_release'"));
     assert.ok(src.includes("'segurudigital/stadiaref'"));
-    assert.ok(src.includes('/^stadiaref-wp-v[\\d.]+\\.zip$/'));
+    assert.ok(src.includes("'stadiaref-wp-v' . $version . '.zip'"));
+    assert.ok(src.includes("hash_file( 'sha256'"));
     for (const f of ['wordpress/stadiaref/stadiaref.php', 'wordpress/stadiaref.php']) {
       assert.doesNotMatch(read(f), /wp_localize_script\(\s*[\w'"$]/, f + ' calls wp_localize_script');
     }

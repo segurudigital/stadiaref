@@ -17,7 +17,7 @@ The old names keep working through every 3.x release and are removed in 4.0. You
 | | 2.x | 3.0 |
 |---|---|---|
 | npm | `@segurudigital/seguru-debug-toolbar` | `stadiaref` |
-| CDN | `…/npm/@segurudigital/seguru-debug-toolbar@2/dist/seguru-debug-toolbar.min.js` | `https://cdn.jsdelivr.net/npm/stadiaref@3/dist/stadiaref.min.js` |
+| CDN | `…/npm/@segurudigital/seguru-debug-toolbar@2/dist/seguru-debug-toolbar.min.js` | Exact-version URL and SRI from [Static HTML](install/static-html.md) |
 | File | `seguru-debug-toolbar.min.js` | `stadiaref.min.js` |
 | Repo | `segurudigital/seguru-debug-toolbar` | `segurudigital/stadiaref` (the old URL redirects) |
 

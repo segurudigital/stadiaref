@@ -21,6 +21,12 @@ Seguru Debug Toolbar becomes **StadiaRef**, and gains what it needs to work in a
 - [x] **StadiaRef's own colour.** The icon, labels, toolbar, panels, the WordPress settings page and the brand graphics move from orange to Signal Lime `#A3E635`, with black text on lime and Lime Ink `#3F6212` where lime would be text on a light surface. Focus rings use Seguru's focus colours. Every pair still passes 4.5:1.
 - [x] **WordPress.org graphics:** the plugin icon and banner, ready for the directory listing.
 
+## Unreleased — security hardening
+
+- [x] **Runtime inputs:** close inherited-key vocabulary matches, support SVG/MathML class conversion, and minimise reviewer identity to its two display fields.
+- [x] **Distribution trust:** exact CDN versions with SRI; WordPress release name, URL and SHA-256 binding; esbuild updated past its advisory.
+- [x] **Least-privilege delivery:** unprivileged release and Pages builds, prebuilt npm publication, immutable action pins, dependency auditing and full-history secret scanning.
+
 ## 3.2 — safe inside any app, and one address fast
 
 - **One overlay layer for labels.** In 3.0 labels are drawn inside the page's own elements, which a framework re-render can disturb. 3.2 draws them in one layer of StadiaRef's own, positioned from each element's box, so StadiaRef changes nothing in the page at all. This removes the void-element workaround and the label re-mounting after re-renders.

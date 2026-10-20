@@ -10,6 +10,10 @@ Needs WordPress 5.8 or later and PHP 8.1 or later.
 2. In wp-admin go to **Plugins → Add New → Upload Plugin**, choose the zip and activate it.
 3. Go to **Settings → StadiaRef** and turn it on.
 
+Future updates appear in WordPress only when the GitHub release tag, exact asset
+name and GitHub-provided SHA-256 digest agree. The plugin verifies that digest
+again after download and stops before installation on any mismatch.
+
 ## 2. Open the site and press D
 
 Visit any front-end page while signed in. Press **D**. The toolbar appears in the bottom-right corner.

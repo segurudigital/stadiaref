@@ -1,36 +1,24 @@
 // src/core/rules.js
 var MAX_LENGTH = 160;
 function coreProblems(address) {
-  if (typeof address !== "string")
-    return ["not a string"];
-  if (address === "")
-    return ["empty"];
+  if (typeof address !== "string") return ["not a string"];
+  if (address === "") return ["empty"];
   var problems = [];
-  if (/[A-Z]/.test(address))
-    problems.push("uppercase letters");
-  if (/_/.test(address))
-    problems.push("underscore");
-  if (/\s/.test(address))
-    problems.push("spaces");
-  if (/[^A-Za-z0-9_\s-]/.test(address))
-    problems.push("characters other than a-z, 0-9 and hyphens");
-  if (address.charAt(0) === "-")
-    problems.push("starts with a hyphen");
-  if (address.length > 1 && address.charAt(address.length - 1) === "-")
-    problems.push("ends with a hyphen");
-  if (address.indexOf("--") !== -1)
-    problems.push("two hyphens in a row");
-  if (address.length > MAX_LENGTH)
-    problems.push("longer than " + MAX_LENGTH + " characters");
+  if (/[A-Z]/.test(address)) problems.push("uppercase letters");
+  if (/_/.test(address)) problems.push("underscore");
+  if (/\s/.test(address)) problems.push("spaces");
+  if (/[^A-Za-z0-9_\s-]/.test(address)) problems.push("characters other than a-z, 0-9 and hyphens");
+  if (address.charAt(0) === "-") problems.push("starts with a hyphen");
+  if (address.length > 1 && address.charAt(address.length - 1) === "-") problems.push("ends with a hyphen");
+  if (address.indexOf("--") !== -1) problems.push("two hyphens in a row");
+  if (address.length > MAX_LENGTH) problems.push("longer than " + MAX_LENGTH + " characters");
   return problems;
 }
 
 // src/core/profiles/nesting.js
 function tierFromNesting(context) {
-  if (!context || typeof context.depth !== "number")
-    return null;
-  if (context.depth === 0)
-    return "section";
+  if (!context || typeof context.depth !== "number") return null;
+  if (context.depth === 0) return "section";
   return context.hasAddressedChildren ? "block" : "element";
 }
 
@@ -52,8 +40,7 @@ var generic = {
 var SURFACES = ["app", "pwa", "mobile", "wp-admin", "wp-frontend", "shopify-admin", "shopify-storefront"];
 function split(address) {
   var segs = address.split("-");
-  if (segs.length < 2 || !segs[0])
-    return null;
+  if (segs.length < 2 || !segs[0]) return null;
   var two = segs.length >= 3 ? segs[1] + "-" + segs[2] : null;
   if (two && SURFACES.indexOf(two) !== -1) {
     return { product: segs[0], surface: two, path: segs.slice(3).join("-") };
@@ -99,13 +86,14 @@ var ELEMENT_NOUNS = {
   link: 1,
   wrapper: 1
 };
+function owns(map, key) {
+  return Object.prototype.hasOwnProperty.call(map, key);
+}
 function classifyTitan(ref) {
-  if (!ref || typeof ref !== "string")
-    return "unclassified";
+  if (!ref || typeof ref !== "string") return "unclassified";
   var segs = ref.split("-");
   var len = segs.length;
-  if (len < 2)
-    return "unclassified";
+  if (len < 2) return "unclassified";
   var twoDigit = /^\d{2}$/;
   var numeric = /^\d+$/;
   if (len >= 6) {
@@ -113,14 +101,14 @@ function classifyTitan(ref) {
     var s2 = segs[len - 2];
     var s3 = segs[len - 3];
     var s4 = segs[len - 4];
-    if (!numeric.test(s1) && twoDigit.test(s2) && twoDigit.test(s3) && ELEMENT_NOUNS[s4]) {
+    if (!numeric.test(s1) && twoDigit.test(s2) && twoDigit.test(s3) && owns(ELEMENT_NOUNS, s4)) {
       return "element";
     }
   }
   if (len >= 4) {
     var bNN = segs[len - 1];
     var bType = segs[len - 2];
-    if (twoDigit.test(bNN) && BLOCK_TYPES[bType]) {
+    if (twoDigit.test(bNN) && owns(BLOCK_TYPES, bType)) {
       return "block";
     }
   }
@@ -148,8 +136,7 @@ var titan = {
     if (tier === "block") {
       return { tier, prefix: segs.slice(0, len - 2).join("-"), blockType: segs[len - 2], number: segs[len - 1] };
     }
-    if (tier === "section")
-      return { tier, segments: segs };
+    if (tier === "section") return { tier, segments: segs };
     return null;
   }
 };
@@ -171,23 +158,16 @@ function hasProfile(name) {
 }
 function profileFor(options) {
   var name = options && options.profile !== void 0 ? options.profile : DEFAULT_PROFILE;
-  if (!hasProfile(name))
-    throw new Error('[stadiaref] unknown profile "' + name + '". Registered: ' + profiles.join(", "));
+  if (!hasProfile(name)) throw new Error('[stadiaref] unknown profile "' + name + '". Registered: ' + profiles.join(", "));
   return registry[name];
 }
 function registerProfile(profile) {
-  if (!profile || typeof profile !== "object")
-    throw new TypeError("[stadiaref] registerProfile expects an object");
-  if (typeof profile.name !== "string" || !profile.name)
-    throw new TypeError("[stadiaref] a profile needs a name");
-  if (typeof profile.classify !== "function")
-    throw new TypeError('[stadiaref] profile "' + profile.name + '" needs a classify(address, context) function');
-  if (profile.validate !== void 0 && typeof profile.validate !== "function")
-    throw new TypeError('[stadiaref] profile "' + profile.name + '": validate must be a function');
-  if (profile.parse !== void 0 && typeof profile.parse !== "function")
-    throw new TypeError('[stadiaref] profile "' + profile.name + '": parse must be a function');
-  if (hasProfile(profile.name))
-    throw new Error('[stadiaref] a profile named "' + profile.name + '" is already registered');
+  if (!profile || typeof profile !== "object") throw new TypeError("[stadiaref] registerProfile expects an object");
+  if (typeof profile.name !== "string" || !profile.name) throw new TypeError("[stadiaref] a profile needs a name");
+  if (typeof profile.classify !== "function") throw new TypeError('[stadiaref] profile "' + profile.name + '" needs a classify(address, context) function');
+  if (profile.validate !== void 0 && typeof profile.validate !== "function") throw new TypeError('[stadiaref] profile "' + profile.name + '": validate must be a function');
+  if (profile.parse !== void 0 && typeof profile.parse !== "function") throw new TypeError('[stadiaref] profile "' + profile.name + '": parse must be a function');
+  if (hasProfile(profile.name)) throw new Error('[stadiaref] a profile named "' + profile.name + '" is already registered');
   add({ name: profile.name, classify: profile.classify, validate: profile.validate, parse: profile.parse });
   return profile.name;
 }
@@ -196,15 +176,13 @@ function validate(address, options) {
   var problems = coreProblems(address);
   if (!problems.length && p.validate) {
     var own = p.validate(address);
-    if (own && own.length)
-      problems = problems.concat(own);
+    if (own && own.length) problems = problems.concat(own);
   }
   return { valid: problems.length === 0, problems };
 }
 function classify(address, options) {
   var p = profileFor(options);
-  if (!validate(address, options).valid)
-    return "unclassified";
+  if (!validate(address, options).valid) return "unclassified";
   var tier = p.classify(address, options && options.context);
   return TIERS.indexOf(tier) !== -1 ? tier : "unclassified";
 }

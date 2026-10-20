@@ -10,25 +10,21 @@ var OPTIMIZE_DEPS = { exclude: ["stadiaref", "stadiaref/core"] };
 function initOptions(options) {
   var out = {};
   for (var key in options || {}) {
-    if (key !== "setup" && Object.prototype.hasOwnProperty.call(options, key))
-      out[key] = options[key];
+    if (key !== "setup" && Object.prototype.hasOwnProperty.call(options, key)) out[key] = options[key];
   }
   return out;
 }
 function setupPath(setup, root) {
-  if (typeof setup !== "string" || !setup)
-    return null;
+  if (typeof setup !== "string" || !setup) return null;
   return path.resolve(root, setup).split(path.sep).join("/");
 }
 function loaderCode(options, root) {
   var setup = setupPath(options && options.setup, root);
   var lines = ["import stadiaref from 'stadiaref';"];
-  if (setup)
-    lines.push("import setup from " + JSON.stringify(setup) + ";");
+  if (setup) lines.push("import setup from " + JSON.stringify(setup) + ";");
   lines.push("(async function () {");
   lines.push("  if (!stadiaref) return;");
-  if (setup)
-    lines.push("  if (typeof setup === 'function') await setup(stadiaref);");
+  if (setup) lines.push("  if (typeof setup === 'function') await setup(stadiaref);");
   lines.push("  stadiaref.init(" + JSON.stringify(initOptions(options)) + ");");
   lines.push("})();");
   return lines.join("\n") + "\n";
@@ -42,8 +38,7 @@ function stadiaref(options) {
     name: "stadiaref",
     hooks: {
       "astro:config:setup": function(params) {
-        if (params.command !== "dev")
-          return;
+        if (params.command !== "dev") return;
         params.addDevToolbarApp({
           id: "stadiaref",
           name: "StadiaRef",

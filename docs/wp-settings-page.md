@@ -81,7 +81,12 @@ A setting already saved in 3.0 is never overwritten.
 
 ## Updates
 
-The plugin checks the latest release of `segurudigital/stadiaref` on GitHub (cached for six hours) and offers it through WordPress's normal update screens when it carries an asset named `stadiaref-wp-v<version>.zip`.
+The plugin checks the latest release of `segurudigital/stadiaref` on GitHub
+(cached for six hours) and offers it through WordPress's normal update screens
+only when the tag, the exact `stadiaref-wp-v<version>.zip` filename and its
+GitHub release URL agree. Before installation it verifies the downloaded file
+against the SHA-256 digest GitHub recorded when the asset was uploaded; missing
+or mismatched integrity metadata stops the update.
 
 ## The mu-plugin
 

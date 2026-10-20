@@ -50,7 +50,7 @@ function syncUser() {
   const session = getHostSession();   // your own auth state
   window.stadiaref?.setUser(
     session?.user
-      ? { name: session.user.displayName, role: session.user.role, id: session.user.id }
+      ? { name: session.user.displayName, role: session.user.role }
       : null
   );
 }
@@ -60,7 +60,10 @@ window.addEventListener('stadiaref:ready', syncUser);  // in case StadiaRef load
 hostAuth.subscribe(syncUser);
 ```
 
-Other tools on the page can follow along with `stadiaref:user-change`.
+Other tools on the page can follow along with `stadiaref:user-change`. StadiaRef
+keeps only the display fields `name` and `role`; it discards IDs, email
+addresses and any other fields. Those display fields are visible to every
+script on the page, so use a pseudonym when a real name is unnecessary.
 
 ## 3. Keep the theme in step
 

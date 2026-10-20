@@ -178,8 +178,8 @@ add_action( 'admin_notices', function () {
 // into WordPress's native update flow. Admins see a standard "Update available"
 // notice on Plugins and Dashboard → Updates, same as any wp.org plugin.
 //
-// Release zip asset name must match /stadiaref-wp-v[\d.]+\.zip/
-// (the output of scripts/build-wp-zip.sh).
+// Release zip name, version and SHA-256 digest must all agree with GitHub's
+// release metadata (the output of scripts/build-wp-zip.sh).
 define( 'STADIAREF_GITHUB_REPO', 'segurudigital/stadiaref' );
 define( 'STADIAREF_UPDATE_CACHE_KEY', 'stadiaref_github_release' );
 define( 'STADIAREF_UPDATE_CACHE_TTL', 6 * HOUR_IN_SECONDS );
@@ -212,12 +212,33 @@ function stadiaref_fetch_latest_release() {
     return $data;
 }
 
-function stadiaref_release_zip_url( $release ) {
+function stadiaref_release_zip_asset( $release, $version ) {
     if ( empty( $release['assets'] ) || ! is_array( $release['assets'] ) ) return '';
+    if ( ! preg_match( '/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/', $version ) ) return '';
+
+    $expected_name = 'stadiaref-wp-v' . $version . '.zip';
     foreach ( $release['assets'] as $asset ) {
-        if ( ! empty( $asset['name'] ) && preg_match( '/^stadiaref-wp-v[\d.]+\.zip$/', $asset['name'] ) ) {
-            return $asset['browser_download_url'] ?? '';
-        }
+        if ( ( $asset['name'] ?? '' ) !== $expected_name ) continue;
+
+        $url    = $asset['browser_download_url'] ?? '';
+        $digest = $asset['digest'] ?? '';
+        $parts  = wp_parse_url( $url );
+        $path   = $parts['path'] ?? '';
+        $release_path = '/' . STADIAREF_GITHUB_REPO . '/releases/download/';
+        $valid_path = $release_path . 'v' . $version . '/' . $expected_name;
+        $valid_path_without_v = $release_path . $version . '/' . $expected_name;
+        if (
+            ! is_array( $parts )
+            || ( $parts['scheme'] ?? '' ) !== 'https'
+            || strtolower( $parts['host'] ?? '' ) !== 'github.com'
+            || ( $path !== $valid_path && $path !== $valid_path_without_v )
+            || ! preg_match( '/^sha256:([a-f0-9]{64})$/i', $digest, $match )
+        ) continue;
+
+        return [
+            'url'    => $url,
+            'sha256' => strtolower( $match[1] ),
+        ];
     }
     return '';
 }
@@ -231,8 +252,8 @@ add_filter( 'pre_set_site_transient_update_plugins', function ( $transient ) {
     $latest = isset( $release['tag_name'] ) ? ltrim( $release['tag_name'], 'vV' ) : '';
     if ( ! $latest || version_compare( $latest, STADIAREF_VERSION, '<=' ) ) return $transient;
 
-    $zip_url = stadiaref_release_zip_url( $release );
-    if ( ! $zip_url ) return $transient;
+    $zip_asset = stadiaref_release_zip_asset( $release, $latest );
+    if ( ! $zip_asset ) return $transient;
 
     $plugin_file = plugin_basename( __FILE__ );
     $transient->response[ $plugin_file ] = (object) [
@@ -241,7 +262,8 @@ add_filter( 'pre_set_site_transient_update_plugins', function ( $transient ) {
         'plugin'        => $plugin_file,
         'new_version'   => $latest,
         'url'           => 'https://github.com/' . STADIAREF_GITHUB_REPO,
-        'package'       => $zip_url,
+        'package'       => $zip_asset['url'],
+        'stadiaref_sha256' => $zip_asset['sha256'],
         'tested'        => '7.1',
         'requires'      => '5.8',
         'requires_php'  => '8.1',
@@ -260,7 +282,8 @@ add_filter( 'plugins_api', function ( $result, $action, $args ) {
     if ( empty( $release ) || ! empty( $release['error'] ) ) return $result;
 
     $latest  = isset( $release['tag_name'] ) ? ltrim( $release['tag_name'], 'vV' ) : '';
-    $zip_url = stadiaref_release_zip_url( $release );
+    $zip_asset = stadiaref_release_zip_asset( $release, $latest );
+    $zip_url   = $zip_asset ? $zip_asset['url'] : '';
 
     // GitHub markdown → minimal HTML for the "View details" modal.
     $changelog_md   = $release['body'] ?? '';
@@ -286,6 +309,39 @@ add_filter( 'plugins_api', function ( $result, $action, $args ) {
         ],
     ];
 }, 10, 3 );
+
+// WordPress verifies packages from its own directory, but not packages from a
+// custom GitHub updater. Download this plugin's package ourselves and compare
+// it with the SHA-256 digest GitHub calculated when the release asset was
+// uploaded. Returning the verified temporary file lets the normal upgrader
+// continue; missing or mismatched metadata fails closed.
+add_filter( 'upgrader_pre_download', function ( $reply, $package ) {
+    if ( false !== $reply ) return $reply;
+
+    $updates     = get_site_transient( 'update_plugins' );
+    $plugin_file = plugin_basename( __FILE__ );
+    $update      = is_object( $updates ) && isset( $updates->response[ $plugin_file ] )
+        ? $updates->response[ $plugin_file ]
+        : null;
+
+    if ( ! is_object( $update ) || ( $update->package ?? '' ) !== $package ) return $reply;
+
+    $expected = $update->stadiaref_sha256 ?? '';
+    if ( ! is_string( $expected ) || ! preg_match( '/^[a-f0-9]{64}$/', $expected ) ) {
+        return new WP_Error( 'stadiaref_update_unverified', __( 'StadiaRef could not verify the update package.', 'stadiaref' ) );
+    }
+
+    $temporary = download_url( $package, 300 );
+    if ( is_wp_error( $temporary ) ) return $temporary;
+
+    $actual = hash_file( 'sha256', $temporary );
+    if ( ! is_string( $actual ) || ! hash_equals( $expected, strtolower( $actual ) ) ) {
+        wp_delete_file( $temporary );
+        return new WP_Error( 'stadiaref_update_checksum', __( 'The StadiaRef update package failed its integrity check.', 'stadiaref' ) );
+    }
+
+    return $temporary;
+}, 10, 2 );
 
 // Clear the cached release after any plugin upgrade so post-update the next
 // update check sees the current installed version, not a stale cached reply.

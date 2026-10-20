@@ -10,7 +10,10 @@ export function convertClassRefs() {
   var els = document.querySelectorAll('[class*="dataref-"]');
   forEachNode(els, function (el) {
     if (el.getAttribute('data-ref')) return;
-    var classes = el.className.split(/\s+/);
+    // `className` is not always a string: SVG exposes SVGAnimatedString and
+    // other namespaces may use their own object. The attribute is the common
+    // string representation for HTML, SVG and MathML.
+    var classes = (el.getAttribute('class') || '').split(/\s+/);
     for (var i = 0; i < classes.length; i++) {
       if (classes[i].indexOf('dataref-') === 0) {
         el.setAttribute('data-ref', classes[i].replace('dataref-', ''));
@@ -129,7 +132,7 @@ export function getElementContext(el) {
   var content = el.querySelector('img, video, audio, button, a, p, form, table, blockquote, figure');
   if (content) return content.tagName.toLowerCase();
 
-  var cls = el.className || '';
+  var cls = el.getAttribute('class') || '';
   var eMatch = cls.match(/elementor-widget-([\w-]+)/);
   if (eMatch) return eMatch[1];
   var bMatch = cls.match(/brxe-([\w-]+)/);

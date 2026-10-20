@@ -16,6 +16,10 @@ export const ELEMENT_NOUNS = {
   heading: 1, text: 1, image: 1, cta: 1, media: 1, link: 1, wrapper: 1
 };
 
+function owns(map, key) {
+  return Object.prototype.hasOwnProperty.call(map, key);
+}
+
 export function classifyTitan(ref) {
   if (!ref || typeof ref !== 'string') return 'unclassified';
   var segs = ref.split('-');
@@ -29,7 +33,7 @@ export function classifyTitan(ref) {
     var s2 = segs[len - 2]; // instance: /^\d{2}$/
     var s3 = segs[len - 3]; // NN: /^\d{2}$/
     var s4 = segs[len - 4]; // element noun
-    if (!numeric.test(s1) && twoDigit.test(s2) && twoDigit.test(s3) && ELEMENT_NOUNS[s4]) {
+    if (!numeric.test(s1) && twoDigit.test(s2) && twoDigit.test(s3) && owns(ELEMENT_NOUNS, s4)) {
       return 'element';
     }
   }
@@ -37,7 +41,7 @@ export function classifyTitan(ref) {
   if (len >= 4) {
     var bNN = segs[len - 1];  // NN: /^\d{2}$/
     var bType = segs[len - 2]; // block-type in vocabulary
-    if (twoDigit.test(bNN) && BLOCK_TYPES[bType]) {
+    if (twoDigit.test(bNN) && owns(BLOCK_TYPES, bType)) {
       return 'block';
     }
   }

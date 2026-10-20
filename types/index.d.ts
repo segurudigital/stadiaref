@@ -16,8 +16,6 @@ export type Keys = Partial<Record<KeyAction, string | false>>;
 export interface User {
   name?: string;
   role?: string;
-  id?: string;
-  email?: string;
 }
 
 export interface DockOffset {

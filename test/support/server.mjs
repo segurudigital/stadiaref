@@ -102,8 +102,12 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, { 'content-type': TYPES[path.extname(file)] || 'application/octet-stream', 'cache-control': 'no-store' });
     fs.createReadStream(file).pipe(res);
   } catch (err) {
-    res.writeHead(500);
-    res.end(String(err && err.stack || err));
+    if (res.headersSent) {
+      res.destroy(err);
+    } else {
+      res.writeHead(500);
+      res.end(String(err && err.stack || err));
+    }
   }
 });
 

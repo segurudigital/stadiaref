@@ -38,16 +38,15 @@ export function renderUser() {
   pill.classList.add('stadiaref-toolbar__user--visible');
 }
 
-// Snapshot the documented public fields only. Anything else the host hands us
-// (auth tokens, internal IDs) is dropped on the floor. Returns a fresh object
-// every call so external mutation can't reach StadiaRef's stored state.
+// Keep only the two fields the toolbar displays. Identifiers, email addresses,
+// auth tokens and other host data must never be retained or broadcast on the
+// page-wide user-change event. Returns a fresh object every call so external
+// mutation can't reach StadiaRef's stored state.
 export function snapshotUser(u) {
   if (!u || typeof u !== 'object') return null;
   var clone = {};
   if ('name'  in u) clone.name  = u.name;
   if ('role'  in u) clone.role  = u.role;
-  if ('id'    in u) clone.id    = u.id;
-  if ('email' in u) clone.email = u.email;
   return clone;
 }
 

@@ -5,14 +5,12 @@ No build step. One script tag.
 ## The script tag
 
 ```html
-<!-- Follows the 3.x line: bug fixes and new features, no breaking changes -->
-<script src="https://cdn.jsdelivr.net/npm/stadiaref@3/dist/stadiaref.min.js" defer></script>
-```
-
-Pin an exact version when you want upgrades to be a deliberate step:
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/stadiaref@3.0.0/dist/stadiaref.min.js" defer></script>
+<!-- Exact version and integrity: upgrades are always deliberate -->
+<script
+  src="https://cdn.jsdelivr.net/npm/stadiaref@3.1.0/dist/stadiaref.min.js"
+  integrity="sha384-If8zpv95RMVTbF+dDj3YI4QApgqpTJqLPF+krLX7IiEwWTQXzo327sFpAZ0nF9rg"
+  crossorigin="anonymous"
+  defer></script>
 ```
 
 Or download `stadiaref.min.js` from the [latest release](https://github.com/segurudigital/stadiaref/releases/latest) and serve it yourself:
@@ -37,14 +35,20 @@ Set `window.stadiarefConfig` before the script tag:
     dock: 'bottom-right', // any corner, or 'auto'
   };
 </script>
-<script src="https://cdn.jsdelivr.net/npm/stadiaref@3/dist/stadiaref.min.js" defer></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/stadiaref@3.1.0/dist/stadiaref.min.js"
+  integrity="sha384-If8zpv95RMVTbF+dDj3YI4QApgqpTJqLPF+krLX7IiEwWTQXzo327sFpAZ0nF9rg"
+  crossorigin="anonymous"
+  defer></script>
 ```
 
 For a quick one-off, a few keys also work as attributes on the script tag:
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/stadiaref@3/dist/stadiaref.min.js"
+  src="https://cdn.jsdelivr.net/npm/stadiaref@3.1.0/dist/stadiaref.min.js"
+  integrity="sha384-If8zpv95RMVTbF+dDj3YI4QApgqpTJqLPF+krLX7IiEwWTQXzo327sFpAZ0nF9rg"
+  crossorigin="anonymous"
   data-profile="generic"
   data-labels="icons"
   data-dock="bottom-left"
@@ -103,7 +107,7 @@ Add addresses in your section files:
 To survey a page without touching its markup, save this as a bookmark and click it on any page:
 
 ```text
-javascript:(()=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/stadiaref@3/dist/stadiaref.min.js';s.onload=()=>window.stadiaref.show();document.head.appendChild(s)})()
+javascript:(()=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/stadiaref@3.1.0/dist/stadiaref.min.js';s.integrity='sha384-If8zpv95RMVTbF+dDj3YI4QApgqpTJqLPF+krLX7IiEwWTQXzo327sFpAZ0nF9rg';s.crossOrigin='anonymous';s.onload=()=>window.stadiaref.show();document.head.appendChild(s)})()
 ```
 
 It loads StadiaRef in your tab only. Nobody else sees it. A site with a strict Content Security Policy will block it.

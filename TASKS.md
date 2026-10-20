@@ -1,7 +1,7 @@
 # Tasks
 
 **Project:** StadiaRef (was Seguru Debug Toolbar)
-**Current version:** 3.1.0 (prepared 2026-10-09, not yet released)
+**Current version:** 3.1.0 (released 2026-10-10)
 
 > **How this file works**
 > TASKS.md is the canonical list of all open and recently-completed work, organised as **Sprints → Phases → subtasks**. Items are ticked off as they ship. At session end, completed items move from this file to **CHANGELOG.md** (the user-facing record) — only the most recent handoff note stays here as a starting point for the next session. **ROADMAP.md** is the forward view. Agent todo trackers (`TodoWrite`) mirror this file for the active session — they're never the source of truth on their own. All three docs (TASKS, CHANGELOG, ROADMAP) must be in sync at the start and end of every session.
@@ -10,7 +10,14 @@
 
 ## Handoff notes
 
-**Last session:** 2026-10-10 (3.1.0 released)
+**Last session:** 2026-10-20 (security audit remediation; unreleased)
+
+All eight findings from the 2026-10-20 security audit are resolved in the
+working release: runtime regressions, release and Pages job authority, action
+pinning, CDN integrity, the esbuild advisory, WordPress update verification,
+reviewer-data minimisation and security CI. Verification passed: 243 unit
+tests, 580 browser tests, size budgets, Vite/Astro/types, WordPress Playground,
+zero npm advisories and clean history/current-tree secret scans.
 
 **3.1.0 is released** (2026-10-10): GitHub release `v3.1.0` with its three assets, and `stadiaref@3.1.0` on npm as `latest`, with provenance; the lime social preview is uploaded. It is the first publish through npm trusted publishing: the first two runs failed with `ENEEDAUTH` until the trusted publisher entry on npmjs.com was corrected, then the re-run published. StadiaRef is Signal Lime `#A3E635` (Brand Handbook 4.12).
 

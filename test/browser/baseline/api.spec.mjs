@@ -134,11 +134,11 @@ test('setTheme / getTheme, persisted to localStorage', async ({ page }) => {
   expect(await page.evaluate(() => window.stadiaref.getTheme())).toBe('dark');
 });
 
-test('setUser / getUser keep only documented fields', async ({ page }) => {
+test('setUser / getUser retain only display fields', async ({ page }) => {
   await open(page, harness({ page: { startHidden: false } }));
   expect(await page.evaluate(() => window.stadiaref.getUser())).toBe(null);
   await page.evaluate(() => window.stadiaref.setUser({ name: 'Ada Lovelace', role: 'reviewer', id: 'u1', email: 'ada@example.com', token: 'secret' }));
-  expect(await page.evaluate(() => window.stadiaref.getUser())).toEqual({ name: 'Ada Lovelace', role: 'reviewer', id: 'u1', email: 'ada@example.com' });
+  expect(await page.evaluate(() => window.stadiaref.getUser())).toEqual({ name: 'Ada Lovelace', role: 'reviewer' });
   await expect(shadow(page, '[data-stadiaref-user-name]')).toHaveText('Ada Lovelace');
   await expect(shadow(page, '[data-stadiaref-user-avatar]')).toHaveText('A');
   // returned object is a copy

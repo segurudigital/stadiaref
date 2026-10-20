@@ -50,7 +50,11 @@ Pick your stack. Each guide takes a few minutes.
 The shortest path, for any HTML page:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/stadiaref@3/dist/stadiaref.min.js" defer></script>
+<script
+  src="https://cdn.jsdelivr.net/npm/stadiaref@3.1.0/dist/stadiaref.min.js"
+  integrity="sha384-If8zpv95RMVTbF+dDj3YI4QApgqpTJqLPF+krLX7IiEwWTQXzo327sFpAZ0nF9rg"
+  crossorigin="anonymous"
+  defer></script>
 ```
 
 Load the page and press **D**.

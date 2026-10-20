@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
@@ -82,12 +83,22 @@ test('package.json: entry points, exports and published files', () => {
 });
 
 test('npm pack ships only the built files, types and the four documents', () => {
-  const out = execFileSync('npm', ['pack', '--dry-run', '--json'], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-  const files = JSON.parse(out)[0].files.map((f) => f.path).sort();
-  assert.deepEqual(files, [
-    'CHANGELOG.md', 'LICENSE', 'NOTICE', 'README.md',
-    'dist/astro-app.mjs', 'dist/astro.mjs', 'dist/core.mjs', 'dist/index.mjs', 'dist/stadiaref.min.js', 'dist/vite.mjs',
-    'package.json',
-    'types/astro.d.ts', 'types/core.d.ts', 'types/index.d.ts', 'types/vite.d.ts',
-  ]);
+  const cache = fs.mkdtempSync(path.join(os.tmpdir(), 'stadiaref-npm-cache-'));
+  try {
+    const out = execFileSync('npm', ['pack', '--dry-run', '--json'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+      env: { ...process.env, npm_config_cache: cache },
+    });
+    const files = JSON.parse(out)[0].files.map((f) => f.path).sort();
+    assert.deepEqual(files, [
+      'CHANGELOG.md', 'LICENSE', 'NOTICE', 'README.md',
+      'dist/astro-app.mjs', 'dist/astro.mjs', 'dist/core.mjs', 'dist/index.mjs', 'dist/stadiaref.min.js', 'dist/vite.mjs',
+      'package.json',
+      'types/astro.d.ts', 'types/core.d.ts', 'types/index.d.ts', 'types/vite.d.ts',
+    ]);
+  } finally {
+    fs.rmSync(cache, { recursive: true, force: true });
+  }
 });

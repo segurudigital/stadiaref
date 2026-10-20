@@ -145,9 +145,21 @@ describe('titan profile', () => {
   });
 
   test('an address outside the grammar is unclassified, with a problem', () => {
-    for (const a of ['home', 'home-01', 'hero-card-01', 'x-y-card-1', 'home-hero-heading-01-01-02']) {
+    for (const a of [
+      'home', 'home-01', 'hero-card-01', 'x-y-card-1', 'home-hero-heading-01-01-02',
+      'home-x-constructor-00', 'home-x-prototype-00', 'home-x-tostring-00',
+    ]) {
       assert.equal(classify(a, { profile: 'titan' }), 'unclassified', a);
       assert.deepEqual(validate(a, { profile: 'titan' }), { valid: false, problems: ["doesn't match the Titan grammar"] }, a);
+    }
+  });
+
+  test('inherited object keys are never treated as Titan vocabulary entries', () => {
+    // These fall through to the deliberately broad section rule because their
+    // last segment is non-numeric; the important invariant is that none can
+    // masquerade as an allowlisted element.
+    for (const noun of ['constructor', 'prototype', 'toString']) {
+      assert.notEqual(classifyTitan('home-x-' + noun + '-00-00-role'), 'element', noun);
     }
   });
 

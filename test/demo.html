@@ -165,7 +165,7 @@
           case 'theme-light': api.setTheme('light'); break;
           case 'theme-dark':  api.setTheme('dark'); break;
           case 'theme-auto':  api.setTheme('auto'); break;
-          case 'user-set':    api.setUser({ name: 'Jane Reviewer', role: 'reviewer', id: 'jr' }); break;
+          case 'user-set':    api.setUser({ name: 'Jane Reviewer', role: 'reviewer' }); break;
           case 'user-clear':  api.setUser(null); break;
           case 'pick':        api.pick(); break;
           case 'find':        log('find: ' + api.find('home').join(', ')); break;

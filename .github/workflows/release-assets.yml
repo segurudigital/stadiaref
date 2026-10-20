@@ -1,17 +1,7 @@
 name: Release
 
-# On every published release: build, then attach the release assets, then
-# publish the package to npm.
-#
-#   stadiaref.min.js                       the script-tag build
-#   stadiaref-wp-v<version>.zip            the WordPress plugin. Its updater
-#                                          looks for this name
-#   seguru-debug-toolbar-wp-v2.5.1.zip     the bridge for sites still on
-#                                          Seguru Debug Toolbar 2.x. Their
-#                                          updater only accepts this name
-#
-# Manual re-run: the workflow_dispatch trigger takes the tag (e.g. v3.0.0),
-# for when a run failed and the release already exists.
+# Build once without release or npm-publishing authority. Separate downstream
+# jobs attach those exact artifacts to GitHub and publish the exact tarball.
 
 on:
   release:
@@ -19,15 +9,14 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing release tag to attach assets to (e.g. v3.0.0)"
+        description: "Existing release tag to attach assets to (e.g. v3.1.0)"
         required: true
 
 permissions:
-  contents: write   # gh release upload
-  id-token: write   # npm trusted publishing (OIDC) and provenance
+  contents: read
 
 jobs:
-  build-and-attach:
+  build:
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.tag.outputs.name }}
@@ -45,11 +34,11 @@ jobs:
             echo "name=$INPUT_TAG" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ steps.tag.outputs.name }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "22"
           cache: npm
@@ -66,53 +55,84 @@ jobs:
             exit 1
           fi
 
-      - name: Build
+      - name: Build release files
         run: |
           npm run build
           npm run size
           npm run build:wp
           npm run build:wp-bridge
+          npm pack --ignore-scripts
+
+      - name: Check release files
+        run: |
+          version=$(node -p "require('./package.json').version")
+          for file in \
+            dist/stadiaref.min.js \
+            "dist/stadiaref-wp-v${version}.zip" \
+            dist/seguru-debug-toolbar-wp-v2.5.1.zip \
+            "stadiaref-${version}.tgz"
+          do
+            test -f "$file" || { echo "::error::$file was not built."; exit 1; }
+          done
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-build
+          path: |
+            dist/stadiaref.min.js
+            dist/stadiaref-wp-v*.zip
+            dist/seguru-debug-toolbar-wp-v2.5.1.zip
+            stadiaref-*.tgz
+          if-no-files-found: error
+          retention-days: 1
+
+  attach-github-release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release-build
+          path: release-build
 
       - name: Upload assets to the release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_NAME: ${{ steps.tag.outputs.name }}
+          TAG_NAME: ${{ needs.build.outputs.tag }}
         run: |
-          version=$(node -p "require('./package.json').version")
-          for f in dist/stadiaref.min.js "dist/stadiaref-wp-v${version}.zip" dist/seguru-debug-toolbar-wp-v2.5.1.zip; do
-            if [ ! -f "$f" ]; then echo "::error::$f was not built."; ls -la dist/; exit 1; fi
-          done
+          version="${TAG_NAME#v}"
           gh release upload "$TAG_NAME" \
-            dist/stadiaref.min.js \
-            "dist/stadiaref-wp-v${version}.zip" \
-            dist/seguru-debug-toolbar-wp-v2.5.1.zip \
+            release-build/dist/stadiaref.min.js \
+            "release-build/dist/stadiaref-wp-v${version}.zip" \
+            release-build/dist/seguru-debug-toolbar-wp-v2.5.1.zip \
             --clobber
 
-  # Publishes `stadiaref` to npm through npm trusted publishing: npm trusts
-  # this workflow (release-assets.yml in segurudigital/stadiaref), and the
-  # job proves who it is with a short-lived OIDC token (id-token: write
-  # above). No npm token is stored anywhere. Provenance is added
-  # automatically. A failed publish fails the job, and npm refuses to
-  # publish a version that already exists, so a manual re-run can't publish
-  # twice.
   publish-npm:
-    needs: build-and-attach
+    needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          ref: ${{ needs.build-and-attach.outputs.tag }}
+          node-version: "24.22.0"
+          registry-url: "https://registry.npmjs.org"
 
-      - uses: actions/setup-node@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          node-version: "22"
-          cache: npm
+          name: release-build
+          path: release-build
 
-      # Trusted publishing needs npm 11.5.1 or later; Node 22 ships npm 10.
-      - run: npm install -g npm@^11.5.1
-
-      - run: npm ci
-
-      # prepublishOnly runs `npm run build` first.
-      - name: Publish to npm
-        run: npm publish --access public
+      - name: Publish the prebuilt tarball
+        env:
+          TAG_NAME: ${{ needs.build.outputs.tag }}
+        run: |
+          test "$(npm --version)" = "11.19.1"
+          version="${TAG_NAME#v}"
+          npm publish "release-build/stadiaref-${version}.tgz" \
+            --access public \
+            --provenance \
+            --ignore-scripts
