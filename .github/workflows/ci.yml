@@ -83,4 +83,5 @@ jobs:
           base: ""
           head: HEAD
           version: 3.99.3
-          extra_args: --results=verified,unknown --fail
+          # The action adds --fail itself; passing it again is a TruffleHog error.
+          extra_args: --results=verified,unknown
