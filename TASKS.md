@@ -1,7 +1,8 @@
 # Tasks
 
 **Project:** StadiaRef (was Seguru Debug Toolbar)
-**Current version:** 3.1.0 (released 2026-10-10)
+**Current version:** 3.2.0 (versioned 2026-10-21, not released)
+**Last released:** 3.1.0 (2026-10-10)
 
 > **How this file works**
 > TASKS.md is the canonical list of all open and recently-completed work, organised as **Sprints → Phases → subtasks**. Items are ticked off as they ship. At session end, completed items move from this file to **CHANGELOG.md** (the user-facing record) — only the most recent handoff note stays here as a starting point for the next session. **ROADMAP.md** is the forward view. Agent todo trackers (`TodoWrite`) mirror this file for the active session — they're never the source of truth on their own. All three docs (TASKS, CHANGELOG, ROADMAP) must be in sync at the start and end of every session.
@@ -10,7 +11,13 @@
 
 ## Handoff notes
 
-**Last session:** 2026-10-20 (security audit remediation; unreleased)
+**Last session:** 2026-10-21 (Titan profile vocabulary; 3.2.0, not released)
+
+The `titan` profile now knows the `list` element noun (Titan's list rule) and the `loop` and `form` slot wrappers (Titan data-ref 5.3), as core spec 1.1. Before, on the new fixture `test/fixtures/v5-data-ref/slots-and-lists.html`, the two list addresses showed as sections and the loop and form wrappers as unclassified. Version 3.2.0 in every location; the security hardening below ships in it. The overlay-layer release is now 3.3 and reach 3.4.
+
+**For the maintainer at release:** the CDN examples and their SRI hash still pin 3.1.0 (`test/unit/docs.test.mjs`); move them to 3.2.0 once `stadiaref@3.2.0` is on npm.
+
+**Before that:** 2026-10-20 (security audit remediation)
 
 All eight findings from the 2026-10-20 security audit are resolved in the
 working release: runtime regressions, release and Pages job authority, action
@@ -37,7 +44,17 @@ zero npm advisories and clean history/current-tree secret scans.
 
 ## Currently in flight
 
-*Nothing in flight. Next scope is 3.2 (see ROADMAP.md).*
+*Nothing in flight. Next scope is 3.3 (see ROADMAP.md).*
+
+### 3.2.0 — Titan lists, loops and forms — done
+
+The core spec's `titan` profile was behind the Titan data-ref spec. Titan needs it closed before its next reference release.
+
+- [x] Fixture with a Titan list, a loop slot and a form slot; the gap confirmed and recorded against 3.1.0 (lists as sections, loop and form unclassified)
+- [x] Tests first: core unit test and an overlay test on the fixture
+- [x] `list` added to the element nouns, `loop` and `form` to the block types; the 2.x `classifyDataRef()` follows
+- [x] Core spec 1.1: word lists, examples, the versioning note on the fallback section rule, a version table
+- [x] `docs/addressing.md`; version 3.2.0 in every location; CHANGELOG, ROADMAP renumbered (3.3 overlay layer, 3.4 reach), release notes
 
 ### 3.1.0 — Signal Lime (Brand Handbook 4.12, 2026-10-09) — done
 
@@ -210,6 +227,8 @@ For stage 10: the v5 fixtures' page codes looked like they came from a real proj
 | 2026-10-09 | Section labels on a light page: lime fill, black text, Lime Ink border | Lime alone is 1.51:1 against white; the border keeps the label visible (Samuel) |
 | 2026-10-09 | Focus rings are Seguru's (Deep Teal + white halo on light, Primary Blue + black halo on dark), not lime | Brand Handbook, the Seguru Anchor, rule 3 (Samuel) |
 | 2026-10-09 | The colour change is 3.1.0; the overlay-layer release becomes 3.2, reach 3.3 | A colour change is a minor bump (Samuel) |
+| 2026-10-21 | `list`, `loop` and `form` join the `titan` profile as a minor core spec version (1.1), though a list address moves from section to element | The section rule is a fallback; a new noun moving an address to the tier its shape says is the point of adding it. Titan asked for a minor version |
+| 2026-10-21 | The vocabulary change is 3.2.0; the overlay-layer release becomes 3.3, reach 3.4 | A change to how valid addresses classify is a minor bump, as with 3.1.0 |
 | 2026-10-09 | Titan fixture pages use neutral grey for their own styling | They stand in for a host page and shouldn't carry StadiaRef's colour (Samuel) |
 
 ---

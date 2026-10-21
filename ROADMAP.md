@@ -21,22 +21,24 @@ Seguru Debug Toolbar becomes **StadiaRef**, and gains what it needs to work in a
 - [x] **StadiaRef's own colour.** The icon, labels, toolbar, panels, the WordPress settings page and the brand graphics move from orange to Signal Lime `#A3E635`, with black text on lime and Lime Ink `#3F6212` where lime would be text on a light surface. Focus rings use Seguru's focus colours. Every pair still passes 4.5:1.
 - [x] **WordPress.org graphics:** the plugin icon and banner, ready for the directory listing.
 
-## Unreleased — security hardening
+## 3.2.0 — Titan lists, loops and forms; security hardening
+
+- [x] **The `titan` profile reads lists, loops and forms:** the `list` element noun (Titan's list rule) and the `loop` and `form` slot wrappers (Titan data-ref 5.3), in core spec 1.1. They were shown as sections or unclassified.
 
 - [x] **Runtime inputs:** close inherited-key vocabulary matches, support SVG/MathML class conversion, and minimise reviewer identity to its two display fields.
 - [x] **Distribution trust:** exact CDN versions with SRI; WordPress release name, URL and SHA-256 binding; esbuild updated past its advisory.
 - [x] **Least-privilege delivery:** unprivileged release and Pages builds, prebuilt npm publication, immutable action pins, dependency auditing and full-history secret scanning.
 
-## 3.2 — safe inside any app, and one address fast
+## 3.3 — safe inside any app, and one address fast
 
-- **One overlay layer for labels.** In 3.0 labels are drawn inside the page's own elements, which a framework re-render can disturb. 3.2 draws them in one layer of StadiaRef's own, positioned from each element's box, so StadiaRef changes nothing in the page at all. This removes the void-element workaround and the label re-mounting after re-renders.
+- **One overlay layer for labels.** In 3.0 labels are drawn inside the page's own elements, which a framework re-render can disturb. 3.3 draws them in one layer of StadiaRef's own, positioned from each element's box, so StadiaRef changes nothing in the page at all. This removes the void-element workaround and the label re-mounting after re-renders.
 - **Problems in the Tree:** duplicated addresses, unclassified addresses and gaps in numbering, in their own tab.
 - **Tree search and filter.**
 - **Copy for a developer or an agent:** the address, its tier, the page URL, the chain of addresses around it and the element's tag, as one block of text.
 - **An `onAddress(address, context)` hook,** with examples for GitHub Issues and Linear. StadiaRef still stores nothing itself.
 - **Drill-down:** narrow the view to one section or block, with a breadcrumb of where you are. Built on the overlay layer, behind a config flag first.
 
-## 3.3 — reach
+## 3.4 — reach
 
 - **`npx stadiaref audit <path or URL>`:** the address inventory, duplicates and grammar check from the command line, for CI.
 - **A browser extension,** so StadiaRef can run on any page, including production sites with no plugin and screens with no build change.

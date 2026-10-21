@@ -1,5 +1,7 @@
 // titan: the Titan Foundation grammar (data-ref v5). The tier is read from
-// the address itself. This is the 2.x classifyDataRef(), unchanged.
+// the address itself. This is the 2.x classifyDataRef(), with the vocabulary
+// Titan has added since: the list element (a list is addressed as a list) and the loop and
+// form slot wrappers (data-ref 5.3), in core spec 1.1.
 //
 // The page part may contain hyphens (e.g. team-v2, plan-def-110), so segment
 // count alone can't decide the tier. The tail segments are fixed:
@@ -10,10 +12,12 @@
 //   Anything else: unclassified
 export const BLOCK_TYPES = {
   card: 1, row: 1, item: 1, tab: 1, slide: 1,
-  step: 1, cell: 1, column: 1, panel: 1, quote: 1, entry: 1
+  step: 1, cell: 1, column: 1, panel: 1, quote: 1, entry: 1,
+  loop: 1, form: 1
 };
 export const ELEMENT_NOUNS = {
-  heading: 1, text: 1, image: 1, cta: 1, media: 1, link: 1, wrapper: 1
+  heading: 1, text: 1, image: 1, cta: 1, media: 1, link: 1, wrapper: 1,
+  list: 1
 };
 
 function owns(map, key) {

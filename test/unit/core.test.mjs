@@ -140,6 +140,35 @@ describe('titan profile', () => {
     assert.equal(classify('about-team-hero', { profile: 'titan' }), 'section');
   });
 
+  test('the list element and the loop and form slot wrappers (core spec 1.1)', () => {
+    // Titan's list rule and data-ref spec 5.3 §4.4; the fixture is
+    // test/fixtures/v5-data-ref/slots-and-lists.html.
+    const html = fs.readFileSync(path.join(ROOT, 'test/fixtures/v5-data-ref/slots-and-lists.html'), 'utf8');
+    const got = Object.fromEntries([...html.matchAll(/data-ref="([^"]+)"/g)].map(([, a]) => [a, classify(a, { profile: 'titan' })]));
+    assert.deepEqual(got, {
+      'home-cards': 'section',
+      'home-cards-card-01': 'block',
+      'home-cards-heading-01-01-h3': 'element',
+      'home-cards-list-01-01-items': 'element',
+      'home-cards-card-02': 'block',
+      'home-cards-heading-01-02-h3': 'element',
+      'home-cards-list-01-02-items': 'element',
+      'home-news': 'section',
+      'home-news-loop-01': 'block',
+      'home-contact': 'section',
+      'home-contact-form-01': 'block',
+    });
+    // The spec's own examples, with a hyphenated page part.
+    for (const a of ['nws-list-loop-01', 'nwp-related-loop-01', 'team-v2-contact-form-03']) {
+      assert.equal(classify(a, { profile: 'titan' }), 'block', a);
+    }
+    assert.deepEqual(parse('home-cards-list-01-02-items', { profile: 'titan' }).parts, { tier: 'element', prefix: 'home-cards', element: 'list', number: '01', instance: '02', role: 'items' });
+    assert.deepEqual(parse('home-news-loop-01', { profile: 'titan' }).parts, { tier: 'block', prefix: 'home-news', blockType: 'loop', number: '01' });
+    // The 2.x classifier is the same grammar, so it learns them too.
+    assert.equal(classifyTitan('home-contact-form-01'), 'block');
+    assert.equal(classifyTitan('home-cards-list-01-01-items'), 'element');
+  });
+
   test('needs no context; context is ignored', () => {
     assert.equal(classify('home-hero-card-01', { profile: 'titan', context: { depth: 0, hasAddressedChildren: false } }), 'block');
   });

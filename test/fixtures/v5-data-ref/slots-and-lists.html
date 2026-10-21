@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<!--
+  Fixture: the Titan vocabulary added after data-ref 5.0
+    - list: element noun for a list address (a list is addressed as a list), e.g.
+      home-cards-list-01-01-items, renamed from a richtext text-…-body
+    - loop: block type for the wrapper of a data-slot region the endpoint
+      renders as a repeating query (data-ref spec 5.3, §4.4)
+    - form: block type for the wrapper of a data-slot region a form plugin
+      renders (data-ref spec 5.3, §4.4)
+  Nothing inside a slot region is addressed: the wrapper carries the
+  only address.
+
+  Expected behaviour under profile 'titan' (core spec 1.1, StadiaRef 3.2.0):
+    - home-cards-list-01-01-items, home-cards-list-01-02-items → element
+    - home-news-loop-01, home-contact-form-01 → block
+    - every other address as its shape says (sections, a card, its heading)
+
+  Before core spec 1.1 (StadiaRef 3.1.0, recorded 2026-10-21):
+    - the list addresses classified as section (wrong tier, not flagged)
+    - home-news-loop-01 and home-contact-form-01 were unclassified, shown
+      with the unclassified tag and "doesn't match the Titan grammar"
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="titan:data-ref-grammar" content="v5.0">
+  <meta name="titan:page-abbreviation" content="home">
+  <title>StadiaRef — Titan list, loop and form fixture</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; }
+    [data-ref] { position: relative; padding: 16px; }
+    .section  { border: 2px solid #ddd; margin: 10px; min-height: 120px; }
+    .block    { border: 1px solid #6b728033; margin: 8px; padding: 12px; background: #f9fafb; }
+    .element  { border: 1px dashed #aaa; margin: 6px; padding: 6px; }
+    .slot     { border: 1px dotted #6b7280; padding: 8px; }
+  </style>
+</head>
+<body>
+  <!-- A card whose body is a list: the list element -->
+  <section class="section" data-ref="home-cards">
+    <div class="block" data-ref="home-cards-card-01">
+      <h3 class="element" data-ref="home-cards-heading-01-01-h3">Card 1</h3>
+      <ul class="element" data-ref="home-cards-list-01-01-items">
+        <li>First point</li>
+        <li>Second point</li>
+      </ul>
+    </div>
+    <div class="block" data-ref="home-cards-card-02">
+      <h3 class="element" data-ref="home-cards-heading-01-02-h3">Card 2</h3>
+      <ul class="element" data-ref="home-cards-list-01-02-items">
+        <li>Third point</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- A loop slot: the endpoint renders the posts; only the wrapper is addressed -->
+  <section class="section" data-ref="home-news">
+    <div class="block" data-ref="home-news-loop-01" data-slot="news-latest">
+      <div class="slot">
+        <article><h3>Latest post</h3><p>Rendered by the endpoint.</p></article>
+        <article><h3>Another post</h3><p>Rendered by the endpoint.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- A form slot: the form plugin renders the fields; only the wrapper is addressed -->
+  <section class="section" data-ref="home-contact">
+    <div class="block" data-ref="home-contact-form-01" data-slot="contact-form">
+      <form class="slot">
+        <label>Name <input name="name"></label>
+        <button type="button">Send</button>
+      </form>
+    </div>
+  </section>
+
+  <script>
+    // A page written to the Titan grammar. ?hidden starts StadiaRef hidden.
+    window.stadiarefConfig = { startHidden: /[?&]hidden\b/.test(location.search), labels: 'full', profile: 'titan' };
+  </script>
+  <script src="../../../dist/stadiaref.min.js"></script>
+</body>
+</html>

@@ -32,6 +32,24 @@ test('the default profile is generic: tiers from nesting', async ({ page }) => {
   });
 });
 
+test('titan: lists, loop slots and form slots are classified (core spec 1.1)', async ({ page }) => {
+  await open(page, '/test/fixtures/v5-data-ref/slots-and-lists.html');
+  expect(await tiers(page)).toEqual({
+    'home-cards': 'section',
+    'home-cards-card-01': 'block',
+    'home-cards-heading-01-01-h3': 'element',
+    'home-cards-list-01-01-items': 'element',
+    'home-cards-card-02': 'block',
+    'home-cards-heading-01-02-h3': 'element',
+    'home-cards-list-01-02-items': 'element',
+    'home-news': 'section',
+    'home-news-loop-01': 'block',
+    'home-contact': 'section',
+    'home-contact-form-01': 'block',
+  });
+  expect(await page.evaluate(() => window.stadiaref.validate('home-contact-form-01'))).toEqual({ valid: true, problems: [] });
+});
+
 test('classify() and validate() on the API use the active profile', async ({ page }) => {
   await open(page, harness({ body: 'nesting' }));
   expect(await page.evaluate(() => ['home-plans', 'home-plans-card-01', 'home-plans-card-01-cta', 'not-on-this-page', 'Bad_Address'].map(window.stadiaref.classify)))

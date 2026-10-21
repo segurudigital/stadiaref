@@ -85,6 +85,10 @@ Yes. Keys set in `window.stadiarefConfig` on the page win over the settings.
 
 == Changelog ==
 
+= 3.2.0 =
+* The Titan profile reads lists, loops and forms: the list element and the loop and form slot wrappers from the Titan data-ref spec 5.3.
+* WordPress updates are verified against the exact release asset and its SHA-256 digest before they install.
+
 = 3.1.0 =
 * StadiaRef is now Signal Lime: the icon, labels, toolbar and settings page. Focus rings use Seguru's focus colours.
 

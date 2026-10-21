@@ -1,6 +1,6 @@
 # Stadia Address core spec
 
-**Version 1.0** · October 2026 · Published with StadiaRef 3.0
+**Version 1.1** · October 2026 · Published with StadiaRef 3.2
 
 A **Stadia Address** is a short, stable name for a part of a screen, carried in an HTML `data-ref` attribute:
 
@@ -156,8 +156,9 @@ The tier is read from the address itself, so it can be checked without a page. T
 
 Anything else is `unclassified`.
 
-- **Block types:** `card`, `row`, `item`, `tab`, `slide`, `step`, `cell`, `column`, `panel`, `quote`, `entry`.
-- **Element nouns:** `heading`, `text`, `image`, `cta`, `media`, `link`, `wrapper`.
+- **Block types:** `card`, `row`, `item`, `tab`, `slide`, `step`, `cell`, `column`, `panel`, `quote`, `entry`, `loop`, `form`.
+- **Element nouns:** `heading`, `text`, `image`, `cta`, `media`, `link`, `wrapper`, `list`.
+- `loop` and `form` are slot wrappers: the element around a region the endpoint renders, such as a posts loop or a form plugin's fields. The wrapper carries the address and nothing inside the region is addressed. `list` is a list's content element (`home-cards-list-01-02-items`). All three were added in 1.1.
 - **Two digits** means exactly two, such as `01` or `12`; `1` and `001` don't match.
 
 | Tier | Shape | Example |
@@ -193,6 +194,9 @@ Validity under each built-in profile, and the tier under `titan`. (Under `generi
 | `home-hero` | valid | valid | invalid | section |
 | `home-hero-card-01` | valid | valid | invalid | block |
 | `home-hero-heading-01-01-primary` | valid | valid | invalid | element |
+| `home-cards-list-01-02-items` | valid | valid | invalid | element |
+| `home-news-loop-01` | valid | valid | invalid | block |
+| `home-contact-form-01` | valid | valid | invalid | block |
 | `about-team-hero` | valid | valid | invalid | section |
 | `home` | valid | valid | invalid | unclassified |
 | `hero-card-01` | valid | valid | invalid | unclassified |
@@ -224,3 +228,10 @@ Tiers from nesting, under `generic` or `app`:
 ## 11. Versioning
 
 This spec is versioned on its own. A minor version may add built-in surfaces, block types, element nouns or profiles. A change that makes a valid address invalid, or changes the tier of a valid address under a built-in profile, needs a major version.
+
+One exception follows from how `titan` works. Its section rule (order 3 in [8.3](#83-titan)) is a fallback, so an address shaped as a block or element whose noun the profile doesn't know yet is placed as a section, or not at all. Adding that noun in a minor version moves such an address to the tier its shape always said. That is the purpose of adding the noun, not a breaking change.
+
+| Version | StadiaRef | Change |
+|---|---|---|
+| 1.1 | 3.2.0 | `titan`: the block types `loop` and `form` (slot wrappers, Titan data-ref 5.3) and the element noun `list` (Titan's list rule). The exception above |
+| 1.0 | 3.0.0 | First version |

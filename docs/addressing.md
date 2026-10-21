@@ -119,8 +119,9 @@ For Seguru Titan Foundations. Here the tier is read from the address itself, so 
 | Block | `<page>-<section>-<block-type>-<NN>` | `home-hero-card-01` |
 | Element | `<page>-<section>-<element>-<NN>-<instance>-<role>` | `home-hero-heading-01-01-primary` |
 
-- Block types: `card`, `row`, `item`, `tab`, `slide`, `step`, `cell`, `column`, `panel`, `quote`, `entry`.
-- Element nouns: `heading`, `text`, `image`, `cta`, `media`, `link`, `wrapper`.
+- Block types: `card`, `row`, `item`, `tab`, `slide`, `step`, `cell`, `column`, `panel`, `quote`, `entry`, `loop`, `form`.
+- Element nouns: `heading`, `text`, `image`, `cta`, `media`, `link`, `wrapper`, `list`.
+- `loop` and `form` wrap a region the site renders itself, such as a posts loop or a form plugin (`home-news-loop-01`, `home-contact-form-01`). Only the wrapper is addressed.
 - `NN` and `instance` are two digits.
 - The page part may contain hyphens (`about-team-hero`).
 

@@ -1,24 +1,23 @@
-# StadiaRef 3.1.0
+# StadiaRef 3.2.0
 
-**StadiaRef is now Signal Lime.**
+**The Titan profile reads lists, loops and forms.**
 
-StadiaRef shows each `data-ref` attribute on a page as a label you can point at and copy. 3.1 gives it a colour of its own: Signal Lime `#A3E635` replaces orange across the icon, labels, toolbar and WordPress settings page. Nothing about how it works has changed.
+StadiaRef shows each `data-ref` attribute on a page as a label you can point at and copy. 3.2 brings the `titan` profile up to date with the Titan data-ref spec, and carries the security hardening done since 3.1. The Stadia Address core spec is now 1.1.
 
-## What you'll see
+## What's new
 
-- **Section labels are lime with black text**, edged in Lime Ink `#3F6212` so they stand out on white pages. On a dark page they're a lighter lime, `#BEF264`. Blocks stay dark and elements light.
-- **Active controls, ticks, the Pick chip and the Find and Pick frames are lime.** Wherever lime would be text on a light surface it is Lime Ink instead, so every text pair still passes 4.5:1. The lowest is 6.52:1.
-- **Focus rings are Seguru's focus colours** (Deep Teal on light, Primary Blue on dark, each with a halo), the same as on every Seguru product.
-- **New product icon:** the black S mark on lime.
+- **Loop and form slots are blocks.** `loop` and `form` wrap a region the site renders itself: a posts loop, a related list, a form plugin's fields (`home-news-loop-01`, `home-contact-form-01`). Only the wrapper is addressed. In 3.1 these showed as unclassified.
+- **Lists are elements.** A list's address, such as `home-cards-list-01-02-items`, is an element. In 3.1 it showed as a section, with no warning.
+- **Safer updates and builds.** WordPress updates are checked against the exact release asset and its SHA-256 digest before they install. Release builds run with least privilege, actions are pinned, and the reviewer identity StadiaRef keeps is just a name and a role.
 
 ## Upgrading
 
-Nothing to change. Update the package (`npm install --save-dev stadiaref@3.1.0`) or the WordPress plugin as usual. If your own CSS matched StadiaRef's old orange values, update it; class names and attributes are unchanged.
+Nothing to change. Update the package (`npm install --save-dev stadiaref@3.2.0`) or the WordPress plugin as usual. If you use the `titan` profile, addresses with `-loop-`, `-form-` or `-list-` in them now get their own tier.
 
 The full list of changes is in the [changelog](https://github.com/segurudigital/stadiaref/blob/main/CHANGELOG.md).
 
 ## Assets
 
 - `stadiaref.min.js`: the script-tag build
-- `stadiaref-wp-v3.1.0.zip`: the WordPress plugin
+- `stadiaref-wp-v3.2.0.zip`: the WordPress plugin
 - `seguru-debug-toolbar-wp-v2.5.1.zip`: the last Seguru Debug Toolbar release, for sites still on 2.x

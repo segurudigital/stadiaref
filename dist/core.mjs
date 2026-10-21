@@ -75,7 +75,9 @@ var BLOCK_TYPES = {
   column: 1,
   panel: 1,
   quote: 1,
-  entry: 1
+  entry: 1,
+  loop: 1,
+  form: 1
 };
 var ELEMENT_NOUNS = {
   heading: 1,
@@ -84,7 +86,8 @@ var ELEMENT_NOUNS = {
   cta: 1,
   media: 1,
   link: 1,
-  wrapper: 1
+  wrapper: 1,
+  list: 1
 };
 function owns(map, key) {
   return Object.prototype.hasOwnProperty.call(map, key);

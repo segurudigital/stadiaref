@@ -8,6 +8,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 
 ## [Unreleased]
 
+## [3.2.0] — 2026-10-21
+
+The `titan` profile catches up with the Titan data-ref spec: it reads lists, loops and forms. This release also carries the security hardening done since 3.1.0. The Stadia Address core spec is now **1.1**.
+
+### Added
+
+- **`titan` profile: the `loop` and `form` block types.** They are the slot wrappers from the Titan data-ref spec 5.3: the element around a region the endpoint renders, a posts loop or a form plugin's fields (`home-news-loop-01`, `home-contact-form-01`). They were unclassified and flagged as outside the Titan grammar; they are now blocks.
+- **`titan` profile: the `list` element noun** (Titan's rule that a list is addressed as a list): a list's address, such as `home-cards-list-01-02-items`, is now an element.
+- A fixture page with a Titan list, a loop slot and a form slot, `test/fixtures/v5-data-ref/slots-and-lists.html`.
+
+### Changed
+
+- **Under `titan`, an address shaped as a list element was shown as a section** (the profile's fallback rule), without a warning. It is now an element. The 2.x `classifyDataRef()` uses the same grammar and gives the same answers. Core spec 1.1 records why this is a minor change.
+
 ### Security
 
 - Release builds now run with read-only repository access and no OIDC authority. Separate least-privilege jobs attach GitHub assets and publish the already-built npm tarball; the publishing job installs no dependencies and runs no lifecycle scripts.
