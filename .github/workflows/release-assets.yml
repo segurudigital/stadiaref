@@ -100,6 +100,8 @@ jobs:
       - name: Upload assets to the release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # No checkout in this job, so gh can't read the repository from git.
+          GH_REPO: ${{ github.repository }}
           TAG_NAME: ${{ needs.build.outputs.tag }}
         run: |
           version="${TAG_NAME#v}"
@@ -132,7 +134,8 @@ jobs:
         run: |
           test "$(npm --version)" = "11.19.1"
           version="${TAG_NAME#v}"
-          npm publish "release-build/stadiaref-${version}.tgz" \
+          # ./ keeps npm from reading the path as a GitHub user/repo shorthand.
+          npm publish "./release-build/stadiaref-${version}.tgz" \
             --access public \
             --provenance \
             --ignore-scripts

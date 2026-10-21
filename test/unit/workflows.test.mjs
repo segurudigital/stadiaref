@@ -23,7 +23,12 @@ test('release build has no write or OIDC authority; publish consumes the prebuil
   assert.doesNotMatch(build, /id-token:\s*write|contents:\s*write/);
   assert.match(publish, /id-token:\s*write/);
   assert.doesNotMatch(publish, /npm ci|npm install|npm run build/);
-  assert.match(publish, /npm publish "release-build\/stadiaref-\$\{version\}\.tgz"/);
+  // A path without ./ is read by npm as a GitHub user/repo shorthand.
+  assert.match(publish, /npm publish "\.\/release-build\/stadiaref-\$\{version\}\.tgz"/);
+  // The attach job has no checkout, so gh needs the repository named.
+  const attach = source.slice(source.indexOf('  attach-github-release:'), source.indexOf('  publish-npm:'));
+  assert.doesNotMatch(attach, /actions\/checkout/);
+  assert.match(attach, /GH_REPO: \$\{\{ github\.repository \}\}/);
   assert.match(publish, /--ignore-scripts/);
 });
 
