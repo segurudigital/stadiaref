@@ -59,8 +59,8 @@ for (const file of FILES) {
 
 test('CDN examples pin the current release and carry its integrity hash', () => {
   const text = FILES.map((file) => fs.readFileSync(file, 'utf8')).join('\n');
-  const url = 'https://cdn.jsdelivr.net/npm/stadiaref@3.1.0/dist/stadiaref.min.js';
-  const integrity = 'sha384-If8zpv95RMVTbF+dDj3YI4QApgqpTJqLPF+krLX7IiEwWTQXzo327sFpAZ0nF9rg';
+  const url = 'https://cdn.jsdelivr.net/npm/stadiaref@3.2.0/dist/stadiaref.min.js';
+  const integrity = 'sha384-GMtW/j4RJENnGjai/T/KJZuMckSD+W1ujX34pwhF5MOi3QjvVf3DLr0On8Sw8vPl';
   const urls = text.split(url).length - 1;
   const hashes = text.split(integrity).length - 1;
   assert.ok(urls > 0, 'at least one CDN example');

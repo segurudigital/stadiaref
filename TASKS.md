@@ -1,8 +1,7 @@
 # Tasks
 
 **Project:** StadiaRef (was Seguru Debug Toolbar)
-**Current version:** 3.2.0 (versioned 2026-10-21, not released)
-**Last released:** 3.1.0 (2026-10-10)
+**Current version:** 3.2.0 (released 2026-10-21)
 
 > **How this file works**
 > TASKS.md is the canonical list of all open and recently-completed work, organised as **Sprints → Phases → subtasks**. Items are ticked off as they ship. At session end, completed items move from this file to **CHANGELOG.md** (the user-facing record) — only the most recent handoff note stays here as a starting point for the next session. **ROADMAP.md** is the forward view. Agent todo trackers (`TodoWrite`) mirror this file for the active session — they're never the source of truth on their own. All three docs (TASKS, CHANGELOG, ROADMAP) must be in sync at the start and end of every session.
@@ -11,11 +10,15 @@
 
 ## Handoff notes
 
-**Last session:** 2026-10-21 (Titan profile vocabulary; 3.2.0, not released)
+**Last session:** 2026-10-21 (Titan profile vocabulary; 3.2.0 released)
 
 The `titan` profile now knows the `list` element noun (Titan's list rule) and the `loop` and `form` slot wrappers (Titan data-ref 5.3), as core spec 1.1. Before, on the new fixture `test/fixtures/v5-data-ref/slots-and-lists.html`, the two list addresses showed as sections and the loop and form wrappers as unclassified. Version 3.2.0 in every location; the security hardening below ships in it. The overlay-layer release is now 3.3 and reach 3.4.
 
-**For the maintainer at release:** the CDN examples and their SRI hash still pin 3.1.0 (`test/unit/docs.test.mjs`); move them to 3.2.0 once `stadiaref@3.2.0` is on npm.
+**3.2.0 is released** (2026-10-21): GitHub release `v3.2.0` (tag at `f90aadc`) with its three assets, and `stadiaref@3.2.0` on npm as `latest`, with provenance. The npm file, the GitHub asset and jsDelivr's copy are byte-identical. The CDN examples pin 3.2.0 with its SRI hash, and the committed `dist/stadiaref-wp-v3.2.0.zip` is the release asset itself (SHA-256 `bab2d3e9…6bdd`), not a local rebuild.
+
+Two release-pipeline bugs from the 2026-10-20 hardening surfaced and are fixed:
+- CI's secret scan passed `--fail` twice, so TruffleHog exited before scanning on every push since `d99f55d` (`f90aadc`).
+- The first release run built but couldn't publish: the attach job had no repository for `gh` (now `GH_REPO`), and npm read `release-build/…tgz` as a GitHub shorthand (now `./release-build/…`). The re-run with `gh workflow run release-assets.yml -f tag=v3.2.0` published (`53d0398`).
 
 **Before that:** 2026-10-20 (security audit remediation)
 
@@ -55,6 +58,7 @@ The core spec's `titan` profile was behind the Titan data-ref spec. Titan needs 
 - [x] `list` added to the element nouns, `loop` and `form` to the block types; the 2.x `classifyDataRef()` follows
 - [x] Core spec 1.1: word lists, examples, the versioning note on the fallback section rule, a version table
 - [x] `docs/addressing.md`; version 3.2.0 in every location; CHANGELOG, ROADMAP renumbered (3.3 overlay layer, 3.4 reach), release notes
+- [x] Released: GitHub release `v3.2.0` and npm `stadiaref@3.2.0`; CDN examples and SRI moved to 3.2.0; the release's plugin zip committed
 
 ### 3.1.0 — Signal Lime (Brand Handbook 4.12, 2026-10-09) — done
 

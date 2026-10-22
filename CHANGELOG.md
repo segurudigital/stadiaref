@@ -27,7 +27,7 @@ The `titan` profile catches up with the Titan data-ref spec: it reads lists, loo
 - Release builds now run with read-only repository access and no OIDC authority. Separate least-privilege jobs attach GitHub assets and publish the already-built npm tarball; the publishing job installs no dependencies and runs no lifecycle scripts.
 - Every third-party GitHub Action is pinned to a full commit. CI now blocks moderate-or-higher npm advisories and scans the full Git history for secrets with a pinned TruffleHog release. The Pages build no longer receives deployment or OIDC authority.
 - WordPress updates require the exact asset name for the advertised version, an expected GitHub release URL and GitHub's SHA-256 asset digest. The downloaded zip is verified before WordPress installs it, and missing or mismatched integrity metadata fails closed.
-- CDN examples pin StadiaRef 3.1.0 and carry its SHA-384 Subresource Integrity hash instead of following every future 3.x publication.
+- CDN examples pin StadiaRef 3.2.0 and carry its SHA-384 Subresource Integrity hash instead of following every future 3.x publication.
 - Reviewer identity is display-only: `setUser()` retains and emits `name` and `role`, and discards IDs, email addresses, tokens and every other field.
 - esbuild is updated from 0.20.2 to 0.28.2, clearing the reported development-server advisory. The package still has no runtime dependencies.
 

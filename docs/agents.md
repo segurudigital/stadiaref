@@ -47,8 +47,8 @@ SvelteKit, Nuxt, Remix, other bundled frameworks:
   Import 'stadiaref' in the browser only, inside a check the bundler resolves at build time (dev from $app/environment, import.meta.dev, import.meta.env.DEV).
 
 Static HTML or wireframes:
-  <script src="https://cdn.jsdelivr.net/npm/stadiaref@3.1.0/dist/stadiaref.min.js"
-    integrity="sha384-If8zpv95RMVTbF+dDj3YI4QApgqpTJqLPF+krLX7IiEwWTQXzo327sFpAZ0nF9rg" crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/stadiaref@3.2.0/dist/stadiaref.min.js"
+    integrity="sha384-GMtW/j4RJENnGjai/T/KJZuMckSD+W1ujX34pwhF5MOi3QjvVf3DLr0On8Sw8vPl" crossorigin="anonymous" defer></script>
   Only in wireframes or non-production templates.
 
 WordPress:
