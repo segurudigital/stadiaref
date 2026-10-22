@@ -118,6 +118,7 @@ npm run build             # everything in dist/
 npm run dev               # rebuild the overlay on change (dist/stadiaref.js)
 npm test                  # build, unit tests, browser tests
 npm run size              # bundle-size budget
+npm run ci:local          # CI's gates here, in CI's order (--quick, --from <step>, --list)
 npm run test:integration  # Vite, Astro 7, types (needs the network the first time)
 npm run test:wordpress    # WordPress plugin on WordPress Playground (needs the network)
 npm run build:wp          # dist/stadiaref-wp-v<version>.zip
@@ -128,6 +129,7 @@ npm run build:wp-bridge   # dist/seguru-debug-toolbar-wp-v2.5.1.zip
 
 ## Guardrails
 
+- **CI runs locally first.** `npm run ci:local -- --quick` before every commit you hand over for a push; the full `npm run ci:local` when a change touches the browser behaviour, the integrations, the WordPress plugin or dependencies, and before a release. GitHub Actions is the backstop; only the secret scan and the release and demo-page workflows run there alone.
 - **The `data-ref` attribute and the `dataref-` class prefix never change.**
 - **No runtime dependencies, no network requests.** The overlay ships as one file. Source may use modules and modern syntax; esbuild bundles it.
 - **Nothing is written to the page while StadiaRef is hidden** (class converter aside). The host and the label stylesheet are created on first show.

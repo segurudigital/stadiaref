@@ -27,6 +27,8 @@ npm run test:integration   # the Vite plugin and the Astro integration, the type
 npm run test:wordpress     # the WordPress plugin on WordPress Playground
 ```
 
+`npm run ci:local` runs all of CI's gates here in CI's order and stops at the first failure (`-- --quick` for the build, unit tests and size budget; `-- --from <step>` to resume). Run it before you push.
+
 ## Where things are
 
 | Path | What |
