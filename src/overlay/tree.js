@@ -8,6 +8,7 @@ import { forEachNode, setClassState, toArray } from './dom.js';
 import { highlight, placeHighlights, unhighlight } from './highlight.js';
 import { openCardWhenSettled } from './card.js';
 import { emitEvent } from './events.js';
+import { findProblems } from './problems.js';
 
 export function clearTreeJumpHighlight() {
   if (S.treeJumpTimer) {
@@ -66,23 +67,24 @@ function el(tag, className, text) {
   return n;
 }
 
-export function buildTreePanel() {
-  var refs = toArray(document.querySelectorAll('[data-ref]'));
-  var outlineLabel = OUTLINE_LABELS[S.outlineMode] || 'Off';
+// The Tree's header (title, count, meta, search, tier filter and the
+// Addresses / Problems tabs) is built once and kept, so a survey that
+// rebuilds the list doesn't take focus from the search field.
+var FILTERS = [['all', 'All'], ['section', 'Sections'], ['block', 'Blocks'], ['element', 'Elements']];
 
-  clearTreeHoverHighlights();
+function view() {
+  if (!S.treeView) S.treeView = { query: '', tier: 'all', tab: 'addresses' };
+  return S.treeView;
+}
 
-  refs.sort(function (a, b) {
-    return (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
-  });
-
+function buildHeader() {
+  var ui = {};
   var header = el('div', 'stadiaref-tree-panel__header');
   var headerMain = el('div', 'stadiaref-tree-panel__header-main');
   var titleWrap = el('div', 'stadiaref-tree-panel__title-wrap');
   titleWrap.appendChild(el('span', 'stadiaref-tree-panel__title', 'Address tree'));
-  var count = el('span', 'stadiaref-tree-panel__count', String(refs.length));
-  count.setAttribute('aria-label', refs.length + (refs.length === 1 ? ' address' : ' addresses'));
-  titleWrap.appendChild(count);
+  ui.count = el('span', 'stadiaref-tree-panel__count');
+  titleWrap.appendChild(ui.count);
   var closeBtn = el('button', 'stadiaref-tree-panel__close');
   closeBtn.type = 'button';
   closeBtn.innerHTML = CLOSE_SVG;
@@ -91,83 +93,204 @@ export function buildTreePanel() {
   headerMain.appendChild(titleWrap);
   headerMain.appendChild(closeBtn);
   header.appendChild(headerMain);
-  var meta = el('div', 'stadiaref-tree-panel__meta');
-  meta.appendChild(el('span', 'stadiaref-tree-panel__meta-item', 'Show ' + showText()));
-  meta.appendChild(el('span', 'stadiaref-tree-panel__meta-item', 'Auto-address ' + (S.autoRefEnabled ? 'on' : 'off')));
-  meta.appendChild(el('span', 'stadiaref-tree-panel__meta-item', 'Outline ' + outlineLabel));
-  header.appendChild(meta);
-  header.appendChild(el('div', 'stadiaref-tree-panel__hint', refs.length
-    ? 'Hover a row to find it on the page. Click to jump there.'
-    : 'Add data-ref attributes, or turn on auto-address.'));
+  ui.meta = el('div', 'stadiaref-tree-panel__meta');
+  header.appendChild(ui.meta);
+  ui.hint = el('div', 'stadiaref-tree-panel__hint');
+  header.appendChild(ui.hint);
 
-  var body = el('div', 'stadiaref-tree-panel__body');
-  S.treeRows = [];
+  ui.search = el('input', 'stadiaref-tree-search');
+  ui.search.type = 'search';
+  ui.search.placeholder = 'Filter addresses';
+  ui.search.setAttribute('aria-label', 'Filter addresses');
+  ui.search.setAttribute('autocomplete', 'off');
+  ui.search.setAttribute('spellcheck', 'false');
+  ui.search.addEventListener('input', function () {
+    view().query = ui.search.value;
+    renderBody();
+  });
+  header.appendChild(ui.search);
 
-  if (refs.length === 0) {
-    body.appendChild(el('div', 'stadiaref-tree-empty', 'No addresses on this screen yet.'));
-  } else {
-    forEachNode(refs, function (target) {
-      var depth = 0;
-      for (var ancestor = target.parentElement; ancestor; ancestor = ancestor.parentElement) {
-        if (ancestor.hasAttribute('data-ref')) depth++;
-      }
-      var address = target.getAttribute('data-ref');
-
-      var row = el('div', 'stadiaref-tree-row');
-      row.tabIndex = 0;
-      row.title = 'Jump to ' + address;
-      row.style.paddingLeft = (12 + depth * 18) + 'px';
-      row.appendChild(tierTag(target));
-
-      var ref = el('span', 'stadiaref-tree-ref', address);
-      row.appendChild(ref);
-
-      var copyBtn = el('button', 'stadiaref-tree-copy');
-      copyBtn.type = 'button';
-      copyBtn.innerHTML = COPY_SVG;
-      copyBtn.setAttribute('aria-label', 'Copy ' + address);
-      copyBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        copyAddress(target, address, copyBtn, 'tree');
-      });
-      row.appendChild(copyBtn);
-
-      row.addEventListener('mouseenter', function () {
-        highlight('hover', target);
-        row.classList.add('stadiaref-tree-row--active');
-      });
-      row.addEventListener('mouseleave', function () {
-        unhighlight('hover');
-        row.classList.remove('stadiaref-tree-row--active');
-      });
-      row.addEventListener('focus', function () {
-        highlight('hover', target);
-        row.classList.add('stadiaref-tree-row--active');
-      });
-      row.addEventListener('blur', function () {
-        unhighlight('hover');
-        row.classList.remove('stadiaref-tree-row--active');
-      });
-      row.addEventListener('click', function () {
-        openRow(target);
-      });
-      row.addEventListener('keydown', function (e) {
-        if (e.target !== row) return;
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          openRow(target);
-        }
-      });
-      S.treeRows.push({ el: target, row: row });
-      body.appendChild(row);
+  var controls = el('div', 'stadiaref-tree-controls');
+  var tabs = el('div', 'stadiaref-tree-tabs');
+  tabs.setAttribute('role', 'group');
+  tabs.setAttribute('aria-label', 'List');
+  ui.tabs = {};
+  [['addresses', 'Addresses'], ['problems', 'Problems']].forEach(function (t) {
+    var b = el('button', 'stadiaref-tree-tab', t[1]);
+    b.type = 'button';
+    b.setAttribute('data-stadiaref-tree-tab', t[0]);
+    b.addEventListener('click', function () {
+      view().tab = t[0];
+      syncHeader();
+      renderBody();
     });
-  }
+    ui.tabs[t[0]] = b;
+    tabs.appendChild(b);
+  });
+  controls.appendChild(tabs);
+  var filters = el('div', 'stadiaref-tree-filters');
+  filters.setAttribute('role', 'group');
+  filters.setAttribute('aria-label', 'Tier');
+  ui.filters = {};
+  FILTERS.forEach(function (f) {
+    var b = el('button', 'stadiaref-tree-filter', f[1]);
+    b.type = 'button';
+    b.setAttribute('data-stadiaref-tree-filter', f[0]);
+    b.addEventListener('click', function () {
+      view().tier = f[0];
+      syncHeader();
+      renderBody();
+    });
+    ui.filters[f[0]] = b;
+    filters.appendChild(b);
+  });
+  controls.appendChild(filters);
+  header.appendChild(controls);
 
+  ui.header = header;
+  ui.body = el('div', 'stadiaref-tree-panel__body');
+  S.treeUi = ui;
   S.treePanel.innerHTML = '';
   S.treePanel.setAttribute('role', 'dialog');
   S.treePanel.setAttribute('aria-label', 'Address tree');
   S.treePanel.appendChild(header);
-  S.treePanel.appendChild(body);
+  S.treePanel.appendChild(ui.body);
+}
+
+function syncHeader() {
+  var ui = S.treeUi;
+  var v = view();
+  for (var t in ui.tabs) ui.tabs[t].setAttribute('aria-pressed', v.tab === t ? 'true' : 'false');
+  for (var f in ui.filters) ui.filters[f].setAttribute('aria-pressed', v.tier === f ? 'true' : 'false');
+  ui.filters.all.parentNode.hidden = v.tab !== 'addresses';
+  ui.tabs.problems.textContent = 'Problems' + (S.treeProblems && S.treeProblems.length ? ' ' + S.treeProblems.length : '');
+}
+
+function sortedRefs() {
+  var refs = toArray(document.querySelectorAll('[data-ref]'));
+  refs.sort(function (a, b) {
+    return (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
+  });
+  return refs;
+}
+
+function depthOf(target) {
+  var depth = 0;
+  for (var ancestor = target.parentElement; ancestor; ancestor = ancestor.parentElement) {
+    if (ancestor.hasAttribute('data-ref')) depth++;
+  }
+  return depth;
+}
+
+// One row: hover frames the element, a click (or Enter) jumps there and
+// opens its card, the copy button copies.
+function treeRow(target, opts) {
+  var address = target.getAttribute('data-ref');
+  var row = el('div', 'stadiaref-tree-row' + (opts.problem ? ' stadiaref-tree-row--problem' : ''));
+  row.tabIndex = 0;
+  row.title = 'Jump to ' + address;
+  row.style.paddingLeft = (12 + (opts.depth || 0) * 18) + 'px';
+  if (opts.note) row.appendChild(el('span', 'stadiaref-tree-problem', opts.note));
+  else row.appendChild(tierTag(target));
+  row.appendChild(el('span', 'stadiaref-tree-ref', opts.label || address));
+
+  var copyBtn = el('button', 'stadiaref-tree-copy');
+  copyBtn.type = 'button';
+  copyBtn.innerHTML = COPY_SVG;
+  copyBtn.setAttribute('aria-label', 'Copy ' + address);
+  copyBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    copyAddress(target, address, copyBtn, 'tree');
+  });
+  if (!opts.noCopy) row.appendChild(copyBtn);
+
+  function on() { highlight('hover', target); row.classList.add('stadiaref-tree-row--active'); }
+  function off() { unhighlight('hover'); row.classList.remove('stadiaref-tree-row--active'); }
+  row.addEventListener('mouseenter', on);
+  row.addEventListener('mouseleave', off);
+  row.addEventListener('focus', on);
+  row.addEventListener('blur', off);
+  row.addEventListener('click', function () { openRow(target); });
+  row.addEventListener('keydown', function (e) {
+    if (e.target !== row) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openRow(target);
+    }
+  });
+  if (!opts.problem) S.treeRows.push({ el: target, row: row });
+  return row;
+}
+
+function renderBody() {
+  var body = S.treeUi.body;
+  var v = view();
+  clearTreeHoverHighlights();
+  body.innerHTML = '';
+  S.treeRows = [];
+  var refs = S.treeRefs || [];
+
+  if (v.tab === 'problems') {
+    var problems = S.treeProblems || [];
+    if (!problems.length) body.appendChild(el('div', 'stadiaref-tree-empty', 'No problems: no duplicates, nothing unclassified, no gaps in numbering.'));
+    problems.forEach(function (p) {
+      if (p.kind === 'duplicate') {
+        p.items.forEach(function (it, i) {
+          body.appendChild(treeRow(it.el, { problem: true, note: 'DUP', label: p.address + ' (' + (i + 1) + ' of ' + p.count + ')' }));
+        });
+      } else if (p.kind === 'unclassified') {
+        body.appendChild(treeRow(p.items[0].el, { problem: true, note: '?', label: p.address + ' (unclassified)' }));
+      } else {
+        var label = p.missing.join(', ') + (p.more ? ' and ' + p.more + ' more' : '') + ' missing, before ' + p.after.address;
+        body.appendChild(treeRow(p.after.el, { problem: true, note: 'GAP', label: label, noCopy: true }));
+      }
+    });
+    return;
+  }
+
+  if (refs.length === 0) {
+    body.appendChild(el('div', 'stadiaref-tree-empty', 'No addresses on this screen yet.'));
+    return;
+  }
+  var q = v.query.trim().toLowerCase();
+  var shown = 0;
+  forEachNode(refs, function (target) {
+    var address = target.getAttribute('data-ref');
+    if (q && address.toLowerCase().indexOf(q) === -1) return;
+    if (v.tier !== 'all' && tierOf(target) !== v.tier) return;
+    shown++;
+    // While filtering, rows are flat: the nesting no longer lines up.
+    body.appendChild(treeRow(target, { depth: q || v.tier !== 'all' ? 0 : depthOf(target) }));
+  });
+  if (!shown) body.appendChild(el('div', 'stadiaref-tree-empty', 'No address matches.'));
+}
+
+export function buildTreePanel() {
+  if (!S.treeUi) buildHeader();
+  var refs = sortedRefs();
+  var ui = S.treeUi;
+  S.treeRefs = refs;
+  S.treeProblems = findProblems(refs.map(function (r) {
+    return { address: r.getAttribute('data-ref'), tier: tierOf(r), auto: r.hasAttribute('data-stadiaref-auto'), el: r };
+  }));
+  var outlineLabel = OUTLINE_LABELS[S.outlineMode] || 'Off';
+  ui.count.textContent = String(refs.length);
+  ui.count.setAttribute('aria-label', refs.length + (refs.length === 1 ? ' address' : ' addresses'));
+  ui.meta.innerHTML = '';
+  ui.meta.appendChild(el('span', 'stadiaref-tree-panel__meta-item', 'Show ' + showText()));
+  ui.meta.appendChild(el('span', 'stadiaref-tree-panel__meta-item', 'Auto-address ' + (S.autoRefEnabled ? 'on' : 'off')));
+  ui.meta.appendChild(el('span', 'stadiaref-tree-panel__meta-item', 'Outline ' + outlineLabel));
+  ui.hint.textContent = refs.length
+    ? 'Hover a row to find it on the page. Click to jump there.'
+    : 'Add data-ref attributes, or turn on auto-address.';
+  if (ui.search.value !== view().query) ui.search.value = view().query;
+  syncHeader();
+  renderBody();
+}
+
+function rowFor(target) {
+  for (var i = 0; i < (S.treeRows || []).length; i++) if (S.treeRows[i].el === target) return S.treeRows[i].row;
+  return null;
 }
 
 // A row jumps to its element; with the card on, the card opens there once
@@ -180,8 +303,13 @@ function openRow(target) {
 // Open the Tree (if shut) at the row for `target`, and focus that row.
 export function showInTree(target) {
   if (!S.treeOpen) toggleTree();
-  var found = null;
-  for (var i = 0; i < (S.treeRows || []).length; i++) if (S.treeRows[i].el === target) found = S.treeRows[i].row;
+  var found = rowFor(target);
+  if (!found && S.treeUi) {
+    // Filtered out, or on the Problems tab: show every address.
+    S.treeView = { query: '', tier: 'all', tab: 'addresses' };
+    buildTreePanel();
+    found = rowFor(target);
+  }
   if (!found) return false;
   try { found.scrollIntoView({ block: 'center' }); } catch (e) { found.scrollIntoView(); }
   found.focus({ preventScroll: true });

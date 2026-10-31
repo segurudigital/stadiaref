@@ -17,6 +17,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 - **Tree push mode:** `tree: 'push'` opens the Tree as a full-height column on the right. While it is open StadiaRef sets `--stadiaref-tree-w` on `<html>` to its width (`0px` once shut) and fires `stadiaref:tree` `{ open, width }`, so the page can make room (`body { margin-right: var(--stadiaref-tree-w, 0) }`). The toolbar moves left of the column. `getTreeWidth()`; `data-tree`. `stadiaref:tree` also fires in the default `overlay` mode, with width 0.
 - **The toolbar in your own chrome:** `dock: 'host'` with `mount: '<selector>'` draws the toolbar inside that page element, inline, in a shadow root of its own, with no fixed positioning or corner offsets. If the selector finds nothing it docks bottom-right and moves in when the element appears; while a host modal is open it moves into the modal. `setDock({ mount })`, `data-mount`.
 - **Hover hint with labels off:** rest the pointer on something and its address and tier appear beside it after a short delay (the nearest addressed element). Never on touch, in Pick or Find, or with a card open; `hint: false` turns it off.
+- **Problems in the Tree:** a Problems tab, with a count, lists duplicated addresses (a row for each element), unclassified addresses and gaps in numbering (`card-01`, `card-02`, `card-05`: `card-03` and `card-04` missing). Automatic addresses are left out.
+- **Tree search and filter:** a filter field and All / Sections / Blocks / Elements. The search keeps its text and focus while the page changes.
 - **`click: 'card' | 'copy'`** in the config, the `data-click` script attribute, the Astro and Vite options and the WordPress settings (**Clicking a label**), and `getClick()`.
 
 ### Changed

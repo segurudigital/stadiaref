@@ -135,6 +135,9 @@ The Tree button opens a panel listing every address on the screen in page order,
 - Hover a row to highlight the element on the page.
 - Click a row to scroll to it and open its card.
 - Click the copy button on a row to copy without moving.
+- Type in **Filter addresses** to list only the addresses that contain what you typed.
+- **All**, **Sections**, **Blocks**, **Elements** narrow the list to one tier.
+- **Problems** lists what needs fixing, with a count: an address used on more than one element (**DUP**, one row for each), an address that doesn't fit the profile (**?**), and a gap in numbering, such as `card-01`, `card-02`, `card-05` (**GAP**: `card-03` and `card-04` missing). Click a row to go to the element. Automatic addresses are left out.
 
 The Tree is the clean view when a screen is too dense to read from labels.
 

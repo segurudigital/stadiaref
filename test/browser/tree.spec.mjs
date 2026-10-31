@@ -68,3 +68,65 @@ test.describe('push mode', () => {
     expect((await treeEvents(page)).at(-1)).toEqual({ open: true, width: 320 });
   });
 });
+
+test.describe('search, filter and problems', () => {
+  const rows = (page) => shadow(page, '.stadiaref-tree-row .stadiaref-tree-ref').allTextContents();
+
+  test('the search field filters rows and keeps focus through a survey', async ({ page }) => {
+    await open(page, cardPage());
+    await page.evaluate(() => window.stadiaref.toggleTree());
+    await shadow(page, '.stadiaref-tree-search').fill('cta');
+    expect(await rows(page)).toEqual(['home-hero-cta']);
+    await page.evaluate(() => window.stadiaref.refresh());
+    expect(await rows(page)).toEqual(['home-hero-cta']);
+    await page.keyboard.type('x');
+    await expect(shadow(page, '.stadiaref-tree-search')).toHaveValue('ctax');
+    await expect(shadow(page, '.stadiaref-tree-empty')).toHaveText('No address matches.');
+    // Typing in the field fires no keys (x, d, l, p would).
+    expect(await page.evaluate(() => window.stadiaref.isVisible())).toBe(true);
+  });
+
+  test('the tier filter', async ({ page }) => {
+    await open(page, cardPage());
+    await page.evaluate(() => window.stadiaref.toggleTree());
+    await shadow(page, '[data-stadiaref-tree-filter="section"]').click();
+    expect(await rows(page)).toEqual(['home-hero', 'list-grid', 'foot-bar']);
+    await expect(shadow(page, '[data-stadiaref-tree-filter="section"]')).toHaveAttribute('aria-pressed', 'true');
+    await shadow(page, '[data-stadiaref-tree-filter="all"]').click();
+    expect((await rows(page)).length).toBe(22);
+  });
+
+  test('Problems: duplicates, unclassified and gaps in numbering, each opening its card', async ({ page }) => {
+    await open(page, harness({ body: 'problems', cfg: { startHidden: false } }));
+    await page.evaluate(() => window.stadiaref.toggleTree());
+    await expect(shadow(page, '[data-stadiaref-tree-tab="problems"]')).toHaveText('Problems 3');
+    await shadow(page, '[data-stadiaref-tree-tab="problems"]').click();
+    await expect(shadow(page, '.stadiaref-tree-problem')).toHaveText(['DUP', 'DUP', '?', 'GAP']);
+    expect(await rows(page)).toEqual([
+      'home-cta (1 of 2)', 'home-cta (2 of 2)', 'Bad_Address (unclassified)',
+      'home-cards-card-03, home-cards-card-04 missing, before home-cards-card-05',
+    ]);
+    await expect(shadow(page, '.stadiaref-tree-filters')).toBeHidden();
+    await shadow(page, '.stadiaref-tree-row').nth(1).click();
+    await expect(shadow(page, '.stadiaref-card__address')).toHaveText('home-cta');
+    expect(await page.evaluate(() => document.getElementById('stadiaref-host').shadowRoot.querySelector('.stadiaref-highlight--card').getBoundingClientRect().top))
+      .toBeCloseTo(await page.locator('[href="#b"]').evaluate((a) => a.getBoundingClientRect().top), 0);
+  });
+
+  test('a clean screen says so', async ({ page }) => {
+    await open(page, cardPage());
+    await page.evaluate(() => window.stadiaref.toggleTree());
+    await shadow(page, '[data-stadiaref-tree-tab="problems"]').click();
+    await expect(shadow(page, '.stadiaref-tree-empty')).toHaveText('No problems: no duplicates, nothing unclassified, no gaps in numbering.');
+  });
+
+  test('Show in Tree clears a filter that hides the row', async ({ page }) => {
+    await open(page, cardPage());
+    await page.evaluate(() => window.stadiaref.toggleTree());
+    await shadow(page, '.stadiaref-tree-search').fill('list');
+    await page.evaluate(() => window.stadiaref.card('home-hero-cta'));
+    await shadow(page, '.stadiaref-card__btn').filter({ hasText: 'Show in Tree' }).click();
+    await expect(shadow(page, '.stadiaref-tree-search')).toHaveValue('');
+    expect(await page.evaluate(() => document.getElementById('stadiaref-host').shadowRoot.activeElement.querySelector('.stadiaref-tree-ref').textContent)).toBe('home-hero-cta');
+  });
+});

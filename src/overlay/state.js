@@ -57,6 +57,12 @@ export const S = {
   // The Tree's rows, { el, row }, from the last build; 'overlay' or 'push';
   // the width it takes from the page in push mode while open.
   treeRows: null,
+  // The Tree's kept header, its search / tier / tab, and the last build's
+  // addresses and problems (tree.js, problems.js).
+  treeUi: null,
+  treeView: null,
+  treeRefs: null,
+  treeProblems: null,
   treeMode: 'overlay',
   treeWidth: 0,
   activeRefTreeOpen: false,

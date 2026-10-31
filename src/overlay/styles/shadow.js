@@ -359,6 +359,16 @@ export function buildShadowCss() {
   text-transform: uppercase;
 }
 .stadiaref-tree-panel__hint { font-size: 11px; color: var(--sr-muted); }
+.stadiaref-tree-search { height: 28px; padding: 0 8px; border: 1px solid var(--sr-barBd); border-radius: 4px; background: var(--sr-barBg); color: var(--sr-fg); font-family: ${FONT_MONO}; font-size: 12px; outline: none; }
+.stadiaref-tree-search:focus-visible { outline: 2px solid var(--sr-focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--sr-focusHalo); }
+.stadiaref-tree-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; }
+.stadiaref-tree-tabs, .stadiaref-tree-filters { display: flex; flex-wrap: wrap; gap: 2px; }
+.stadiaref-tree-filters[hidden] { display: none; }
+.stadiaref-tree-tab, .stadiaref-tree-filter { min-height: 24px; padding: 0 8px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--sr-muted); font-size: 11px; font-weight: 600; cursor: pointer; }
+.stadiaref-tree-tab:hover, .stadiaref-tree-filter:hover { background: var(--sr-hover); }
+.stadiaref-tree-tab[aria-pressed="true"], .stadiaref-tree-filter[aria-pressed="true"] { background: var(--sr-wash); border-color: var(--sr-washBd); color: var(--sr-accent); }
+.stadiaref-tree-problem { min-width: 28px; padding: 1px 4px; border: 1px dashed var(--sr-warnFg); border-radius: 3px; color: var(--sr-warnFg); font-family: ${FONT_MONO}; font-size: 9px; font-weight: 700; text-align: center; flex-shrink: 0; }
+@media (pointer: coarse) { .stadiaref-tree-tab, .stadiaref-tree-filter, .stadiaref-tree-search { min-height: 44px; } }
 .stadiaref-tree-panel__body { display: flex; flex-direction: column; padding: 4px 0; overflow-y: auto; }
 .stadiaref-tree-empty { padding: 12px; color: var(--sr-muted); }
 .stadiaref-tree-row {
