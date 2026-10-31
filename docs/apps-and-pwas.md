@@ -131,6 +131,14 @@ Since 3.4 StadiaRef draws labels, badges and outline frames in a layer of its ow
 
 Labels follow their elements when the page or a scroll container scrolls, the window is resized, or an element changes size, at most once per frame. An element that is animated with a transform is followed when the animation ends.
 
+They behave as if they were still inside the page:
+
+- **Clipped by scroll containers.** A label is cut off by the same scrolling or `overflow: hidden` ancestors as its element, and goes once the element is scrolled out of view.
+- **Under your fixed UI, they step aside.** Labels draw over the page, so a label whose element has scrolled under a fixed or sticky header, tab bar or banner hides until the element comes out. Other overlaps, such as a link stretched over a card, leave the label alone.
+- **Over popovers and modals.** While a modal dialog or a popover is open, StadiaRef moves into it, so the labels of what it shows are drawn on top of it.
+
+A page with 1,000 addresses surveys in about a third of a second, and a scroll places every label within a frame.
+
 ## Clashing shortcut keys
 
 Apps often have their own keyboard shortcuts. Every StadiaRef key can be changed or turned off:

@@ -40,6 +40,10 @@ export const S = {
   slotted: null,
   slotObserver: null,
   placeScheduled: false,
+  // Bumped each survey: which ancestors clip each slot is worked out again.
+  clipVersion: 0,
+  // The check for labels whose element is under the page's fixed UI.
+  coverTimer: null,
   placeHighlights: null,
   shadowHost: null,
   shadowRoot: null,
@@ -109,8 +113,8 @@ export const S = {
   card: null,
   lookup: null,
   onAddress: null,
-  // Drill-down (drill.js), behind drill: true.
-  drillEnabled: false,
+  // Drill-down (drill.js); drill: false turns it off.
+  drillEnabled: true,
   drillRoot: null,
   drillBar: null,
   // Host (host.js, panel.js): the panel in Astro's Dev Toolbar, and what

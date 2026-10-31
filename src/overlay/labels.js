@@ -8,7 +8,7 @@ import { getElementContext } from './survey.js';
 import { applyBlockGroupCollapse, clearBlockGroupCollapse, tierShown } from './tiers.js';
 import { applyLabelVisibilityState, getEffectiveBgLuminance } from './visibility.js';
 import { isLive } from './mount.js';
-import { dropSlot, layerAll, placeSlots, slotFor, syncSlotAddress } from './layer.js';
+import { dropSlot, layerAll, placeSlots, slotFor, slotHidden, syncSlotAddress } from './layer.js';
 
 // Label injection
 export const LABEL_BASE_TOP = 2;
@@ -104,45 +104,50 @@ export function resolveLabelOverlaps() {
     return (pos & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
   });
 
+  // Which labels take part. Skip refs hidden by an ancestor (display:none /
+  // visibility:hidden / opacity:0): their labels are display:none via
+  // .stadiaref-ref-hidden, so they mustn't take collision slots, or hidden
+  // mega-menu labels would push visible ones around. Skip block-group
+  // members, tiers Show is hiding, slots scrolled out of their container and
+  // anything outside a drill-down: their labels are hidden too.
+  var placing = [];
   forEachNode(refs, function (el) {
-    // Skip refs hidden by an ancestor (display:none / visibility:hidden /
-    // opacity:0). Their labels are display:none via .stadiaref-ref-hidden, so
-    // they shouldn't consume collision slots — otherwise hidden mega-menu
-    // labels would push visible labels around.
     if (rec(el).visible === false) return;
-
-    // Skip block-group-collapsed members and tiers Show is hiding — their
-    // labels are hidden by CSS and must not take part in collision detection.
     if (rec(el).blockGroupMember || rec(el).collapsed) return;
-    // Outside a drill-down: hidden, so it takes no slot.
+    if (slotHidden(el)) return;
     if (S.drillRoot && el !== S.drillRoot && !S.drillRoot.contains(el)) return;
     if (!tierShown(rec(el).tier)) return;
-
     var anchor = getActiveLabel(el);
-    var attempt;
-    var rect;
-    var collisionWith;
-    var i;
-    var preferredOffset;
+    if (anchor) placing.push({ el: el, anchor: anchor });
+  });
 
-    if (!anchor) return;
+  // Measure every label once, at its preferred offset (set by
+  // resetLabelOffsets above). A label in the overlay layer moves by exactly
+  // the offset it is given, so each attempt's box is the measured box moved
+  // down: no write-then-measure for each attempt, which forced a layout per
+  // label.
+  var bases = placing.map(function (p) { return p.anchor.getBoundingClientRect(); });
 
-    preferredOffset = getDepthLift(rec(el).depth || 0);
-
-    collisionWith = null;
-    for (attempt = 0; attempt < LABEL_OFFSET_LIMIT; attempt++) {
-      setLabelOffset(el, preferredOffset + (attempt * LABEL_OFFSET_STEP), rec(el).depth || 0);
-      rect = anchor.getBoundingClientRect();
+  placing.forEach(function (p, n) {
+    var el = p.el;
+    var base = bases[n];
+    var preferredOffset = getDepthLift(rec(el).depth || 0);
+    var collisionWith = null;
+    var rect = null;
+    for (var attempt = 0; attempt < LABEL_OFFSET_LIMIT; attempt++) {
+      var dy = attempt * LABEL_OFFSET_STEP;
+      rect = { left: base.left, right: base.right, top: base.top + dy, bottom: base.bottom + dy };
       collisionWith = null;
-
-      for (i = 0; i < placedSlots.length; i++) {
+      for (var i = 0; i < placedSlots.length; i++) {
         if (rectsOverlap(rect, placedSlots[i].rect, LABEL_COLLISION_GAP)) {
           collisionWith = placedSlots[i];
           break;
         }
       }
-
-      if (!collisionWith) break;
+      if (!collisionWith) {
+        if (attempt) setLabelOffset(el, preferredOffset + dy, rec(el).depth || 0);
+        break;
+      }
     }
 
     if (collisionWith) {
@@ -152,7 +157,7 @@ export function resolveLabelOverlaps() {
       // and surfaced via the +N badge on the owner.
       addToCluster(collisionWith.owner, el);
     } else {
-      placedSlots.push({ rect: anchor.getBoundingClientRect(), owner: el });
+      placedSlots.push({ rect: rect, owner: el });
     }
   });
 

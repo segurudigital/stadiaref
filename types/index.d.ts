@@ -63,7 +63,7 @@ export interface Config {
   tree?: TreeMode;
   /** With labels off, the address and tier beside the pointer. Default true. */
   hint?: boolean;
-  /** Drill-down on the card. Behind a flag; default false. */
+  /** Drill-down on the card. Default true. */
   drill?: boolean;
 }
 
@@ -117,7 +117,7 @@ export interface StadiaRef {
   setLookup(fn: Lookup | null): void;
   /** One host button on every card; onAddress(null) removes it. */
   onAddress(fn: ((address: string, context: AddressContext) => unknown) | null, label?: string): void;
-  /** With drill: true, narrow the view to an address or element; drill(false) leaves. */
+  /** Narrow the view to an address or element (unless drill: false); drill(false) leaves. */
   drill(target: string | Element | false): boolean;
   /** The address drilled into, or null. */
   getDrill(): string | null;

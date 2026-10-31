@@ -1,6 +1,6 @@
 import { S } from './state.js';
 import { injectLabels, resolveLabelOverlaps } from './labels.js';
-import { ensureLayer, placeSlots, setLayerAttr } from './layer.js';
+import { ensureLayer, invalidateClips, placeSlots, setLayerAttr } from './layer.js';
 import { applyOutlineMode } from './outline.js';
 import { autoRefSections, clearAutoRefs, convertClassRefs } from './survey.js';
 import { TIER_NAMES } from './tiers.js';
@@ -63,6 +63,7 @@ export function applyRootState() {
 // One survey: automatic addresses, labels, tiers, overlaps, outlines.
 export function survey() {
   if (!isLive()) return;
+  invalidateClips();
   convertClassRefs();
   if (S.autoRefEnabled) autoRefSections();
   else clearAutoRefs();

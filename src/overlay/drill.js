@@ -7,7 +7,7 @@ import { highlight, unhighlight } from './highlight.js';
 import { isLive } from './mount.js';
 import { resolveLabelOverlaps } from './labels.js';
 
-// ─── Drill-down (behind drill: true) ────────────────────────
+// ─── Drill-down (on by default; drill: false turns it off) ───
 // Narrow the view to one section or block: labels outside it are hidden,
 // the rest of the page is dimmed, and a breadcrumb at the top says where
 // you are. Each crumb drills to that level; All leaves. Esc leaves too,

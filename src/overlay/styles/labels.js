@@ -23,6 +23,9 @@ export const LABEL_CSS = (`
 /* --- The layer and the slots (layer.js) --- */
 .stadiaref-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow: visible; pointer-events: none; z-index: 1; }
 .stadiaref-slot { position: absolute; top: 0; left: 0; pointer-events: none; }
+/* Scrolled out of its container (layer.js), or its element is covered. */
+.stadiaref-slot[data-clipped] { display: none; }
+.stadiaref-slot[data-covered] > :not(.stadiaref-outline) { visibility: hidden !important; }
 
 /* --- What is drawn --- */
 LAYER:not([data-stadiaref-visible]) :is(${LABEL_NODES}) { display: none !important; }

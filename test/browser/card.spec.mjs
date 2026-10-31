@@ -439,12 +439,12 @@ test.describe('onAddress', () => {
   });
 });
 
-test.describe('drill-down (drill: true)', () => {
+test.describe('drill-down', () => {
   const visibleLabels = (page) => page.evaluate(() => Array.from(((document.getElementById('stadiaref-host') || {}).shadowRoot || document).querySelectorAll('.stadiaref-ref-full-label'))
     .filter((l) => getComputedStyle(l).display !== 'none').length);
 
-  test('off by default: no Drill in on the card, drill() does nothing', async ({ page }) => {
-    await open(page, cardPage());
+  test('drill: false turns it off: no Drill in on the card, drill() does nothing', async ({ page }) => {
+    await open(page, cardPage({ drill: false }));
     await page.evaluate(() => window.stadiaref.card('list-grid'));
     await expect(shadow(page, '.stadiaref-card__btn').filter({ hasText: 'Drill in' })).toHaveCount(0);
     expect(await page.evaluate(() => window.stadiaref.drill('list-grid'))).toBe(false);
@@ -452,7 +452,7 @@ test.describe('drill-down (drill: true)', () => {
 
   test('Drill in narrows labels to the element, with a breadcrumb; All and Esc leave', async ({ page }) => {
     await page.addInitScript(() => { window.__drills = []; window.addEventListener('stadiaref:drill', (e) => window.__drills.push(e.detail.address)); });
-    await open(page, cardPage({ drill: true }));
+    await open(page, cardPage());
     const all = await visibleLabels(page);
     await page.evaluate(() => window.stadiaref.card('list-grid'));
     await shadow(page, '.stadiaref-card__btn').filter({ hasText: 'Drill in' }).click();

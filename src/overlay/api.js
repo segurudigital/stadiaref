@@ -40,7 +40,7 @@ export function publicInit(opts) {
   if ('click' in o) setClick(o.click);
   if ('tree' in o) setTreeMode(o.tree);
   if ('drill' in o) {
-    S.drillEnabled = o.drill === true || o.drill === '1';
+    S.drillEnabled = !(o.drill === false || o.drill === '0');
     if (!S.drillEnabled) exitDrill();
   }
   if ('hint' in o) S.hintEnabled = !(o.hint === false || o.hint === '0');

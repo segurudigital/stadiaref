@@ -75,7 +75,7 @@ From the keyboard, the card takes focus when it opens, **Tab** moves through its
 
 ### Drill-down
 
-With `drill: true` in the config the card has **Drill in**. It narrows the view to that section or block: labels outside it are hidden and the rest of the page is dimmed. A breadcrumb at the top shows where you are; click a level to move up to it, or **All** to leave. **Esc** leaves too. Drill-down is behind the flag while it settles.
+**Drill in** on the card narrows the view to that section or block: labels outside it are hidden and the rest of the page is dimmed. A breadcrumb at the top shows where you are; click a level to move up to it, or **All** to leave. **Esc** leaves too. Set `drill: false` to take **Drill in** off the card.
 
 ## Show (1, 2, 3)
 

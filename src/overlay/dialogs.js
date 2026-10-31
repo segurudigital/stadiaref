@@ -21,6 +21,19 @@ export function openHostModal() {
   return null;
 }
 
+// An open popover (the Popover API) of the host page, or null. A popover is
+// drawn in the browser's top layer, over every z-index, so StadiaRef's host
+// goes inside it while it is open, or the labels of what it shows would be
+// under it. The last open one in the document is taken as the top one.
+export function openHostPopover() {
+  var open;
+  try { open = document.querySelectorAll(':popover-open'); } catch (e) { return null; }
+  for (var i = open.length - 1; i >= 0; i--) {
+    if (!open[i].closest('#stadiaref-host')) return open[i];
+  }
+  return null;
+}
+
 export function isHostModalOpen() {
   return !!openHostModal();
 }
@@ -94,9 +107,12 @@ export function applyDialogScope() {
     line.hidden = true;
     if (S.scopeModal) {
       S.scopeModal = null;
-      if (document.body) placeHost(document.body);
       if (S.position === 'host' && S.applyDockPosition) S.applyDockPosition();
     }
+    // An open popover takes the host without narrowing the labels.
+    var popover = S.presentationMode ? null : openHostPopover();
+    if (popover) placeHost(popover);
+    else if (document.body) placeHost(document.body);
   }
   markOutside(modal);
 }

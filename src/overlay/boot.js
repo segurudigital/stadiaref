@@ -11,6 +11,7 @@ import { closestMatch, forEachNode, isOwnHost } from './dom.js';
 import { emitEvent } from './events.js';
 import { attachKeys, defaultKeys, mergeKeys } from './keys.js';
 import { applyHost } from './panel.js';
+import { applyDialogScope } from './dialogs.js';
 import { isPicking, notePointer, stopPick, togglePick } from './pick.js';
 import { closeFind, isFinding, openFind } from './find.js';
 import { isLive, survey } from './mount.js';
@@ -54,8 +55,8 @@ export function boot() {
   S.clickMode = S.config.click === 'copy' ? 'copy' : 'card';
   // The hover hint with labels off. Default on.
   S.hintEnabled = !(S.config.hint === false || S.config.hint === '0');
-  // Drill-down, behind a flag while it settles.
-  S.drillEnabled = S.config.drill === true || S.config.drill === '1';
+  // Drill-down on the card. Default on (3.4); drill: false turns it off.
+  S.drillEnabled = !(S.config.drill === false || S.config.drill === '0');
   // Auto-ref is OFF by default — only the WordPress plugin sets autoRef: true
   // via its injected config. Standard hosts label elements manually
   // with data-ref; auto-tagging is opt-in via the autoRef config key.
@@ -322,6 +323,13 @@ function init() {
     applyLabelVisibilityState();
     resolveLabelOverlaps();
   });
+  // A popover opening or closing fires no mutation: follow its toggle, so
+  // the host goes into an open popover (dialogs.js) and the slots follow.
+  document.addEventListener('toggle', function () {
+    if (!isLive()) return;
+    applyDialogScope();
+    schedulePlace();
+  }, true);
   // Images and fonts settle boxes after load; the slots follow (and the
   // ResizeObserver in layer.js catches each element that changes size).
   window.addEventListener('load', schedulePlace);

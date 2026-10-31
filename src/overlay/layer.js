@@ -45,7 +45,10 @@ export function slotFor(el) {
   r.slot = slot;
   S.slotted.add(el);
   if (S.slotObserver) S.slotObserver.observe(el);
-  placeSlot(el, slot, el.getBoundingClientRect(), S.layer.getBoundingClientRect());
+  // Placed by the next pass (a survey runs one before measuring labels):
+  // reading the element's box here, between writes, would force a layout
+  // per element.
+  schedulePlace();
   return slot;
 }
 
@@ -74,7 +77,65 @@ export function syncSlotAddress(el) {
   if (address && slot.getAttribute('data-stadiaref-for') !== address) slot.setAttribute('data-stadiaref-for', address);
 }
 
-function placeSlot(el, slot, r, origin) {
+// ─── Clipping ───────────────────────────────────────────────
+// A label inside the page used to be clipped by any scroll container or
+// overflow: hidden ancestor of its element. A slot is clipped the same way:
+// to the intersection of those ancestors' client boxes, with clip-path, so
+// what is scrolled out of a container doesn't show its label (or take a
+// click). Which ancestors clip is worked out once per survey (clipVersion).
+var CLIPS = { hidden: 1, scroll: 1, auto: 1, clip: 1 };
+
+function clippers(el) {
+  var r = rec(el);
+  if (r.clipVersion === S.clipVersion) return r.clippers;
+  var out = [];
+  var root = document.documentElement;
+  for (var cur = el; cur && cur !== root && cur !== document.body; cur = cur.parentElement) {
+    var cs = window.getComputedStyle(cur);
+    if (cur !== el && (CLIPS[cs.overflowX] || CLIPS[cs.overflowY])) out.push(cur);
+    // A fixed element is placed on the viewport: nothing above it clips it.
+    if (cs.position === 'fixed') break;
+  }
+  r.clippers = out;
+  r.clipVersion = S.clipVersion;
+  return out;
+}
+
+// Forget which ancestors clip, after the page has changed (mount.js survey).
+export function invalidateClips() {
+  S.clipVersion = (S.clipVersion || 0) + 1;
+}
+
+function clientBox(el, memo) {
+  var box = memo.get(el);
+  if (box) return box;
+  var r = el.getBoundingClientRect();
+  var left = r.left + el.clientLeft;
+  var top = r.top + el.clientTop;
+  box = { left: left, top: top, right: left + el.clientWidth, bottom: top + el.clientHeight };
+  memo.set(el, box);
+  return box;
+}
+
+function clipFor(el, memo) {
+  var list = clippers(el);
+  if (!list.length) return null;
+  var c = { left: -Infinity, top: -Infinity, right: Infinity, bottom: Infinity };
+  for (var i = 0; i < list.length; i++) {
+    var b = clientBox(list[i], memo);
+    c.left = Math.max(c.left, b.left);
+    c.top = Math.max(c.top, b.top);
+    c.right = Math.min(c.right, b.right);
+    c.bottom = Math.min(c.bottom, b.bottom);
+  }
+  return c;
+}
+
+function px(n) {
+  return (Math.round(n * 100) / 100) + 'px';
+}
+
+function placeSlot(el, slot, r, origin, clip) {
   // The layer is fixed at the viewport's origin unless a transformed
   // ancestor of the host (a modal centred with a transform) moves it.
   var x = Math.round((r.left - origin.left) * 100) / 100;
@@ -82,6 +143,17 @@ function placeSlot(el, slot, r, origin) {
   slot.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
   slot.style.width = r.width + 'px';
   slot.style.height = r.height + 'px';
+  var path = '';
+  if (clip) {
+    // inset() from the slot's own box; a side that reaches past the slot
+    // is negative, so labels wider than their element still show.
+    path = 'inset(' + px(clip.top - r.top) + ' ' + px(r.right - clip.right) + ' ' + px(r.bottom - clip.bottom) + ' ' + px(clip.left - r.left) + ')';
+    var gone = clip.right <= clip.left || clip.bottom <= clip.top || clip.right <= r.left || clip.left >= r.right || clip.bottom <= r.top || clip.top >= r.bottom;
+    if (gone !== slot.hasAttribute('data-clipped')) slot.toggleAttribute('data-clipped', gone);
+  } else if (slot.hasAttribute('data-clipped')) {
+    slot.removeAttribute('data-clipped');
+  }
+  if (slot.style.clipPath !== path) slot.style.clipPath = path;
 }
 
 // One pass: forget elements that have left the page, then read every rect
@@ -102,8 +174,11 @@ export function placeSlots() {
     els.push(el);
   });
   var origin = S.layer.getBoundingClientRect();
+  var memo = new Map();
   var rects = els.map(function (el) { return el.getBoundingClientRect(); });
-  for (var i = 0; i < els.length; i++) placeSlot(els[i], rec(els[i]).slot, rects[i], origin);
+  var clips = els.map(function (el) { return clipFor(el, memo); });
+  for (var i = 0; i < els.length; i++) placeSlot(els[i], rec(els[i]).slot, rects[i], origin, clips[i]);
+  scheduleCoverCheck();
 }
 
 export function schedulePlace() {
@@ -113,6 +188,66 @@ export function schedulePlace() {
     S.placeScheduled = false;
     placeSlots();
     if (S.highlights && S.placeHighlights) S.placeHighlights();
+  });
+}
+
+// True when nothing of the element's slot is shown (scrolled out of its
+// container); the overlap solver leaves such labels out.
+export function slotHidden(el) {
+  var slot = hasRecord(el) && rec(el).slot;
+  return !!(slot && slot.hasAttribute('data-clipped'));
+}
+
+// ─── Covered elements ───────────────────────────────────────
+// Labels are drawn over everything, so a label whose element is under the
+// page's own fixed or sticky UI (a header, a tab bar, a cookie banner)
+// would float over that UI. Once scrolling settles, each label on the
+// screen checks the point under its corner: if what is there sits inside
+// a fixed or sticky box that isn't part of the element, the label hides
+// until the element comes out. Other overlaps (a stretched link over a
+// card) leave the label alone.
+var COVER_DELAY = 150;
+
+export function scheduleCoverCheck() {
+  if (!S.layer) return;
+  clearTimeout(S.coverTimer);
+  S.coverTimer = setTimeout(checkCovered, COVER_DELAY);
+}
+
+function inFixedBox(node, el) {
+  for (var cur = node; cur && cur.nodeType === 1 && cur !== document.body && cur !== document.documentElement; cur = cur.parentElement) {
+    if (cur.contains(el)) return false;
+    var pos = window.getComputedStyle(cur).position;
+    if (pos === 'fixed' || pos === 'sticky') return true;
+  }
+  return false;
+}
+
+function isOwnHit(node) {
+  return node === S.shadowHost || node === S.mountHost;
+}
+
+export function checkCovered() {
+  S.coverTimer = null;
+  if (!S.layer || !S.slotted || typeof document.elementsFromPoint !== 'function') return;
+  var vw = window.innerWidth;
+  var vh = window.innerHeight;
+  S.slotted.forEach(function (el) {
+    var slot = rec(el).slot;
+    if (!slot || !el.isConnected) return;
+    var covered = false;
+    if (!slot.hasAttribute('data-clipped')) {
+      var r = el.getBoundingClientRect();
+      var x = Math.min(r.left + 4, r.right - 1);
+      var y = Math.min(r.top + 4, r.bottom - 1);
+      if (x >= 0 && y >= 0 && x < vw && y < vh && r.width > 0 && r.height > 0) {
+        var stack = document.elementsFromPoint(x, y);
+        var top = null;
+        for (var i = 0; i < stack.length; i++) if (!isOwnHit(stack[i])) { top = stack[i]; break; }
+        covered = !!top && top !== el && !el.contains(top) && inFixedBox(top, el);
+      }
+    }
+    if (covered !== slot.hasAttribute('data-covered')) slot.toggleAttribute('data-covered', covered);
   });
 }
 
