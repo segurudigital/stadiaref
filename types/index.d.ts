@@ -27,6 +27,8 @@ export interface DockOffset {
 
 /** What a label click does: open the address card (default), or copy as in 3.2. */
 export type ClickMode = 'card' | 'copy';
+/** How the Tree opens: over the page, or as a column the page makes room for. */
+export type TreeMode = 'overlay' | 'push';
 
 /** A row the host adds to the address card. Values are shown as text, never HTML. */
 export interface LookupRow {
@@ -55,6 +57,7 @@ export interface Config {
   classConverter?: boolean;
   pageSlug?: string;
   click?: ClickMode;
+  tree?: TreeMode;
 }
 
 export interface StadiaRef {
@@ -88,6 +91,8 @@ export interface StadiaRef {
   card(target: string | Element | false): boolean;
   /** What a label click does now. */
   getClick(): ClickMode;
+  /** The width the Tree takes from the page: its width while open with tree: 'push', else 0. */
+  getTreeWidth(): number;
   /** Rows for the card from the host, sync or async; setLookup(null) removes them. */
   setLookup(fn: Lookup | null): void;
 
@@ -131,6 +136,7 @@ export interface StadiaRefEventMap {
   'stadiaref:address-hover': CustomEvent<AddressDetail>;
   'stadiaref:address-leave': CustomEvent<AddressDetail>;
   'stadiaref:card': CustomEvent<CardDetail>;
+  'stadiaref:tree': CustomEvent<{ open: boolean; width: number }>;
   'stadiaref:labels-change': CustomEvent<{ labels: LabelMode }>;
   'stadiaref:tiers-change': CustomEvent<{ tiers: Tier[] }>;
   'stadiaref:auto-address-change': CustomEvent<{ autoAddress: boolean }>;

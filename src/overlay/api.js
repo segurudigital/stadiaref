@@ -8,7 +8,7 @@ import { setOutline } from './outline.js';
 import { survey } from './mount.js';
 import { getTheme, setTheme } from './theme.js';
 import { applyAutoAddress, getAutoAddress, getTiers, setAutoAddress, setTiers } from './tiers.js';
-import { toggleTree } from './tree.js';
+import { setTreeMode, toggleTree } from './tree.js';
 import { closeCard, openCard } from './card.js';
 import { startPick, stopPick } from './pick.js';
 import { closeFind, openFind } from './find.js';
@@ -35,6 +35,7 @@ export function publicInit(opts) {
   }
   if ('watch' in o) S.watch = !(o.watch === false || o.watch === '0');
   if ('click' in o) setClick(o.click);
+  if ('tree' in o) setTreeMode(o.tree);
   if ('user' in o) setUser(o.user);
   if ('labels' in o) setLabels(o.labels);
   if ('outline' in o) setOutline(o.outline);
@@ -163,6 +164,7 @@ export const api = {
   setLookup: setLookup,
   onAddress: onAddress,
   getClick: function () { return S.clickMode; },
+  getTreeWidth: function () { return S.treeWidth; },
   pick: queueable(pick),
   find: find,
   setTheme: queueable(setTheme),

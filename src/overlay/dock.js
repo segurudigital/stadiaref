@@ -119,11 +119,14 @@ export function applyDockPosition() {
   // With the toolbar drawn by a host, the panels take its place in the corner.
   var near = toolbarHosted() ? EDGE : EDGE + ((S.toolbar && S.toolbar.offsetHeight) || 40) + GAP;
   var status = S.dialogStatus && !S.dialogStatus.hidden ? S.dialogStatus.offsetHeight + GAP : 0;
-  var side = h + ':' + at(EDGE, h, v) + ';' + (h === 'left' ? 'right:auto;' : 'left:auto;');
+  // A pushed Tree is a column on the right: what docks right moves left of it.
+  var push = h === 'right' ? S.treeWidth || 0 : 0;
+  var side = h + ':' + at(EDGE + push, h, v) + ';' + (h === 'left' ? 'right:auto;' : 'left:auto;');
   applyStyleSnippet(S.toolbar, v + ':' + at(EDGE, v, v) + ';' + opposite + ':auto;' + side);
   applyStyleSnippet(S.dialogStatus, v + ':' + at(near, v, v) + ';' + opposite + ':auto;' + side);
   applyStyleSnippet(S.toast, v + ':' + at(near + status, v, v) + ';' + opposite + ':auto;' + side);
-  applyStyleSnippet(S.treePanel, v + ':' + at(near + status, v, v) + ';' + opposite + ':auto;' + side);
+  if (S.treeMode === 'push') applyStyleSnippet(S.treePanel, 'top:0;bottom:0;right:0;left:auto');
+  else applyStyleSnippet(S.treePanel, v + ':' + at(near + status, v, v) + ';' + opposite + ':auto;' + side);
   applyStyleSnippet(S.findPanel, v + ':' + at(near + status, v, v) + ';' + opposite + ':auto;' + side);
   applyStyleSnippet(S.activeRefTree, opposite + ':' + at(EDGE, opposite, v) + ';' + v + ':auto;' + side);
   if (S.shadowHost && S.shadowHost.getAttribute('data-stadiaref-dock') !== pos) S.shadowHost.setAttribute('data-stadiaref-dock', pos);

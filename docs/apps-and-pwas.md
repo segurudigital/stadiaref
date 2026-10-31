@@ -71,6 +71,16 @@ Give the dialog its own address so it is easy to refer to:
 
 A dialog that your framework renders at the end of `<body>`, outside the screen's element, has no addressed ancestor. It shows as a section.
 
+## Making room for the Tree
+
+In an app the Tree covering the screen gets in the way. Set `tree: 'push'` and give the app shell the room StadiaRef asks for:
+
+```css
+.app-shell { margin-right: var(--stadiaref-tree-w, 0); }
+```
+
+The property is `0px` while the Tree is shut, so the shell is unchanged until someone opens it. `stadiaref:tree` carries the same width for layouts that are set in code. See [Tree push mode](api.md#tree-push-mode).
+
 ## Touch
 
 A phone has no hover and small labels are hard to tap. On a touch screen:

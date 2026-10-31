@@ -7,6 +7,7 @@ import { copyAddress } from './copy.js';
 import { forEachNode, setClassState, toArray } from './dom.js';
 import { highlight, placeHighlights, unhighlight } from './highlight.js';
 import { openCardWhenSettled } from './card.js';
+import { emitEvent } from './events.js';
 
 export function clearTreeJumpHighlight() {
   if (S.treeJumpTimer) {
@@ -198,5 +199,47 @@ export function toggleTree() {
   var treeBtn = S.toolbar.querySelector('[data-stadiaref-toggle-tree]');
   if (treeBtn) {
     treeBtn.setAttribute('aria-pressed', S.treeOpen ? 'true' : 'false');
+  }
+  applyTreeWidth();
+  if (S.applyDockPosition) S.applyDockPosition();
+  emitEvent('tree', { open: S.treeOpen, width: S.treeWidth });
+}
+
+// ─── Push mode ──────────────────────────────────────────────
+// tree: 'push' docks the Tree as a full-height column on the right and
+// tells the host how wide it is, so the host can make room:
+// --stadiaref-tree-w on <html> (0px when shut) and stadiaref:tree.
+// tree: 'overlay' (the default) floats it over the page and sets nothing.
+export function setTreeMode(value) {
+  if (value !== 'overlay' && value !== 'push') {
+    if (typeof console !== 'undefined' && console.warn) console.warn('[stadiaref] tree expected "overlay" or "push", got', value);
+    return;
+  }
+  if (S.treeMode === value) return;
+  S.treeMode = value;
+  setClassState(S.treePanel, 'stadiaref-tree-panel--push', value === 'push');
+  var was = S.treeWidth;
+  applyTreeWidth();
+  if (S.applyDockPosition) S.applyDockPosition();
+  if (S.treeOpen && was !== S.treeWidth) emitEvent('tree', { open: true, width: S.treeWidth });
+}
+
+// The width the Tree takes from the page: its own in push mode while open.
+export function applyTreeWidth() {
+  var push = S.treeMode === 'push';
+  S.treeWidth = push && S.treeOpen && S.treePanel ? S.treePanel.offsetWidth : 0;
+  var root = document.documentElement;
+  if (push && S.mounted) root.style.setProperty('--stadiaref-tree-w', S.treeWidth + 'px');
+  else if (root.style.getPropertyValue('--stadiaref-tree-w')) root.style.removeProperty('--stadiaref-tree-w');
+}
+
+// After a resize the column may be narrower: tell the host.
+export function refreshTreeWidth() {
+  if (S.treeMode !== 'push' || !S.treeOpen) return;
+  var was = S.treeWidth;
+  applyTreeWidth();
+  if (was !== S.treeWidth) {
+    if (S.applyDockPosition) S.applyDockPosition();
+    emitEvent('tree', { open: true, width: S.treeWidth });
   }
 }

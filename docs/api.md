@@ -36,6 +36,7 @@ Every way of loading StadiaRef takes the same keys. (The WordPress settings page
 | `user` | `{ name, role }` or `null` | `null` | The display-only identity pill. Other fields are discarded |
 | `classConverter` | `true`, `false` | `false` | Turn `dataref-` classes into `data-ref` attributes |
 | `pageSlug` | A string | From the URL | The slug auto-address builds on |
+| `tree` | `'overlay'`, `'push'` | `'overlay'` | How the Tree opens. `'push'` makes it a full-height column on the right and tells the page its width, so the page can make room. See [Tree push mode](#tree-push-mode) |
 | `click` | `'card'`, `'copy'` | `'card'` | What a label click does: open the [address card](#the-address-card), or copy the address as before 3.3. A page still configured through a 2.x object (`seguruDebugConfig`, `sdtConfig`) keeps `'copy'` unless it sets `click` |
 
 The Astro integration and the Vite plugin take one more option, `setup`: the path to a module in your project whose default export receives the API before the first survey. Use it to register a profile or wire up listeners. It is only loaded on the dev server. See [Your own profile](addressing.md#your-own-profile).
@@ -52,7 +53,7 @@ stadiaref.init({
 
 When the same key is set in more than one place, the order is: `init()` and the setters, then `window.stadiarefConfig`, then the WordPress settings, then `data-*` attributes on the script tag, then the defaults.
 
-The script tag accepts `data-profile`, `data-labels`, `data-theme`, `data-dock`, `data-click` and `data-hotkey`.
+The script tag accepts `data-profile`, `data-labels`, `data-theme`, `data-dock`, `data-click`, `data-tree` and `data-hotkey`.
 
 ## Keys
 
@@ -130,6 +131,25 @@ stadiaref.setTiers([]);            // no labels
 | `pick()` | Start Pick. `pick(false)` stops it |
 | `find(query)` | Open Find with `query`. Returns the matching addresses as an array. `find(false)` closes it |
 | `toggleTree()` | Open or close the Tree panel |
+| `getTreeWidth()` | The width in pixels the Tree takes from the page: its width while open with `tree: 'push'`, otherwise 0 |
+
+#### Tree push mode
+
+With `tree: 'push'` the Tree opens as a full-height column on the right. While it is open StadiaRef sets `--stadiaref-tree-w` on `<html>` to its width (`0px` once shut) and fires `stadiaref:tree`. Reserve the space with one line of CSS:
+
+```css
+body { margin-right: var(--stadiaref-tree-w, 0); }
+```
+
+Or listen for the event:
+
+```js
+window.addEventListener('stadiaref:tree', ({ detail }) => {
+  appShell.style.paddingRight = detail.width + 'px';
+});
+```
+
+The toolbar, when docked on the right, moves left of the column. Nothing is written before StadiaRef is first shown.
 
 ### The address card
 
@@ -203,6 +223,7 @@ window.addEventListener('stadiaref:address-click', (event) => {
 | `stadiaref:address-hover` | The pointer entered a label | `{ address, tier, element }` |
 | `stadiaref:address-leave` | The pointer left a label | `{ address, tier, element }` |
 | `stadiaref:card` | The address card opened or closed | `{ open, address, tier, element }` |
+| `stadiaref:tree` | The Tree opened or closed, or its pushed width changed | `{ open, width }`. `width` is 0 with `tree: 'overlay'` |
 | `stadiaref:labels-change` | Label mode changed | `{ labels }` |
 | `stadiaref:tiers-change` | The Show control changed | `{ tiers }` |
 | `stadiaref:auto-address-change` | Auto-address switched | `{ autoAddress }` |

@@ -12,6 +12,8 @@ import { tierOf } from './classify.js';
 //   stadiaref:theme-change   → resolved theme changed { theme, mode }
 //   stadiaref:user-change    → setUser() called { user }
 //   stadiaref:address-click / -hover / -leave → { address, tier, element, … }
+//   stadiaref:card           → the address card opened or closed { open, address, tier, element }
+//   stadiaref:tree           → the Tree opened or closed { open, width }
 // compat/aliases.js fires the 2.x twin of each through S.legacyEmit.
 export function dispatchWindowEvent(type, detail) {
   if (typeof window === 'undefined' || !window.dispatchEvent) return;

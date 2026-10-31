@@ -23,7 +23,7 @@ import { convertClassRefs } from './survey.js';
 import { applyTheme, setupHtmlClassObserver, setupThemeMediaListener } from './theme.js';
 import { parseTiers, toggleTier } from './tiers.js';
 import { attachMenuKeys, closeAllDropdowns, toggleDropdown, toolbarHtml, updateAutoChip, updateKeyHints, updateShowControl } from './toolbar.js';
-import { showInTree, toggleTree } from './tree.js';
+import { refreshTreeWidth, setTreeMode, showInTree, toggleTree } from './tree.js';
 import { renderUser, snapshotUser } from './user.js';
 import { applyLabelVisibilityState, scheduleVisibilityRecheck } from './visibility.js';
 
@@ -127,6 +127,7 @@ export function boot() {
   S.treeJumpTimer = null;
   S.treePanel = document.createElement('div');
   S.treePanel.className = 'stadiaref-tree-panel';
+  if (S.config.tree === 'push') setTreeMode('push');
 
   // Active-ref tree panel — shows data-ref breadcrumb chain on hover.
   // Positioned at the opposite vertical edge from the toolbar.
@@ -254,6 +255,7 @@ function init() {
     }
   };
   S.dismissChain = dismissActiveRefTree;
+  S.applyDockPosition = applyDockPosition;
   S.showInTree = showInTree;
   S.leaveMode = function () {
     if (isCardOpen()) { closeCard(); return true; }
@@ -305,6 +307,7 @@ function init() {
   });
 
   window.addEventListener('resize', function () {
+    refreshTreeWidth();
     if (isLive()) applyDockPosition();
     syncAllVoidHosts();
     applyLabelVisibilityState();

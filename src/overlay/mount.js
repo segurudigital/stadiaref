@@ -3,7 +3,7 @@ import { injectLabels, resolveLabelOverlaps, syncAllVoidHosts } from './labels.j
 import { applyOutlineMode } from './outline.js';
 import { autoRefSections, clearAutoRefs, convertClassRefs } from './survey.js';
 import { TIER_NAMES } from './tiers.js';
-import { buildTreePanel } from './tree.js';
+import { applyTreeWidth, buildTreePanel } from './tree.js';
 import { LABEL_NAMES } from './mode.js';
 import { applyDockPosition } from './dock.js';
 import { applyDialogScope } from './dialogs.js';
@@ -75,6 +75,7 @@ export function survey() {
 export function goLive() {
   mount();
   S.shadowHost.style.display = '';
+  applyTreeWidth();
   applyHost();
   applyDockPosition();
   applyRootState();

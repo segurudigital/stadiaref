@@ -324,6 +324,7 @@ export function buildShadowCss() {
 .stadiaref-tree-panel button, .stadiaref-active-ref-tree button { font-family: inherit; margin: 0; }
 .stadiaref-tree-panel--open, .stadiaref-active-ref-tree--open { display: flex; }
 .stadiaref-tree-panel { max-height: min(560px, calc(100vh - 120px)); }
+.stadiaref-tree-panel--push { width: 360px; max-width: 100vw; max-height: none; border-width: 0 0 0 1px; border-radius: 0; box-shadow: none; }
 .stadiaref-tree-panel__header { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--sr-barBd); }
 .stadiaref-tree-panel__header-main { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .stadiaref-tree-panel__title-wrap { display: flex; align-items: center; gap: 8px; }

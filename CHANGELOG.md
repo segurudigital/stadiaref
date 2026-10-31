@@ -14,6 +14,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 - **Copy for a brief:** one line for a ticket, a message or an agent: page title (or URL), screen width, address, tier and text, separated by `|`. It fires `stadiaref:address-click` with `source: 'brief'`.
 - **`setLookup(fn)`:** the host's rows on every card. `fn(address, element)` returns `[{ label, value, tone?, href? }]` or a promise of them; values are text, never HTML, and only `http`, `https` and `mailto` links are kept.
 - **Inspect in Pick:** with Pick on, a click anywhere opens the card for the pick target (the element under the pointer, or its nearest addressed ancestor, at the level the arrow keys chose). On touch, a tap opens the card. With `click: 'copy'` Pick copies as in 3.2.
+- **Tree push mode:** `tree: 'push'` opens the Tree as a full-height column on the right. While it is open StadiaRef sets `--stadiaref-tree-w` on `<html>` to its width (`0px` once shut) and fires `stadiaref:tree` `{ open, width }`, so the page can make room (`body { margin-right: var(--stadiaref-tree-w, 0) }`). The toolbar moves left of the column. `getTreeWidth()`; `data-tree`. `stadiaref:tree` also fires in the default `overlay` mode, with width 0.
 - **`click: 'card' | 'copy'`** in the config, the `data-click` script attribute, the Astro and Vite options and the WordPress settings (**Clicking a label**), and `getClick()`.
 
 ### Changed

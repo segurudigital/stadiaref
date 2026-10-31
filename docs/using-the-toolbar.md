@@ -131,10 +131,12 @@ Outline is useful on its own with labels off. It shows where one section ends an
 The Tree button opens a panel listing every address on the screen in page order, indented by nesting and tagged by tier.
 
 - Hover a row to highlight the element on the page.
-- Click a row to scroll to it.
+- Click a row to scroll to it and open its card.
 - Click the copy button on a row to copy without moving.
 
 The Tree is the clean view when a screen is too dense to read from labels.
+
+By default the Tree floats over the page. With `tree: 'push'` it opens as a column down the right-hand side and the page can move over to make room, so nothing is covered. See [Tree push mode](api.md#tree-push-mode).
 
 ## The address chain
 

@@ -54,8 +54,11 @@ export const S = {
   highlights: null,
   highlightTracking: false,
   treePanel: null,
-  // The Tree's rows, { el, row }, from the last build.
+  // The Tree's rows, { el, row }, from the last build; 'overlay' or 'push';
+  // the width it takes from the page in push mode while open.
   treeRows: null,
+  treeMode: 'overlay',
+  treeWidth: 0,
   activeRefTreeOpen: false,
   activeRefTreePinned: false,
   activeRefTreeHideTimer: null,
