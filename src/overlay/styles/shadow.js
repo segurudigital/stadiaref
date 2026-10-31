@@ -616,6 +616,30 @@ ${tierTags()}
 .stadiaref-find__note { margin-left: auto; padding: 0 6px; border-radius: 999px; background: var(--sr-chipBg); color: var(--sr-chipFg); font-family: ${FONT_UI}; font-size: 10px; font-weight: 600; }
 .stadiaref-find__status { padding: 7px 12px; border-top: 1px solid var(--sr-barBd); font-size: 11px; color: var(--sr-muted); }
 @media (max-width: 479px), (pointer: coarse) { .stadiaref-find__row { min-height: 44px; } .stadiaref-find__input { height: 44px; } }
+/* --- Hover hint (labels off) --- */
+.stadiaref-hint {
+  all: initial;
+  box-sizing: border-box;
+  position: fixed;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100vw - 16px);
+  padding: 4px 8px 4px 4px;
+  background: #111827;
+  color: #FFFFFF;
+  border-radius: 5px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  font-family: ${FONT_MONO};
+  font-size: 11px;
+  line-height: 1.3;
+  pointer-events: none;
+  z-index: 5;
+}
+.stadiaref-hint[hidden] { display: none; }
+.stadiaref-hint__address { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.stadiaref-hint__tier { color: #D1D5DB; font-family: ${FONT_UI}; }
+
 /* --- The address card --- */
 .stadiaref-card {
   all: initial;

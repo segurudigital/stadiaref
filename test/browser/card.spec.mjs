@@ -361,3 +361,51 @@ test.describe('Inspect in Pick', () => {
     await expect(shadow(page, '.stadiaref-card')).toHaveCount(0);
   });
 });
+
+test.describe('hover hint with labels off', () => {
+  const hint = (page) => shadow(page, '.stadiaref-hint');
+  const center = async (page, sel) => {
+    const b = await page.locator(sel).boundingBox();
+    return [b.x + b.width / 2, b.y + b.height / 2];
+  };
+
+  test('after a short delay, the address and tier beside the pointer', async ({ page }) => {
+    await open(page, cardPage({ labels: 'off' }));
+    await page.mouse.move(...await center(page, '#cta'));
+    await page.waitForTimeout(150);
+    await expect(hint(page)).toHaveCount(0);
+    await expect(hint(page)).toBeVisible();
+    await expect(shadow(page, '.stadiaref-hint__address')).toHaveText('home-hero-cta');
+    await expect(shadow(page, '.stadiaref-hint__tier')).toHaveText('element');
+    const [box, [x, y]] = [await hint(page).boundingBox(), await center(page, '#cta')];
+    expect(box.x).toBeGreaterThan(x);
+    expect(box.y).toBeGreaterThan(y);
+    // Moving to something else hides it until the next pause.
+    await page.mouse.move(...await center(page, '#heading'));
+    await expect(hint(page)).toBeHidden();
+    await expect(shadow(page, '.stadiaref-hint__address')).toHaveText('home-hero-heading');
+    await page.mouse.down();
+    await expect(hint(page)).toBeHidden();
+  });
+
+  test('not with labels on, not with hint: false', async ({ page }) => {
+    await open(page, cardPage());
+    await page.mouse.move(...await center(page, '#cta'));
+    await page.waitForTimeout(600);
+    await expect(hint(page)).toHaveCount(0);
+    await page.evaluate(() => window.stadiaref.init({ labels: 'off', hint: false }));
+    await page.mouse.move(...await center(page, '#heading'));
+    await page.waitForTimeout(600);
+    await expect(hint(page)).toHaveCount(0);
+  });
+});
+
+test.describe('hover hint on touch', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  test('never shows', async ({ page }) => {
+    await open(page, cardPage({ labels: 'off' }));
+    await page.locator('#heading').tap();
+    await page.waitForTimeout(700);
+    await expect(shadow(page, '.stadiaref-hint')).toHaveCount(0);
+  });
+});

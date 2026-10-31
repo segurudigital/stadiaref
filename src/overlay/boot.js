@@ -1,5 +1,6 @@
 import { S } from './state.js';
 import { attachCardDismiss, closeCard, isCardOpen } from './card.js';
+import { attachHint } from './hint.js';
 import { dismissActiveRefTree, hideActiveRefTree, showActiveRefTree } from './chain.js';
 import { readConfig, readPersistedTheme } from './config.js';
 import { migrateLegacyStorage } from '../compat/aliases.js';
@@ -48,6 +49,8 @@ export function boot() {
   S.classConverterEnabled = S.config.classConverter === '1' || S.config.classConverter === true;
   // A label click opens the address card, or with click: 'copy' copies (3.2).
   S.clickMode = S.config.click === 'copy' ? 'copy' : 'card';
+  // The hover hint with labels off. Default on.
+  S.hintEnabled = !(S.config.hint === false || S.config.hint === '0');
   // Auto-ref is OFF by default — only the WordPress plugin sets autoRef: true
   // via its injected config. Standard hosts label elements manually
   // with data-ref; auto-tagging is opt-in via the autoRef config key.
@@ -289,6 +292,7 @@ function init() {
   // The card closes on a press elsewhere, a scroll or a resize. Attached
   // before Pick adds its listeners, so a press in Pick still closes it.
   attachCardDismiss();
+  attachHint();
 
   // Keyboard shortcuts
   attachKeys();

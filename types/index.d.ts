@@ -61,6 +61,8 @@ export interface Config {
   pageSlug?: string;
   click?: ClickMode;
   tree?: TreeMode;
+  /** With labels off, the address and tier beside the pointer. Default true. */
+  hint?: boolean;
 }
 
 export interface StadiaRef {

@@ -37,6 +37,7 @@ Every way of loading StadiaRef takes the same keys. (The WordPress settings page
 | `user` | `{ name, role }` or `null` | `null` | The display-only identity pill. Other fields are discarded |
 | `classConverter` | `true`, `false` | `false` | Turn `dataref-` classes into `data-ref` attributes |
 | `pageSlug` | A string | From the URL | The slug auto-address builds on |
+| `hint` | `true`, `false` | `true` | With labels off, show the address and tier beside the pointer after it rests for a moment. Never on touch |
 | `tree` | `'overlay'`, `'push'` | `'overlay'` | How the Tree opens. `'push'` makes it a full-height column on the right and tells the page its width, so the page can make room. See [Tree push mode](#tree-push-mode) |
 | `click` | `'card'`, `'copy'` | `'card'` | What a label click does: open the [address card](#the-address-card), or copy the address as before 3.3. A page still configured through a 2.x object (`seguruDebugConfig`, `sdtConfig`) keeps `'copy'` unless it sets `click` |
 

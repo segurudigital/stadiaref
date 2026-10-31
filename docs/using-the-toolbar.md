@@ -33,7 +33,7 @@ Under `astro dev` the same controls live in a panel inside Astro's Dev Toolbar. 
 |---|---|---|
 | **Full** | The address written out on every element | Review, QA, copying addresses |
 | **Icons** | A small dot. Hover it to read the address | Looking at the design with addresses close at hand |
-| **Off** | Nothing on the page. The toolbar stays | Checking the page itself |
+| **Off** | Nothing on the page. The toolbar stays. Rest the pointer on something and its address and tier appear beside it | Checking the page itself |
 
 Labels are coded by tier so you can tell them apart at a glance:
 
@@ -52,6 +52,8 @@ On a dark part of the page each label switches to a version that reads against i
 When labels would overlap, StadiaRef staggers them and draws a thin line back to the element. Where there still isn't room, the extra labels fold into a **+N** badge. Hover the badge to see the list and click a row as you would a label.
 
 Labels inside anything hidden, such as a closed menu or an inactive tab, stay hidden until it opens.
+
+With labels **Off**, rest the pointer on anything for a moment and a small hint beside it shows the address and tier of the nearest element with an address. It never shows on a touch screen, in Pick or Find, or while a card is open. Turn it off with `hint: false`.
 
 ## The address card
 

@@ -89,6 +89,13 @@ export const S = {
   // The address card (card.js): what a label click does, the card, the
   // host's lookup and onAddress action.
   clickMode: 'card',
+  // The hover hint with labels off (hint.js).
+  hintEnabled: true,
+  hint: null,
+  hintTarget: null,
+  hintTimer: null,
+  hintX: 0,
+  hintY: 0,
   card: null,
   lookup: null,
   onAddress: null,

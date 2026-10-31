@@ -38,6 +38,7 @@ export function publicInit(opts) {
   if ('watch' in o) S.watch = !(o.watch === false || o.watch === '0');
   if ('click' in o) setClick(o.click);
   if ('tree' in o) setTreeMode(o.tree);
+  if ('hint' in o) S.hintEnabled = !(o.hint === false || o.hint === '0');
   if ('user' in o) setUser(o.user);
   if ('labels' in o) setLabels(o.labels);
   if ('outline' in o) setOutline(o.outline);
