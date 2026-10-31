@@ -22,7 +22,7 @@ Decisions made while building, which the prompt didn't settle:
 - `onAddress(fn, label)` adds one button to the card; its context carries the chain, tag and URL the roadmap's "copy for a developer or an agent" named.
 - The size budget is provisionally 172,000 / 47,000 bytes; set the final figure at the release.
 
-**3.3.0 release blocked (2026-10-31):** `main` is pushed (`6a1f469`), but GitHub Actions starts no job: "your account is locked due to a billing issue". The GitHub release is not created, because the release workflow (assets and npm publish) would not run. Once billing is fixed: re-run CI on `main`, then publish the `v3.3.0` release with `RELEASE_NOTES.md`.
+**3.3.0 released on GitHub (2026-10-31):** CI runs locally, not on GitHub Actions (Samuel). `npm run ci:local` passed on `6a1f469`; the release files were built from a clean clone of it and attached to the GitHub release `v3.3.0` by hand (SHA-256: `stadiaref.min.js` `15649a60…9a24`, `stadiaref-wp-v3.3.0.zip` `155a7db4…ae7b`, bridge `a5578d2c…573`); `dist/stadiaref-wp-v3.3.0.zip` is that asset, committed. **Still open:** `stadiaref@3.3.0` on npm (Samuel, from his own npm login: trusted publishing only runs from Actions), then the CDN examples and SRI move to 3.3.0. AGENTS.md's release flow now describes the local process.
 
 **The overlay layer moved to 3.4** (Samuel, 2026-10-31: ship 3.3.0 now). About 125 browser-test assertions, the 2.5.0 comparison spec and the host-page DOM tests read labels inside page elements, and the move needs clipping in scroll containers, top-layer modals and transformed or sticky elements solved. It is the next release. 3.3.0 is in every version location, `dist/` is built and the release notes are written; nothing is tagged, pushed or published. The CDN examples stay on 3.2.0 until 3.3.0 is on npm (the SRI hash comes from the published file).
 
@@ -77,7 +77,8 @@ From the 2026-10-31 code prompt (UI Master spec 1.5, RF-023): a click on a label
 - [x] Part 8a — problems in the Tree, Tree search and filter, `onAddress(fn)`, drill-down behind `drill: true`
 - [x] Part 8b — the overlay layer for labels: moved to 3.4 (Samuel, 2026-10-31: ship 3.3.0 now)
 - [x] Docs, types, demo, CHANGELOG, ROADMAP, version 3.3.0, `dist/`, release notes
-- [ ] Released: GitHub release `v3.3.0`, npm `stadiaref@3.3.0`; then the CDN examples and SRI move to 3.3.0 and the release's plugin zip is committed (maintainer)
+- [x] GitHub release `v3.3.0` with its three assets, built locally; the release's plugin zip committed
+- [ ] npm `stadiaref@3.3.0` (Samuel); then the CDN examples and SRI move to 3.3.0
 
 ### 3.4 — the overlay layer
 

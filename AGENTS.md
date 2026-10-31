@@ -102,10 +102,13 @@ When the version changes, update all of these:
 
 For reference; the maintainer does this.
 
-1. Bump the version in every location above, commit, push to `main`.
-2. Publish a GitHub release tagged `v<version>` (it must match `package.json`), with the notes in `RELEASE_NOTES.md`.
-3. `.github/workflows/release-assets.yml` builds and attaches `stadiaref.min.js`, `stadiaref-wp-v<version>.zip` and the bridge `seguru-debug-toolbar-wp-v2.5.1.zip`, then publishes `stadiaref` to npm through npm trusted publishing (no stored token; the trusted publisher on npmjs.com names this workflow), with provenance. A failed publish fails the job.
-4. Re-run for an existing tag with `gh workflow run release-assets.yml -f tag=v<version>`.
+CI runs locally, not on GitHub Actions (from 3.3.0).
+
+1. Bump the version in every location above, run the full `npm run ci:local`, commit, push to `main`.
+2. Build the release files from a clean clone of the release commit, as `.github/workflows/release-assets.yml` does: `npm ci`, `npm run build`, `npm run size`, `npm run build:wp`, `npm run build:wp-bridge`, `npm pack --ignore-scripts`.
+3. Publish a GitHub release tagged `v<version>` (it must match `package.json`), with the notes in `RELEASE_NOTES.md` and the three assets attached: `stadiaref.min.js`, `stadiaref-wp-v<version>.zip` and the bridge `seguru-debug-toolbar-wp-v2.5.1.zip`.
+4. Publish the packed `stadiaref-<version>.tgz` to npm from the maintainer's own npm login. npm trusted publishing (and provenance) only works from the Actions workflow, which isn't used.
+5. Then pin the CDN examples and their SRI hash to the new version (from the file on npm), and force-add the release's `dist/stadiaref-wp-v<version>.zip`.
 
 WordPress installs see a new release when the `stadiaref_github_release` transient expires (six hours).
 
@@ -129,7 +132,7 @@ npm run build:wp-bridge   # dist/seguru-debug-toolbar-wp-v2.5.1.zip
 
 ## Guardrails
 
-- **CI runs locally first.** `npm run ci:local -- --quick` before every commit you hand over for a push; the full `npm run ci:local` when a change touches the browser behaviour, the integrations, the WordPress plugin or dependencies, and before a release. GitHub Actions is the backstop; only the secret scan and the release and demo-page workflows run there alone.
+- **CI runs locally first.** `npm run ci:local -- --quick` before every commit you hand over for a push; the full `npm run ci:local` when a change touches the browser behaviour, the integrations, the WordPress plugin or dependencies, and before a release. GitHub Actions is not used: the local run is the CI result. The secret scan and the demo-page build exist only as workflows, so run TruffleHog by hand before a release if it matters.
 - **The `data-ref` attribute and the `dataref-` class prefix never change.**
 - **No runtime dependencies, no network requests.** The overlay ships as one file. Source may use modules and modern syntax; esbuild bundles it.
 - **Nothing is written to the page while StadiaRef is hidden** (class converter aside). The host and the label stylesheet are created on first show.
