@@ -100,11 +100,13 @@ Cut down to one tier and read the labels.
 
 ### You can see it: Pick (P)
 
-Press **P** or click **Pick**. The labels step aside. Move the pointer over the page and one chip follows it, showing the section, block and element under the pointer. Click to copy the address of the element under the pointer. To take the block or the section instead, press the up arrow to step up a level first. The down arrow steps back.
+Press **P** or click **Pick**. The labels step aside. Move the pointer over the page and one chip follows it, showing the section, block and element under the pointer. Click anywhere to inspect it: the [card](#the-address-card) opens for the element under the pointer, or for its nearest ancestor with an address. To take the block or the section instead, press the up arrow to step up a level first. The down arrow steps back. Clicks in Pick never reach the page, so links and buttons don't fire.
 
-Press **P** again or **Esc** to leave Pick.
+Press **P** again or **Esc** to leave Pick (with a card open, the first **Esc** closes the card).
 
-On a touch screen, tap the thing you want. A sheet slides up with the same three parts, **Copy address**, and **Parent** to step up a level.
+On a touch screen, tap the thing you want and its card opens.
+
+With `click: 'copy'` a click in Pick copies the address instead, and on a touch screen a sheet slides up with the same three parts, **Copy address**, and **Parent** to step up a level.
 
 ### You have the address: Find (/)
 

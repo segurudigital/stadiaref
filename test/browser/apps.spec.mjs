@@ -241,11 +241,26 @@ test.describe('dialogs', () => {
 test.describe('touch', () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
-  test('Pick by tap: a sheet with the chain, the full address, Copy address, Parent and Close', async ({ page, context }) => {
+  test('Pick by tap opens the card, sized for touch', async ({ page }) => {
+    await open(page, harness({ body: 'pickfind', page: { startHidden: false }, post: "document.querySelectorAll('article').forEach(function (a) { a.style.width = 'auto'; });" }));
+    await shadow(page, '[data-stadiaref-pick]').tap();
+    await page.locator('#price').tap();
+    const card = shadow(page, '.stadiaref-card');
+    await expect(card).toBeVisible();
+    await expect(shadow(page, '.stadiaref-pick-sheet')).toBeHidden();
+    await expect(card.locator('.stadiaref-card__address')).toHaveText('shop-grid-text-02-06-price');
+    const box = await card.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(8);
+    expect(box.x + box.width).toBeLessThanOrEqual(390 - 8 + 0.5);
+    for (const b of await card.locator('.stadiaref-card__btn:not(.stadiaref-card__btn--close)').all()) expect((await b.boundingBox()).height).toBeGreaterThanOrEqual(44);
+    expect(await page.evaluate(() => window.__hostClicks)).toBe(0);
+  });
+
+  test("Pick by tap with click: 'copy': a sheet with the chain, the full address, Copy address, Parent and Close", async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await recordEvents(page);
     // The sample cards are fixed-width; let them fit a phone.
-    await open(page, harness({ body: 'pickfind', page: { startHidden: false }, post: "document.querySelectorAll('article').forEach(function (a) { a.style.width = 'auto'; });" }));
+    await open(page, harness({ body: 'pickfind', page: { startHidden: false, click: 'copy' }, post: "document.querySelectorAll('article').forEach(function (a) { a.style.width = 'auto'; });" }));
     await shadow(page, '[data-stadiaref-pick]').tap();
     await page.locator('#price').tap();
 

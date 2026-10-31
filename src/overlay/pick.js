@@ -3,19 +3,21 @@ import { tierOf } from './classify.js';
 import { copyAddress } from './copy.js';
 import { highlight, unhighlight } from './highlight.js';
 import { applyRootState } from './mount.js';
+import { openCard } from './card.js';
 
 // ─── Pick ───────────────────────────────────────────────────
 // Point at something to get its address. Labels step aside; a chip follows
 // the pointer with the chain (section / block / element) of the element
-// under it. Click copies the highlighted level; up and down arrows move it
-// between the element and its addressed ancestors. Clicks while picking
-// never reach the page. Esc or P leaves.
+// under it. Up and down arrows move the highlighted level between the
+// element and its addressed ancestors. A click inspects it: the address
+// card opens for that level (with click: 'copy' the click copies it
+// instead). Clicks while picking never reach the page. Esc or P leaves.
 //
-// On touch there is no pointer to follow: a tap picks the element and a
-// sheet rises from the bottom with the chain, the full address and three
-// buttons, Copy address, Parent and Close. An interaction is touch when
-// its pointerType is touch, or when the pointer is coarse and no fine
-// pointer has been seen.
+// On touch there is no pointer to follow: a tap picks the element and opens
+// its card. With click: 'copy' a sheet rises from the bottom instead, with
+// the chain, the full address and three buttons, Copy address, Parent and
+// Close. An interaction is touch when its pointerType is touch, or when the
+// pointer is coarse and no fine pointer has been seen.
 
 var TIER_WORDS = { section: 'section', block: 'block', element: 'element', unclassified: 'address' };
 
@@ -122,7 +124,7 @@ function renderChip() {
     if (p.level < p.chain.length - 1) moves.push('down arrow goes back');
     moves.push('Esc leaves pick mode');
     var rest = moves.join(', ');
-    hint.textContent = 'Click copies ' + chosen.getAttribute('data-ref') + '. ' + rest.charAt(0).toUpperCase() + rest.slice(1) + '.';
+    hint.textContent = (S.clickMode === 'copy' ? 'Click copies ' : 'Click opens ') + chosen.getAttribute('data-ref') + '. ' + rest.charAt(0).toUpperCase() + rest.slice(1) + '.';
   }
   chip.appendChild(parts);
   chip.appendChild(hint);
@@ -253,8 +255,12 @@ function onClick(e) {
   // from the click (the level is kept when the chain is the same).
   S.pickState.touch = isTouch();
   setTarget(pointTarget(e));
-  if (S.pickState.touch) { renderSheet(); return; }
   var el = S.pickState.chain[S.pickState.level];
+  if (S.clickMode !== 'copy') {
+    if (el) openCard(el, null, { focus: S.pickState.touch || e.detail === 0 });
+    return;
+  }
+  if (S.pickState.touch) { renderSheet(); return; }
   if (el) copyAddress(el, el.getAttribute('data-ref'), S.pickChip, 'pick');
 }
 

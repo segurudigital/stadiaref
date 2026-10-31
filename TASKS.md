@@ -54,7 +54,7 @@ From the 2026-10-31 code prompt (UI Master spec 1.5, RF-023): a click on a label
 - [x] Part 1 — the address card (`card.js`): placement and flipping, keyboard and focus, Esc / click elsewhere / scroll close, chain, children, Copy, Copy for a brief, Parent, Show in Tree; the Address chain box only in `click: 'copy'`
 - [x] Part 2 — `click: 'card' | 'copy'` (default `'card'`) in config, WordPress, Astro and Vite; `stadiaref:card`
 - [x] Part 3 — `setLookup(fn)`: host rows on the card, sync or async, text only
-- [ ] Part 4 — Inspect in Pick: a click opens the card for the pick target
+- [x] Part 4 — Inspect in Pick: a click opens the card for the pick target
 - [ ] Part 5 — Tree `push` mode: `--stadiaref-tree-w`, `stadiaref:tree`; a Tree row opens the card
 - [ ] Part 6 — `dock: 'host'` with `mount`: the toolbar inline in a host element, falling back to the corner
 - [ ] Part 7 — hover hint with labels off (never on touch)

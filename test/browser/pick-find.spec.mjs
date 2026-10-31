@@ -12,11 +12,12 @@ async function center(page, sel) {
 const chipParts = (page) => shadow(page, '.stadiaref-pick-chip__part').allTextContents();
 const chipHint = (page) => shadow(page, '.stadiaref-pick-chip__hint').textContent();
 
+// Pick with click: 'copy', as in 3.2. Inspect (the card) is in card.spec.mjs.
 test.describe('Pick', () => {
   test.beforeEach(async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await recordEvents(page);
-    await open(page, harness({ body: 'pickfind', page: { startHidden: false } }));
+    await open(page, harness({ body: 'pickfind', page: { startHidden: false, click: 'copy' } }));
   });
 
   test('by pointer: labels step aside, the chip shows the chain, a click copies the element', async ({ page }) => {
@@ -100,7 +101,7 @@ test.describe('Pick', () => {
   test('the 2.x click event carries the chip as current', async ({ page }) => {
     const O = makeHelpers(OLD);
     await O.recordEvents(page);
-    await open(page, harness({ body: 'pickfind', page: { startHidden: false } }));
+    await open(page, harness({ body: 'pickfind', page: { startHidden: false, click: 'copy' } }));
     await page.evaluate(() => window.stadiaref.pick());
     await page.mouse.click(...await center(page, '#price'));
     const [old] = await O.eventsSoon(page, 'dataref-click');

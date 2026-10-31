@@ -298,3 +298,66 @@ test.describe('setLookup', () => {
     await expect(shadow(page, '.stadiaref-card__rows')).toBeHidden();
   });
 });
+
+test.describe('Inspect in Pick', () => {
+  const center = async (page, sel) => {
+    const b = await page.locator(sel).boundingBox();
+    return [b.x + b.width / 2, b.y + b.height / 2];
+  };
+  const pickPage = (cfg = {}) => harness({ body: 'pickfind', cfg: { startHidden: false, ...cfg } });
+
+  test('a click anywhere opens the card for the pick target, and never reaches the page', async ({ page }) => {
+    await open(page, pickPage());
+    await page.evaluate(() => window.stadiaref.pick());
+    await page.mouse.move(...await center(page, '#price'));
+    await expect(shadow(page, '.stadiaref-pick-chip__hint')).toHaveText('Click opens shop-grid-text-02-06-price. Up arrow selects the block, Esc leaves pick mode.');
+    await page.mouse.click(...await center(page, '#price'));
+    await expect(shadow(page, '.stadiaref-card__address')).toHaveText('shop-grid-text-02-06-price');
+    // Something without an address opens its nearest addressed ancestor.
+    // (Esc first: the card sits over #plain.)
+    await page.keyboard.press('Escape');
+    await page.mouse.click(...await center(page, '#plain'));
+    await expect(shadow(page, '.stadiaref-card__address')).toHaveText('shop-grid-card-06');
+    await page.keyboard.press('Escape');
+    await page.mouse.click(...await center(page, '#buy'));
+    await expect(shadow(page, '.stadiaref-card__address')).toHaveText('shop-grid-card-06-buy');
+    expect(await page.evaluate(() => [window.__hostClicks, location.hash])).toEqual([0, '']);
+    await page.waitForTimeout(100);
+    expect(await events(page, 'address-click')).toHaveLength(0);
+  });
+
+  test('the arrow keys choose the level the click opens', async ({ page }) => {
+    await open(page, pickPage());
+    await page.evaluate(() => window.stadiaref.pick());
+    await page.mouse.move(...await center(page, '#price'));
+    await page.keyboard.press('ArrowUp');
+    await page.mouse.click(...await center(page, '#price'));
+    await expect(shadow(page, '.stadiaref-card__address')).toHaveText('shop-grid-card-06');
+  });
+
+  test('nothing opens where there is no address; Esc closes the card, then leaves Pick', async ({ page }) => {
+    await open(page, pickPage());
+    await page.evaluate(() => window.stadiaref.pick());
+    await page.mouse.click(...await center(page, '#top'));
+    await expect(shadow(page, '.stadiaref-card')).toHaveCount(0);
+    await page.mouse.click(...await center(page, '#price'));
+    await expect(shadow(page, '.stadiaref-card')).toBeVisible();
+    // The card's own buttons work while picking.
+    await shadow(page, '.stadiaref-card__btn').filter({ hasText: 'Parent' }).click();
+    await expect(shadow(page, '.stadiaref-card__address')).toHaveText('shop-grid-card-06');
+    await page.keyboard.press('Escape');
+    await expect(shadow(page, '.stadiaref-card')).toBeHidden();
+    expect(await page.evaluate(() => document.documentElement.getAttribute('data-stadiaref-mode'))).toBe('pick');
+    await page.keyboard.press('Escape');
+    expect(await page.evaluate(() => document.documentElement.hasAttribute('data-stadiaref-mode'))).toBe(false);
+  });
+
+  test("with click: 'copy' a Pick click copies, as in 3.2", async ({ page }) => {
+    await open(page, pickPage({ click: 'copy' }));
+    await page.evaluate(() => window.stadiaref.pick());
+    await page.mouse.click(...await center(page, '#price'));
+    const [click] = await eventsSoon(page, 'address-click');
+    expect(click.detail).toMatchObject({ address: 'shop-grid-text-02-06-price', source: 'pick' });
+    await expect(shadow(page, '.stadiaref-card')).toHaveCount(0);
+  });
+});
