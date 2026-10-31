@@ -1,7 +1,7 @@
 # Tasks
 
 **Project:** StadiaRef (was Seguru Debug Toolbar)
-**Current version:** 3.2.0 (released 2026-10-21)
+**Current version:** 3.3.0 (ready to release, 2026-10-31)
 
 > **How this file works**
 > TASKS.md is the canonical list of all open and recently-completed work, organised as **Sprints → Phases → subtasks**. Items are ticked off as they ship. At session end, completed items move from this file to **CHANGELOG.md** (the user-facing record) — only the most recent handoff note stays here as a starting point for the next session. **ROADMAP.md** is the forward view. Agent todo trackers (`TodoWrite`) mirror this file for the active session — they're never the source of truth on their own. All three docs (TASKS, CHANGELOG, ROADMAP) must be in sync at the start and end of every session.
@@ -22,7 +22,7 @@ Decisions made while building, which the prompt didn't settle:
 - `onAddress(fn, label)` adds one button to the card; its context carries the chain, tag and URL the roadmap's "copy for a developer or an agent" named.
 - The size budget is provisionally 172,000 / 47,000 bytes; set the final figure at the release.
 
-**Open: the overlay layer (part 8b).** Not started. About 125 browser-test assertions, the 2.5.0 comparison spec and the host-page DOM tests read labels inside page elements, and the move needs clipping in scroll containers, top-layer modals and transformed or sticky elements solved. It is a release-sized change. Choose between shipping 3.3.0 now and moving the overlay layer to 3.4, or holding 3.3.0 until it is built. The version is still 3.2.0 in every location until that call.
+**The overlay layer moved to 3.4** (Samuel, 2026-10-31: ship 3.3.0 now). About 125 browser-test assertions, the 2.5.0 comparison spec and the host-page DOM tests read labels inside page elements, and the move needs clipping in scroll containers, top-layer modals and transformed or sticky elements solved. It is the next release. 3.3.0 is in every version location, `dist/` is built and the release notes are written; nothing is tagged, pushed or published. The CDN examples stay on 3.2.0 until 3.3.0 is on npm (the SRI hash comes from the published file).
 
 **Before that:** 2026-10-21 (Titan profile vocabulary; 3.2.0 released)
 
@@ -73,8 +73,14 @@ From the 2026-10-31 code prompt (UI Master spec 1.5, RF-023): a click on a label
 - [x] Part 6 — `dock: 'host'` with `mount`: the toolbar inline in a host element, falling back to the corner
 - [x] Part 7 — hover hint with labels off (never on touch)
 - [x] Part 8a — problems in the Tree, Tree search and filter, `onAddress(fn)`, drill-down behind `drill: true`
-- [ ] Part 8b — the overlay layer for labels. **Not started; needs Samuel's call** (see the handoff note)
-- [ ] Docs, types, demo, CHANGELOG, ROADMAP, version 3.3.0, `dist/`, release notes
+- [x] Part 8b — the overlay layer for labels: moved to 3.4 (Samuel, 2026-10-31: ship 3.3.0 now)
+- [x] Docs, types, demo, CHANGELOG, ROADMAP, version 3.3.0, `dist/`, release notes
+- [ ] Released: GitHub release `v3.3.0`, npm `stadiaref@3.3.0`; then the CDN examples and SRI move to 3.3.0 and the release's plugin zip is committed (maintainer)
+
+### 3.4 — the overlay layer
+
+- [ ] One overlay layer for labels (see ROADMAP.md 3.4)
+- [ ] Drill-down drawn on it, out from behind `drill: true`
 
 ### 3.2.0 — Titan lists, loops and forms — done
 

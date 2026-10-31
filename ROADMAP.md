@@ -29,7 +29,7 @@ Seguru Debug Toolbar becomes **StadiaRef**, and gains what it needs to work in a
 - [x] **Distribution trust:** exact CDN versions with SRI; WordPress release name, URL and SHA-256 binding; esbuild updated past its advisory.
 - [x] **Least-privilege delivery:** unprivileged release and Pages builds, prebuilt npm publication, immutable action pins, dependency auditing and full-history secret scanning.
 
-## 3.3 — the address card, and one address fast
+## 3.3.0 — the address card, and one address fast
 
 Turn StadiaRef on and click something: that is where its value is (UI Master spec 1.5, RF-023).
 
@@ -43,9 +43,13 @@ Turn StadiaRef on and click something: that is where its value is (UI Master spe
 - [x] **Copy for a developer or an agent:** **Copy for a brief** on the card (page, viewport width, address, tier, text), and the fuller context (chain, tag, URL) handed to `onAddress()`.
 - [x] **An `onAddress(address, context)` hook,** with examples for GitHub Issues and Linear. StadiaRef still stores nothing itself.
 - [x] **Drill-down:** narrow the view to one section or block, with a breadcrumb of where you are. Behind `drill: true` first. Built on the in-page labels for now.
-- [ ] **One overlay layer for labels.** In 3.0 labels are drawn inside the page's own elements, which a framework re-render can disturb. The overlay layer draws them in one layer of StadiaRef's own, positioned from each element's box, so StadiaRef changes nothing in the page at all. This removes the void-element workaround and the label re-mounting after re-renders. Not started: it needs its own scope decision (see TASKS.md).
 
-## 3.4 — reach
+## 3.4 — safe inside any app
+
+- **One overlay layer for labels.** Since 3.0 labels are drawn inside the page's own elements, which a framework re-render can disturb. 3.4 draws them in one layer of StadiaRef's own, positioned from each element's box, so StadiaRef changes nothing in the page at all. This removes the void-element workaround and the label re-mounting after re-renders. It has to keep labels clipped inside scroll containers, on top of modal dialogs, and on transformed and sticky elements. Moved from 3.3 so the address card could ship first.
+- **Drill-down out from behind its flag,** drawn on the overlay layer.
+
+## 3.5 — reach
 
 - **`npx stadiaref audit <path or URL>`:** the address inventory, duplicates and grammar check from the command line, for CI.
 - **A browser extension,** so StadiaRef can run on any page, including production sites with no plugin and screens with no build change.

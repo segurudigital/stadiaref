@@ -8,6 +8,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 
 ## [Unreleased]
 
+## [3.3.0] — 2026-10-31
+
+Turn StadiaRef on and click something: a label click now opens an **address card** with everything about that one address, and Copy. The Tree can push the page over, the toolbar can live in your own top bar, and the Tree lists what needs fixing. The overlay layer for labels moves to 3.4.
+
 ### Added
 
 - **The address card.** Click a label and a card opens beside it: the address and its tier, the element's text (first 140 characters), the addresses above it and directly inside it (up to 14, then "+n more"), and **Copy**, **Copy for a brief**, **Parent** and **Show in Tree**. It opens below the label, above it when there's no room, always inside the screen; it takes focus, keeps **Tab** inside it, and closes on **Esc**, a click elsewhere or a scroll. A Tree row opens its card on the page. `card(address | element)` opens it from code, `card(false)` closes it, and `stadiaref:card` `{ open, address, tier, element }` fires both ways.
@@ -27,7 +31,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 
 - **A label click opens the card instead of copying.** Set `click: 'copy'` to keep 3.2's click to copy. A page still configured through the 2.x `seguruDebugConfig` or `sdtConfig` keeps click to copy unless it sets `click`. With the card on, a label click fires `stadiaref:card`, not `stadiaref:address-click`; the card's Copy fires `stadiaref:address-click` with `source: 'card'`.
 - **The address chain panel opens on hover only with `click: 'copy'`.** The card shows the chain instead, so the two no longer show together.
-- The bundle-size budget is raised for the card (`scripts/check-size.mjs`).
+- The bundle-size budget is raised to 3.3.0's size plus 10% (`scripts/check-size.mjs`).
 - **Types:** `AddressSource` gains `'card'` and `'brief'`, so code that narrows it exhaustively needs the two new cases. `Config.dock` accepts `'host'` and `getDock()` can return it.
 
 ## [3.2.0] — 2026-10-21
