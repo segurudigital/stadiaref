@@ -7,7 +7,8 @@ const DEMO_AUTHORED = ['home-01-hero-standard', 'home-02-features-grid', 'home-0
 
 async function demo(page, query = '') {
   await open(page, '/test/demo.html' + query);
-  await page.evaluate(() => window.seguruDebugToolbar.show());
+  // Label clicks copy, as in 2.x (a page with no 2.x config object opts in).
+  await page.evaluate(() => window.seguruDebugToolbar.init({ click: 'copy' }).show());
 }
 
 test.describe('demo page label counts', () => {

@@ -98,10 +98,21 @@ var OLD_EVENTS = {
 
 // Config objects a 2.x page or the 2.x WordPress plugin may have set, in
 // 2.x priority order: the per-page object wins over the WordPress one.
+// A page still configured through a 2.x object was built for 2.x's click to
+// copy, so unless it says otherwise a label click copies there (3.3 opens
+// the address card).
 export function legacyConfigSources() {
   var out = [];
-  if (typeof window.seguruDebugConfig !== 'undefined' && window.seguruDebugConfig) out.push(window.seguruDebugConfig);
-  if (typeof window.sdtConfig !== 'undefined' && window.sdtConfig) out.push(window.sdtConfig);
+  if (typeof window.seguruDebugConfig !== 'undefined' && window.seguruDebugConfig) out.push(withCopyClick(window.seguruDebugConfig));
+  if (typeof window.sdtConfig !== 'undefined' && window.sdtConfig) out.push(withCopyClick(window.sdtConfig));
+  return out;
+}
+
+function withCopyClick(src) {
+  var out = { click: 'copy' };
+  for (var k in src) {
+    if (Object.prototype.hasOwnProperty.call(src, k)) out[k] = src[k];
+  }
   return out;
 }
 

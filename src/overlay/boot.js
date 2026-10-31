@@ -1,5 +1,6 @@
 import { S } from './state.js';
-import { hideActiveRefTree, showActiveRefTree } from './chain.js';
+import { attachCardDismiss, closeCard, isCardOpen } from './card.js';
+import { dismissActiveRefTree, hideActiveRefTree, showActiveRefTree } from './chain.js';
 import { readConfig, readPersistedTheme } from './config.js';
 import { migrateLegacyStorage } from '../compat/aliases.js';
 import { VERSION } from './constants.js';
@@ -22,7 +23,7 @@ import { convertClassRefs } from './survey.js';
 import { applyTheme, setupHtmlClassObserver, setupThemeMediaListener } from './theme.js';
 import { parseTiers, toggleTier } from './tiers.js';
 import { attachMenuKeys, closeAllDropdowns, toggleDropdown, toolbarHtml, updateAutoChip, updateKeyHints, updateShowControl } from './toolbar.js';
-import { toggleTree } from './tree.js';
+import { showInTree, toggleTree } from './tree.js';
 import { renderUser, snapshotUser } from './user.js';
 import { applyLabelVisibilityState, scheduleVisibilityRecheck } from './visibility.js';
 
@@ -45,6 +46,8 @@ export function boot() {
 
   // Feature flags
   S.classConverterEnabled = S.config.classConverter === '1' || S.config.classConverter === true;
+  // A label click opens the address card, or with click: 'copy' copies (3.2).
+  S.clickMode = S.config.click === 'copy' ? 'copy' : 'card';
   // Auto-ref is OFF by default — only the WordPress plugin sets autoRef: true
   // via its injected config. Standard hosts label elements manually
   // with data-ref; auto-tagging is opt-in via the autoRef config key.
@@ -250,7 +253,10 @@ function init() {
       if (isFinding()) closeFind(); else openFind();
     }
   };
+  S.dismissChain = dismissActiveRefTree;
+  S.showInTree = showInTree;
   S.leaveMode = function () {
+    if (isCardOpen()) { closeCard(); return true; }
     if (isPicking()) { stopPick(); return true; }
     if (isFinding()) { closeFind(); return true; }
     return false;
@@ -279,14 +285,19 @@ function init() {
     }
   });
 
+  // The card closes on a press elsewhere, a scroll or a resize. Attached
+  // before Pick adds its listeners, so a press in Pick still closes it.
+  attachCardDismiss();
+
   // Keyboard shortcuts
   attachKeys();
 
   // Address chain hover wiring via the stadiaref:address-hover window event.
   // Both icon mouseenter and fullLabel mouseenter fire this event, so the
   // chain updates smoothly when moving between label variants on the same el.
+  // With the card on (click: 'card') the card shows the chain instead.
   window.addEventListener('stadiaref:address-hover', function (e) {
-    if (S.presentationMode || S.state === 1) return;
+    if (S.presentationMode || S.state === 1 || S.clickMode !== 'copy') return;
     showActiveRefTree({ dataRef: e.detail.address, element: e.detail.element });
   });
   window.addEventListener('stadiaref:address-leave', function () {

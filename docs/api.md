@@ -36,6 +36,7 @@ Every way of loading StadiaRef takes the same keys. (The WordPress settings page
 | `user` | `{ name, role }` or `null` | `null` | The display-only identity pill. Other fields are discarded |
 | `classConverter` | `true`, `false` | `false` | Turn `dataref-` classes into `data-ref` attributes |
 | `pageSlug` | A string | From the URL | The slug auto-address builds on |
+| `click` | `'card'`, `'copy'` | `'card'` | What a label click does: open the [address card](#the-address-card), or copy the address as before 3.3. A page still configured through a 2.x object (`seguruDebugConfig`, `sdtConfig`) keeps `'copy'` unless it sets `click` |
 
 The Astro integration and the Vite plugin take one more option, `setup`: the path to a module in your project whose default export receives the API before the first survey. Use it to register a profile or wire up listeners. It is only loaded on the dev server. See [Your own profile](addressing.md#your-own-profile).
 
@@ -51,7 +52,7 @@ stadiaref.init({
 
 When the same key is set in more than one place, the order is: `init()` and the setters, then `window.stadiarefConfig`, then the WordPress settings, then `data-*` attributes on the script tag, then the defaults.
 
-The script tag accepts `data-profile`, `data-labels`, `data-theme`, `data-dock` and `data-hotkey`.
+The script tag accepts `data-profile`, `data-labels`, `data-theme`, `data-dock`, `data-click` and `data-hotkey`.
 
 ## Keys
 
@@ -130,6 +131,35 @@ stadiaref.setTiers([]);            // no labels
 | `find(query)` | Open Find with `query`. Returns the matching addresses as an array. `find(false)` closes it |
 | `toggleTree()` | Open or close the Tree panel |
 
+### The address card
+
+| Method | What it does |
+|---|---|
+| `card(address)` | Open the card for an address (the first element that carries it) or an element. Returns `true` if a card opened. `card(false)` closes it. Works with `click: 'copy'` too |
+| `getClick()` | `'card'` or `'copy'`. Set it with `init({ click })` |
+| `setLookup(fn)` | Add rows to every card. `setLookup(null)` removes them |
+
+`fn(address, element)` returns an array of rows, or a promise of one. While a promise is pending the card shows *Looking up…*; an answer that arrives after the card has moved on is dropped.
+
+```js
+stadiaref.setLookup(async (address, element) => {
+  const entry = await myRegistry.get(address);
+  return [
+    { label: 'Lock', value: entry.locked ? 'Locked' : 'Draft', tone: entry.locked ? 'ok' : 'warn' },
+    { label: 'Spec', value: 'Open', href: entry.specUrl },
+  ];
+});
+```
+
+| Row field | What it is |
+|---|---|
+| `label` | The name on the left |
+| `value` | The value. Shown as text, never as HTML |
+| `tone` | Optional: `'ok'`, `'warn'`, `'error'` or `'muted'` |
+| `href` | Optional: makes the value a link that opens in a new tab. Only `http:`, `https:` and `mailto:` links are kept |
+
+An empty array, `null`, a throw or a rejected promise shows no rows (the last two with a console warning).
+
 ### Toolbar
 
 | Method | What it does |
@@ -172,6 +202,7 @@ window.addEventListener('stadiaref:address-click', (event) => {
 | `stadiaref:address-click` | Someone picked an address to copy | `{ address, tier, element, source, copied }` |
 | `stadiaref:address-hover` | The pointer entered a label | `{ address, tier, element }` |
 | `stadiaref:address-leave` | The pointer left a label | `{ address, tier, element }` |
+| `stadiaref:card` | The address card opened or closed | `{ open, address, tier, element }` |
 | `stadiaref:labels-change` | Label mode changed | `{ labels }` |
 | `stadiaref:tiers-change` | The Show control changed | `{ tiers }` |
 | `stadiaref:auto-address-change` | Auto-address switched | `{ autoAddress }` |
@@ -182,7 +213,8 @@ window.addEventListener('stadiaref:address-click', (event) => {
 - `address` is the Stadia Address.
 - `tier` is `'section'`, `'block'`, `'element'` or `'unclassified'`.
 - `element` is the page element that carries the address.
-- `source` says where the click came from: `'label'` (a label, a +N row or the address chain), `'pick'`, `'find'` or `'tree'` (a row's copy button).
+- `source` says where the click came from: `'label'` (a label, a +N row or the address chain, with `click: 'copy'`), `'card'` (the card's Copy), `'brief'` (the card's Copy for a brief; the clipboard holds the brief line, `address` is still the address), `'pick'`, `'find'` or `'tree'` (a row's copy button).
+- With the card on, a label click opens the card and fires `stadiaref:card`, not `stadiaref:address-click`. A copy from the card fires `stadiaref:address-click`.
 - `copied` is `true` if the address reached the clipboard. Browsers block the clipboard on pages that aren't served securely, such as a dev server opened from a phone by IP address, so check it if you rely on the copy.
 
 StadiaRef tries the copy and shows its toast before the event fires. It keeps no record of addresses and sends nothing anywhere. The only thing it stores is your theme choice, in the browser's local storage. What happens with an address after that is up to your listener. [Integrations](integrations.md) has worked examples.

@@ -54,6 +54,8 @@ export const S = {
   highlights: null,
   highlightTracking: false,
   treePanel: null,
+  // The Tree's rows, { el, row }, from the last build.
+  treeRows: null,
   activeRefTreeOpen: false,
   activeRefTreePinned: false,
   activeRefTreeHideTimer: null,
@@ -75,6 +77,12 @@ export const S = {
   lastPointerType: null,
   finePointerSeen: false,
   pickSheet: null,
+  // The address card (card.js): what a label click does, the card, the
+  // host's lookup and onAddress action.
+  clickMode: 'card',
+  card: null,
+  lookup: null,
+  onAddress: null,
   // Host (host.js, panel.js): the panel in Astro's Dev Toolbar, and what
   // to run after each survey.
   panel: null,

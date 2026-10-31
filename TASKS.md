@@ -47,7 +47,19 @@ zero npm advisories and clean history/current-tree secret scans.
 
 ## Currently in flight
 
-*Nothing in flight. Next scope is 3.3 (see ROADMAP.md).*
+### 3.3.0 — the address card, inspect, host lookup, push Tree, host mount
+
+From the 2026-10-31 code prompt (UI Master spec 1.5, RF-023): a click on a label opens a card by default, and 3.3 ships as one release. Tests first, one commit per part.
+
+- [x] Part 1 — the address card (`card.js`): placement and flipping, keyboard and focus, Esc / click elsewhere / scroll close, chain, children, Copy, Copy for a brief, Parent, Show in Tree; the Address chain box only in `click: 'copy'`
+- [x] Part 2 — `click: 'card' | 'copy'` (default `'card'`) in config, WordPress, Astro and Vite; `stadiaref:card`
+- [x] Part 3 — `setLookup(fn)`: host rows on the card, sync or async, text only
+- [ ] Part 4 — Inspect in Pick: a click opens the card for the pick target
+- [ ] Part 5 — Tree `push` mode: `--stadiaref-tree-w`, `stadiaref:tree`; a Tree row opens the card
+- [ ] Part 6 — `dock: 'host'` with `mount`: the toolbar inline in a host element, falling back to the corner
+- [ ] Part 7 — hover hint with labels off (never on touch)
+- [ ] Part 8 — problems in the Tree, Tree search and filter, `onAddress(fn)`, drill-down behind a flag, the overlay layer for labels
+- [ ] Docs, types, demo, CHANGELOG, ROADMAP, version 3.3.0, `dist/`, release notes
 
 ### 3.2.0 — Titan lists, loops and forms — done
 

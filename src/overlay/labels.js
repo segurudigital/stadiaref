@@ -1,7 +1,7 @@
 import { S } from './state.js';
 import { forget, hasRecord, rec, removeOwn } from './records.js';
 import { tierOf } from './classify.js';
-import { copyAddress } from './copy.js';
+import { labelClick } from './card.js';
 import { forEachNode, rectsOverlap, toArray } from './dom.js';
 import { emitAddressEvent } from './events.js';
 import { getElementContext } from './survey.js';
@@ -218,9 +218,8 @@ export function renderClusterBadgeIfNeeded(ownerEl) {
   badge.style.top = anchorTop + 'px';
   badge.style.left = (anchorLeft + anchorWidth + 4) + 'px';
 
-  // Popover with one row per clustered ref. Row click copies the ref
-  // value to clipboard via copyAddress() and emits the same
-  // stadiaref:address-click event that a regular label would.
+  // Popover with one row per clustered ref. A row click does what a
+  // label click does (labelClick): opens the card, or copies.
   var popover = document.createElement('span');
   popover.className = 'stadiaref-cluster-popover';
   for (var i = 0; i < cluster.length; i++) {
@@ -241,7 +240,7 @@ export function renderClusterBadgeIfNeeded(ownerEl) {
       row.addEventListener('click', function (e) {
         e.stopPropagation();
         e.preventDefault();
-        copyAddress(refEl, refValue, rowEl, 'label');
+        labelClick(refEl, refValue, rowEl);
       });
     }(memberRef, member, row));
     popover.appendChild(row);
@@ -380,7 +379,7 @@ export function injectLabels() {
     icon.addEventListener('click', function (e) {
       e.stopPropagation();
       e.preventDefault();
-      copyAddress(el, refValue, icon, 'label');
+      labelClick(el, refValue, icon);
     });
     icon.addEventListener('mouseenter', function () {
       emitAddressEvent('hover', el, refValue, icon);
@@ -395,7 +394,7 @@ export function injectLabels() {
     tooltip.addEventListener('click', function (e) {
       e.stopPropagation();
       e.preventDefault();
-      copyAddress(el, refValue, tooltip, 'label');
+      labelClick(el, refValue, tooltip);
     });
 
     var fullLabel = document.createElement('span');
@@ -406,7 +405,7 @@ export function injectLabels() {
     fullLabel.addEventListener('click', function (e) {
       e.stopPropagation();
       e.preventDefault();
-      copyAddress(el, refValue, fullLabel, 'label');
+      labelClick(el, refValue, fullLabel);
     });
     fullLabel.addEventListener('mouseenter', function () {
       emitAddressEvent('hover', el, refValue, fullLabel);

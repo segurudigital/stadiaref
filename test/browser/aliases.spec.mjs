@@ -257,7 +257,7 @@ test.describe('2.x events', () => {
   test('sdt:dataref-click / -hover / -leave keep their 2.x detail', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await recordAll(page);
-    await N.open(page, N.harness({ page: { startHidden: false } }));
+    await N.open(page, N.harness({ page: { startHidden: false, click: 'copy' } }));
     const label = page.locator('[data-ref="home-hero"] > .stadiaref-ref-full-label');
     await label.hover();
     await page.mouse.move(5, 890);

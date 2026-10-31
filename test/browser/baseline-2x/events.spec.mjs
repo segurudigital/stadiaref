@@ -119,7 +119,7 @@ test('Tree row copy button copies and emits dataref-click; row click only jumps'
 test('dataref-click from a block-group popover row', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, '/test/fixtures/v5-data-ref/block-bearing-dense.html');
-  await page.evaluate(() => window.seguruDebugToolbar.show());
+  await page.evaluate(() => window.seguruDebugToolbar.init({ click: 'copy' }).show());
   await page.locator('.stadiaref-block-group-badge').first().hover();
   await page.locator('.stadiaref-block-group-item').nth(2).click();
   const [click] = await eventsSoon(page, 'dataref-click');
@@ -132,7 +132,7 @@ test('dataref-click from a block-group popover row', async ({ page, context }) =
 test('dataref-click from a "+N" cluster popover row', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, '/test/demo.html?ar=1');
-  await page.evaluate(() => window.seguruDebugToolbar.show());
+  await page.evaluate(() => window.seguruDebugToolbar.init({ click: 'copy' }).show());
   const badge = page.locator('.stadiaref-cluster-badge').first();
   await badge.hover();
   const item = badge.locator('.stadiaref-cluster-item').first();
@@ -147,7 +147,7 @@ test('dataref-click from a "+N" cluster popover row', async ({ page, context }) 
 test('hovering a label opens the address chain; a chain row click emits dataref-click', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, '/test/fixtures/v5-data-ref/block-bearing-small.html');
-  await page.evaluate(() => window.seguruDebugToolbar.show());
+  await page.evaluate(() => window.seguruDebugToolbar.init({ click: 'copy' }).show());
   await page.locator('[data-ref="home-hero-card-02"] > .stadiaref-ref-full-label').hover();
   const tree = shadow(page, '.stadiaref-active-ref-tree');
   await expect(tree).toHaveClass(/stadiaref-active-ref-tree--open/);

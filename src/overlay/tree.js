@@ -6,6 +6,7 @@ import { showText } from './tiers.js';
 import { copyAddress } from './copy.js';
 import { forEachNode, setClassState, toArray } from './dom.js';
 import { highlight, placeHighlights, unhighlight } from './highlight.js';
+import { openCardWhenSettled } from './card.js';
 
 export function clearTreeJumpHighlight() {
   if (S.treeJumpTimer) {
@@ -99,6 +100,7 @@ export function buildTreePanel() {
     : 'Add data-ref attributes, or turn on auto-address.'));
 
   var body = el('div', 'stadiaref-tree-panel__body');
+  S.treeRows = [];
 
   if (refs.length === 0) {
     body.appendChild(el('div', 'stadiaref-tree-empty', 'No addresses on this screen yet.'));
@@ -146,15 +148,16 @@ export function buildTreePanel() {
         row.classList.remove('stadiaref-tree-row--active');
       });
       row.addEventListener('click', function () {
-        jumpToTreeTarget(target);
+        openRow(target);
       });
       row.addEventListener('keydown', function (e) {
         if (e.target !== row) return;
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          jumpToTreeTarget(target);
+          openRow(target);
         }
       });
+      S.treeRows.push({ el: target, row: row });
       body.appendChild(row);
     });
   }
@@ -164,6 +167,24 @@ export function buildTreePanel() {
   S.treePanel.setAttribute('aria-label', 'Address tree');
   S.treePanel.appendChild(header);
   S.treePanel.appendChild(body);
+}
+
+// A row jumps to its element; with the card on, the card opens there once
+// the scroll has settled.
+function openRow(target) {
+  jumpToTreeTarget(target);
+  if (S.clickMode !== 'copy') openCardWhenSettled(target);
+}
+
+// Open the Tree (if shut) at the row for `target`, and focus that row.
+export function showInTree(target) {
+  if (!S.treeOpen) toggleTree();
+  var found = null;
+  for (var i = 0; i < (S.treeRows || []).length; i++) if (S.treeRows[i].el === target) found = S.treeRows[i].row;
+  if (!found) return false;
+  try { found.scrollIntoView({ block: 'center' }); } catch (e) { found.scrollIntoView(); }
+  found.focus({ preventScroll: true });
+  return true;
 }
 
 export function toggleTree() {

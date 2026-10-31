@@ -455,6 +455,7 @@ ${tierTags()}
 .stadiaref-highlight--pick-current { outline: 2px solid #3F6212; outline-offset: 2px; box-shadow: 0 0 0 2px #A3E635; }
 [class*="stadiaref-highlight--pick-"]:not(.stadiaref-highlight--pick-current) { outline: 1px dashed #3F6212; outline-offset: 4px; box-shadow: 0 0 0 4px rgba(163, 230, 53, 0.35); }
 /* Find: the match framed, the rest of the page dimmed by this one layer */
+.stadiaref-highlight--card { outline: 2px solid #3F6212; outline-offset: 2px; box-shadow: 0 0 0 2px #A3E635; }
 .stadiaref-highlight--find { outline: 2px solid #3F6212; outline-offset: 6px; box-shadow: 0 0 0 6px #A3E635, 0 0 0 100vmax rgba(17, 24, 39, 0.45); }
 
 /* --- Dialog status line --- */
@@ -613,5 +614,63 @@ ${tierTags()}
 .stadiaref-find__note { margin-left: auto; padding: 0 6px; border-radius: 999px; background: var(--sr-chipBg); color: var(--sr-chipFg); font-family: ${FONT_UI}; font-size: 10px; font-weight: 600; }
 .stadiaref-find__status { padding: 7px 12px; border-top: 1px solid var(--sr-barBd); font-size: 11px; color: var(--sr-muted); }
 @media (max-width: 479px), (pointer: coarse) { .stadiaref-find__row { min-height: 44px; } .stadiaref-find__input { height: 44px; } }
+/* --- The address card --- */
+.stadiaref-card {
+  all: initial;
+  box-sizing: border-box;
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 340px;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - 16px);
+  overflow-y: auto;
+  padding: 10px 12px 12px;
+  background: var(--sr-barBg);
+  border: 1px solid var(--sr-barBd);
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08);
+  font-family: ${FONT_UI};
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--sr-fg);
+  pointer-events: auto;
+  z-index: 7;
+}
+.stadiaref-card[hidden] { display: none; }
+.stadiaref-card * { box-sizing: border-box; }
+.stadiaref-card:focus { outline: none; }
+.stadiaref-card :is(button, a):focus { outline: none; }
+.stadiaref-card :is(button, a):focus-visible { outline: 2px solid var(--sr-focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--sr-focusHalo); }
+.stadiaref-card__head { display: flex; align-items: center; gap: 8px; }
+.stadiaref-card__tier { flex: 1; color: var(--sr-muted); font-size: 11px; }
+.stadiaref-card__address { font-family: ${FONT_MONO}; font-size: 15px; font-weight: 700; overflow-wrap: anywhere; }
+.stadiaref-card__text { color: var(--sr-muted); overflow-wrap: anywhere; }
+.stadiaref-card__rows { display: flex; flex-direction: column; gap: 2px; padding: 6px 0; border-top: 1px solid var(--sr-barBd); border-bottom: 1px solid var(--sr-barBd); }
+.stadiaref-card__rows[hidden] { display: none; }
+.stadiaref-card__row { display: flex; gap: 8px; }
+.stadiaref-card__row-label { flex: 0 0 96px; color: var(--sr-muted); font-size: 11px; }
+.stadiaref-card__row-value { flex: 1; min-width: 0; overflow-wrap: anywhere; color: var(--sr-fg); font-weight: 600; }
+a.stadiaref-card__row-value { color: var(--sr-accent); }
+.stadiaref-card__row--ok .stadiaref-card__row-value { color: var(--sr-okFg); }
+.stadiaref-card__row--warn .stadiaref-card__row-value { color: var(--sr-warnFg); }
+.stadiaref-card__row--error .stadiaref-card__row-value { color: var(--sr-errorFg); }
+.stadiaref-card__row--muted .stadiaref-card__row-value { color: var(--sr-muted); font-weight: 400; }
+.stadiaref-card__section { display: flex; flex-direction: column; gap: 4px; }
+.stadiaref-card__key { font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; color: var(--sr-muted); }
+.stadiaref-card__refs { display: flex; flex-wrap: wrap; gap: 4px; }
+.stadiaref-card__ref { all: initial; box-sizing: border-box; display: inline-flex; align-items: center; gap: 5px; max-width: 100%; min-height: 24px; padding: 2px 6px 2px 3px; border: 1px solid var(--sr-barBd); border-radius: 4px; background: var(--sr-pillBg); color: var(--sr-fg); font-family: ${FONT_MONO}; font-size: 11px; cursor: pointer; }
+.stadiaref-card__ref:hover { background: var(--sr-rowHover); color: var(--sr-rowHoverFg); }
+.stadiaref-card__ref-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stadiaref-card__more { align-self: center; color: var(--sr-muted); font-size: 11px; }
+.stadiaref-card__actions { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 2px; }
+.stadiaref-card__btn { all: initial; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; min-height: 30px; padding: 0 10px; border: 1px solid var(--sr-barBd); border-radius: 6px; background: var(--sr-barBg); color: var(--sr-fg); font-family: ${FONT_UI}; font-size: 12px; font-weight: 600; cursor: pointer; }
+.stadiaref-card__btn:hover { background: var(--sr-hover); }
+.stadiaref-card__btn[disabled] { opacity: 0.5; cursor: default; }
+.stadiaref-card__btn--copy { border-color: var(--sr-copyBd); background: var(--sr-copyBg); color: var(--sr-copyFg); }
+.stadiaref-card__btn--copy:hover { background: var(--sr-copyBg); }
+.stadiaref-card__btn--close { width: 26px; min-height: 26px; padding: 0; border-color: transparent; color: var(--sr-muted); }
+@media (pointer: coarse) { .stadiaref-card__btn, .stadiaref-card__ref { min-height: 44px; } }
 `;
 }

@@ -9,6 +9,7 @@ import { survey } from './mount.js';
 import { getTheme, setTheme } from './theme.js';
 import { applyAutoAddress, getAutoAddress, getTiers, setAutoAddress, setTiers } from './tiers.js';
 import { toggleTree } from './tree.js';
+import { closeCard, openCard } from './card.js';
 import { startPick, stopPick } from './pick.js';
 import { closeFind, openFind } from './find.js';
 import { getUser, setUser } from './user.js';
@@ -33,6 +34,7 @@ export function publicInit(opts) {
     applyDockPosition();
   }
   if ('watch' in o) S.watch = !(o.watch === false || o.watch === '0');
+  if ('click' in o) setClick(o.click);
   if ('user' in o) setUser(o.user);
   if ('labels' in o) setLabels(o.labels);
   if ('outline' in o) setOutline(o.outline);
@@ -84,6 +86,42 @@ export function find(query) {
   return openFind(typeof query === 'string' ? query : undefined);
 }
 
+// What a label click does: 'card' (the default) or 'copy' (3.2).
+export function setClick(value) {
+  if (value !== 'card' && value !== 'copy') {
+    if (typeof console !== 'undefined' && console.warn) console.warn('[stadiaref] click expected "card" or "copy", got', value);
+    return;
+  }
+  S.clickMode = value;
+  if (value === 'copy') closeCard();
+}
+
+// card(addressOrElement) opens the card for it, beside the element; card(false)
+// closes it. True when a card opened.
+export function card(target) {
+  if (target === false) { closeCard(); return false; }
+  if (!S.booted || S.presentationMode) return false;
+  if (typeof target === 'string') target = findAddressed(target);
+  return openCard(target, null, { focus: true });
+}
+
+function findAddressed(address) {
+  var all = document.querySelectorAll('[data-ref]');
+  for (var i = 0; i < all.length; i++) if (all[i].getAttribute('data-ref') === address) return all[i];
+  return null;
+}
+
+// setLookup(fn): fn(address, element) returns rows for the card, or a
+// promise of them. setLookup(null) removes it.
+export function setLookup(fn) {
+  S.lookup = typeof fn === 'function' ? fn : null;
+}
+
+// onAddress(fn, label): one host action on the card. fn(address, context).
+export function onAddress(fn, label) {
+  S.onAddress = typeof fn === 'function' ? { fn: fn, label: typeof label === 'string' && label ? label : 'Send' } : null;
+}
+
 export function refresh() {
   survey();
 }
@@ -121,6 +159,10 @@ export const api = {
   setOutline: queueable(setOutline),
   getOutline: function () { return S.outlineMode; },
   toggleTree: queueable(toggleTree),
+  card: card,
+  setLookup: setLookup,
+  onAddress: onAddress,
+  getClick: function () { return S.clickMode; },
   pick: queueable(pick),
   find: find,
   setTheme: queueable(setTheme),

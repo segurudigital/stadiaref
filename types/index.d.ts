@@ -25,6 +25,20 @@ export interface DockOffset {
   left?: number;
 }
 
+/** What a label click does: open the address card (default), or copy as in 3.2. */
+export type ClickMode = 'card' | 'copy';
+
+/** A row the host adds to the address card. Values are shown as text, never HTML. */
+export interface LookupRow {
+  label: string;
+  value: string;
+  tone?: 'ok' | 'warn' | 'error' | 'muted';
+  /** An http, https or mailto link; anything else is dropped. */
+  href?: string;
+}
+
+export type Lookup = (address: string, element: Element) => LookupRow[] | null | undefined | Promise<LookupRow[] | null | undefined>;
+
 export interface Config {
   profile?: string;
   labels?: LabelMode;
@@ -40,6 +54,7 @@ export interface Config {
   user?: User | null;
   classConverter?: boolean;
   pageSlug?: string;
+  click?: ClickMode;
 }
 
 export interface StadiaRef {
@@ -69,6 +84,12 @@ export interface StadiaRef {
   /** Open Find with `query` and return the matching addresses; find(false) closes it. */
   find(query?: string | false): string[];
   toggleTree(): void;
+  /** Open the address card for an address or element; card(false) closes it. True when a card opened. */
+  card(target: string | Element | false): boolean;
+  /** What a label click does now. */
+  getClick(): ClickMode;
+  /** Rows for the card from the host, sync or async; setLookup(null) removes them. */
+  setLookup(fn: Lookup | null): void;
 
   setTheme(mode: Theme): void;
   /** The theme in use. */
@@ -85,7 +106,7 @@ export interface StadiaRef {
   registerProfile(profile: Profile): string;
 }
 
-export type AddressSource = 'label' | 'pick' | 'find' | 'tree';
+export type AddressSource = 'label' | 'pick' | 'find' | 'tree' | 'card' | 'brief';
 
 export interface AddressDetail {
   address: string;
@@ -98,6 +119,10 @@ export interface AddressClickDetail extends AddressDetail {
   copied: boolean;
 }
 
+export interface CardDetail extends AddressDetail {
+  open: boolean;
+}
+
 export interface StadiaRefEventMap {
   'stadiaref:ready': CustomEvent<{ version: string }>;
   'stadiaref:show': CustomEvent<Record<string, never>>;
@@ -105,6 +130,7 @@ export interface StadiaRefEventMap {
   'stadiaref:address-click': CustomEvent<AddressClickDetail>;
   'stadiaref:address-hover': CustomEvent<AddressDetail>;
   'stadiaref:address-leave': CustomEvent<AddressDetail>;
+  'stadiaref:card': CustomEvent<CardDetail>;
   'stadiaref:labels-change': CustomEvent<{ labels: LabelMode }>;
   'stadiaref:tiers-change': CustomEvent<{ tiers: Tier[] }>;
   'stadiaref:auto-address-change': CustomEvent<{ autoAddress: boolean }>;

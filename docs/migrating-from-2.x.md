@@ -47,6 +47,8 @@ Better still, use the [Astro integration](install/astro.md) or the [Vite plugin]
 | `window.sdtConfig` | `window.stadiarefConfig` | Yes |
 | localStorage `seguru-debug-toolbar:theme` | `stadiaref:theme` | Read once and moved over |
 
+From 3.3 a label click opens the [address card](using-the-toolbar.md#the-address-card) instead of copying. A page still configured through `window.seguruDebugConfig` or `window.sdtConfig` keeps 2.x's click to copy, and `sdt:dataref-click` with it, unless that object sets `click`.
+
 ## Config keys
 
 | 2.x | 3.0 |

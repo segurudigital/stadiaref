@@ -94,8 +94,18 @@ describe('plugin', { skip }, () => {
     assert.equal(r.inline[0].position, 'before');
     assert.ok(!r.inline.some((i) => i.localize));
     assert.deepEqual(handOver(r.inline[0].js), {
-      labels: 'full', startHidden: true, dock: 'bottom-right', classConverter: false, autoAddress: true, profile: 'titan',
+      labels: 'full', startHidden: true, dock: 'bottom-right', classConverter: false, autoAddress: true, profile: 'titan', click: 'card',
     });
+  });
+
+  test('the click setting: card by default, copy when chosen, anything else back to card', () => {
+    const run = (click) => handOver(wp(PLUGIN, { options: { stadiaref_enabled: '1', ...(click ? { stadiaref_click: click } : {}) }, caps: ['manage_options'], run: ['wp_enqueue_scripts'] }).inline[0].js);
+    assert.equal(run().click, 'card');
+    assert.equal(run('copy').click, 'copy');
+    assert.equal(run('<script>').click, 'card');
+    // A 2.x page config that sets click keeps it.
+    const js = wp(PLUGIN, { options: { stadiaref_enabled: '1' }, caps: ['manage_options'], run: ['wp_enqueue_scripts'] }).inline[0].js;
+    assert.equal('click' in handOver(js, { seguruDebugConfig: { click: 'copy' } }), false);
   });
 
   test('the page wins: window.stadiarefConfig, and the 2.x window.seguruDebugConfig', () => {

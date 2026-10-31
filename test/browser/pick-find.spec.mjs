@@ -224,7 +224,7 @@ test.describe('the copied flag', () => {
       document.execCommand = () => false;
     });
     await recordEvents(page);
-    await open(page, harness({ body: 'pickfind', page: { startHidden: false } }));
+    await open(page, harness({ body: 'pickfind', page: { startHidden: false, click: 'copy' } }));
     await page.locator('[data-ref="shop-grid"] > .stadiaref-ref-full-label').click();
     const [click] = await eventsSoon(page, 'address-click');
     expect(click.detail).toMatchObject({ address: 'shop-grid', copied: false, source: 'label' });
@@ -237,7 +237,7 @@ test.describe('the copied flag', () => {
       document.execCommand = () => true;
     });
     await recordEvents(page);
-    await open(page, harness({ body: 'pickfind', page: { startHidden: false } }));
+    await open(page, harness({ body: 'pickfind', page: { startHidden: false, click: 'copy' } }));
     await page.locator('[data-ref="shop-grid"] > .stadiaref-ref-full-label').click();
     const [click] = await eventsSoon(page, 'address-click');
     expect(click.detail.copied).toBe(true);

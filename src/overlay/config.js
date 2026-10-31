@@ -5,7 +5,8 @@ import { legacyConfigSources, mapLegacyKeys } from '../compat/aliases.js';
 // mapLegacyKeys(). autoRefDepth has no 3.0 key: it is the 2.x single-tier
 // auto-address state, kept for pages that still set it.
 var CONFIG_KEYS = ['profile', 'labels', 'tiers', 'autoAddress', 'outline', 'startHidden', 'theme', 'dock',
-  'keys', 'user', 'classConverter', 'pageSlug', 'autoRefDepth', 'watch', 'dockOffset'];
+  'keys', 'user', 'classConverter', 'pageSlug', 'autoRefDepth', 'watch', 'dockOffset', 'click', 'tree', 'mount',
+  'hint', 'drill'];
 
 // Merge config from every source. For each key the first source that sets
 // it wins: window.stadiarefConfig, then the 2.x objects (per-page before
@@ -44,7 +45,7 @@ export function readConfig() {
 // Attributes on the <script> tag that loaded StadiaRef.
 function scriptAttrConfig() {
   var out = {};
-  var attrs = { profile: 'data-profile', labels: 'data-labels', hotkey: 'data-hotkey', theme: 'data-theme', dock: 'data-dock', position: 'data-position' };
+  var attrs = { profile: 'data-profile', labels: 'data-labels', hotkey: 'data-hotkey', theme: 'data-theme', dock: 'data-dock', position: 'data-position', click: 'data-click', tree: 'data-tree', mount: 'data-mount' };
   for (var key in attrs) {
     var v = readScriptAttr(attrs[key]);
     if (typeof v !== 'undefined') out[key] = v;

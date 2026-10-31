@@ -6,7 +6,7 @@ Everything the toolbar does, control by control.
 
 StadiaRef loads hidden. Press **D** to show the toolbar and the labels. Press **D** again to hide them.
 
-**Esc** leaves Pick or Find if one of them is open. With neither open, it hides everything in one press.
+**Esc** closes the address card, or leaves Pick or Find, if one of them is open. With none open, it hides everything in one press.
 
 Starting hidden keeps screenshots, client demos and automated browser sessions clean. To show it on load instead, set `startHidden: false` in the [config](api.md#config).
 
@@ -47,11 +47,29 @@ Labels are coded by tier so you can tell them apart at a glance:
 
 On a dark part of the page each label switches to a version that reads against it.
 
-**Click any label to copy its address.** A toast confirms what was copied.
+**Click any label to open its [card](#the-address-card).** The card has **Copy**. To have a click copy straight away, as it did before 3.3, set `click: 'copy'` in the [config](api.md#config) or choose it in the WordPress settings.
 
-When labels would overlap, StadiaRef staggers them and draws a thin line back to the element. Where there still isn't room, the extra labels fold into a **+N** badge. Hover the badge to see the list and click a row to copy it.
+When labels would overlap, StadiaRef staggers them and draws a thin line back to the element. Where there still isn't room, the extra labels fold into a **+N** badge. Hover the badge to see the list and click a row as you would a label.
 
 Labels inside anything hidden, such as a closed menu or an inactive tab, stay hidden until it opens.
+
+## The address card
+
+Click a label and a card opens beside it. It holds everything about that one address:
+
+- the address, large, and its tier;
+- the element's text, the first 140 characters;
+- rows from your site or app, if it adds any (lock state, format problems, a note, a link). See [`setLookup()`](api.md#the-address-card);
+- **Inside**: the addresses above it, outermost first. Click one to open its card;
+- **Contains**: the addresses directly inside it, up to 14, then how many more;
+- **Copy**: the address;
+- **Copy for a brief**: one line for a ticket, a message or an agent, with the page title (or URL), the screen width, the address, the tier and the text, separated by `|`;
+- **Parent**: the card of the address it sits in;
+- **Show in Tree**: open the Tree at its row.
+
+The card opens below the label, or above it when there isn't room below, and always inside the screen. The element is framed while its card is open. **Esc**, a click anywhere else, or a scroll closes it.
+
+From the keyboard, the card takes focus when it opens, **Tab** moves through its buttons and stays inside it, and focus goes back where it was when it closes.
 
 ## Show (1, 2, 3)
 
@@ -118,7 +136,7 @@ The Tree is the clean view when a screen is too dense to read from labels.
 
 ## The address chain
 
-Hover a label and a small panel opens at the opposite edge (at the top if the toolbar is at the bottom), on the toolbar's side, showing where the element sits: its section, then its block, then the element itself. Each row copies on click. Pin the panel to keep it open.
+With `click: 'copy'`, hovering a label opens a small panel at the opposite edge (at the top if the toolbar is at the bottom), on the toolbar's side, showing where the element sits: its section, then its block, then the element itself. Each row copies on click. Pin the panel to keep it open. With the card on (the default) the card shows the chain instead, and this panel doesn't open.
 
 ## Auto-address
 
@@ -136,7 +154,7 @@ While it is on, the **AUTO** chip shows on the toolbar and temporary addresses c
 | **P** | Pick |
 | **/** | Find |
 | **O** | Cycle Outline: Off, Sections, Blocks |
-| **Esc** | Leave Pick or Find. With neither open, hide everything |
+| **Esc** | Close the card, or leave Pick or Find. With none open, hide everything |
 
 Keys do nothing while you are typing in a field, and nothing when Cmd, Ctrl or Alt is held. While one of your app's own modal dialogs is open, Esc is left to the dialog. Every key can be changed or turned off. See the [API](api.md#keys).
 

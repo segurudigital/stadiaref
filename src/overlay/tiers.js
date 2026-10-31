@@ -1,6 +1,6 @@
 import { S } from './state.js';
 import { hasRecord, rec, removeOwn } from './records.js';
-import { copyAddress } from './copy.js';
+import { labelClick } from './card.js';
 import { forEachNode, toArray } from './dom.js';
 import { emitEvent } from './events.js';
 import { getActiveLabel, injectLabels, recordedTier, resolveLabelOverlaps } from './labels.js';
@@ -213,7 +213,7 @@ export function applyBlockGroupCollapse() {
         rowEl.addEventListener('click', function (e) {
           e.stopPropagation();
           e.preventDefault();
-          copyAddress(refEl, refVal, rowEl, 'label');
+          labelClick(refEl, refVal, rowEl);
         });
       }(memberRef, member, row));
       popover.appendChild(row);

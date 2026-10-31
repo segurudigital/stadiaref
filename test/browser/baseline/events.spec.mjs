@@ -68,7 +68,7 @@ test('no labels-change at start', async ({ page }) => {
 
 test('address-hover, address-leave, address-click from the full label', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await open(page, harness({ page: { startHidden: false } }));
+  await open(page, harness({ page: { startHidden: false, click: 'copy' } }));
   const label = page.locator('[data-ref="home-hero"] > .stadiaref-ref-full-label');
   await label.hover();
   await page.mouse.move(5, 890);
@@ -92,7 +92,7 @@ test('address-hover, address-leave, address-click from the full label', async ({
 
 test('address-click from the icon (icons mode)', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await open(page, harness({ page: { startHidden: false, labels: 'icons' } }));
+  await open(page, harness({ page: { startHidden: false, labels: 'icons', click: 'copy' } }));
   await page.locator('[data-ref="home-features"] > .stadiaref-ref-icon').click();
   const click = await eventsSoon(page, 'address-click');
   expect(click).toHaveLength(1);
@@ -125,7 +125,7 @@ test('Tree row copy button copies and emits address-click (source tree); row cli
 test('address-click from a block-group popover row', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, '/test/fixtures/v5-data-ref/block-bearing-dense.html');
-  await page.evaluate(() => window.stadiaref.show());
+  await page.evaluate(() => window.stadiaref.init({ click: 'copy' }).show());
   await page.locator('.stadiaref-block-group-badge').first().hover();
   await page.locator('.stadiaref-block-group-item').nth(2).click();
   const [click] = await eventsSoon(page, 'address-click');
@@ -138,7 +138,7 @@ test('address-click from a block-group popover row', async ({ page, context }) =
 test('address-click from a "+N" cluster popover row', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, '/test/demo.html?ar=1');
-  await page.evaluate(() => window.stadiaref.show());
+  await page.evaluate(() => window.stadiaref.init({ click: 'copy' }).show());
   const badge = page.locator('.stadiaref-cluster-badge').first();
   await badge.hover();
   const item = badge.locator('.stadiaref-cluster-item').first();
@@ -152,7 +152,7 @@ test('address-click from a "+N" cluster popover row', async ({ page, context }) 
 test('hovering a label opens the address chain; a chain row click emits address-click', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, '/test/fixtures/v5-data-ref/block-bearing-small.html');
-  await page.evaluate(() => window.stadiaref.show());
+  await page.evaluate(() => window.stadiaref.init({ click: 'copy' }).show());
   await page.locator('[data-ref="home-hero-card-02"] > .stadiaref-ref-full-label').hover();
   const tree = shadow(page, '.stadiaref-active-ref-tree');
   await expect(tree).toHaveClass(/stadiaref-active-ref-tree--open/);

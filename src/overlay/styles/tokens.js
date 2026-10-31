@@ -47,7 +47,10 @@ export const TOOLBAR = {
     focus: '#00707E', focusHalo: '#FFFFFF',
     toastBg: '#F7FEE7', toastFg: '#3F6212', toastBd: 'rgba(63, 98, 18, 0.4)',
     pinOnBg: 'rgba(163, 230, 53, 0.16)', pinOnFg: '#3F6212', pinOnBd: 'rgba(63, 98, 18, 0.5)',
-    statusBg: '#F7FEE7', statusFg: '#3F6212'
+    statusBg: '#F7FEE7', statusFg: '#3F6212',
+    // Tones of the host's rows on the address card (setLookup).
+    okFg: '#3F6212', warnFg: '#92400E', errorFg: '#B91C1C',
+    copyBg: '#A3E635', copyFg: '#000000', copyBd: '#3F6212'
   },
   dark: {
     barBg: '#27272A',
@@ -81,7 +84,9 @@ export const TOOLBAR = {
     focus: '#00C0F3', focusHalo: '#000000',
     toastBg: '#27272A', toastFg: '#A3E635', toastBd: 'rgba(163, 230, 53, 0.36)',
     pinOnBg: 'rgba(163, 230, 53, 0.14)', pinOnFg: '#A3E635', pinOnBd: 'rgba(163, 230, 53, 0.5)',
-    statusBg: '#27272A', statusFg: '#A3E635'
+    statusBg: '#27272A', statusFg: '#A3E635',
+    okFg: '#A3E635', warnFg: '#FBBF24', errorFg: '#FCA5A5',
+    copyBg: '#A3E635', copyFg: '#000000', copyBd: '#A3E635'
   }
 };
 
@@ -157,6 +162,14 @@ export function pairs() {
     p('toast', t.toastFg, t.toastBg);
     p('pinned button', t.pinOnFg, t.pinOnBg);
     p('dialog status line', t.statusFg, t.statusBg);
+    p('card row ok', t.okFg, t.barBg);
+    p('card row warn', t.warnFg, t.barBg);
+    p('card row error', t.errorFg, t.barBg);
+    p('card row muted', t.muted, t.barBg);
+    p('card link', t.accent, t.barBg);
+    p('card copy button', t.copyFg, t.copyBg);
+    p('tree problem', t.warnFg, t.barBg);
+    p('tree filter on', t.accent, t.wash);
   });
   Object.keys(LABELS).forEach(function (tier) {
     var l = LABELS[tier];
@@ -176,6 +189,7 @@ export function pairs() {
   out.push(['pick sheet address', '#E5E7EB', '#111827', '#111827']);
   out.push(['pick sheet copy button', '#000000', '#A3E635', '#111827']);
   out.push(['pick sheet button', '#F9FAFB', '#111827', '#111827']);
+  out.push(['hover hint address', '#FFFFFF', '#111827', '#111827']);
   // The panel in Astro's Dev Toolbar (panel.js), on Astro's dark window.
   out.push(['astro panel text', '#F4F4F5', '#13151A', '#13151A']);
   out.push(['astro panel key', '#A1A1AA', '#13151A', '#13151A']);

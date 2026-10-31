@@ -8,6 +8,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 
 ## [Unreleased]
 
+### Added
+
+- **The address card.** Click a label and a card opens beside it: the address and its tier, the element's text (first 140 characters), the addresses above it and directly inside it (up to 14, then "+n more"), and **Copy**, **Copy for a brief**, **Parent** and **Show in Tree**. It opens below the label, above it when there's no room, always inside the screen; it takes focus, keeps **Tab** inside it, and closes on **Esc**, a click elsewhere or a scroll. A Tree row opens its card on the page. `card(address | element)` opens it from code, `card(false)` closes it, and `stadiaref:card` `{ open, address, tier, element }` fires both ways.
+- **Copy for a brief:** one line for a ticket, a message or an agent: page title (or URL), screen width, address, tier and text, separated by `|`. It fires `stadiaref:address-click` with `source: 'brief'`.
+- **`setLookup(fn)`:** the host's rows on every card. `fn(address, element)` returns `[{ label, value, tone?, href? }]` or a promise of them; values are text, never HTML, and only `http`, `https` and `mailto` links are kept.
+- **`click: 'card' | 'copy'`** in the config, the `data-click` script attribute, the Astro and Vite options and the WordPress settings (**Clicking a label**), and `getClick()`.
+
+### Changed
+
+- **A label click opens the card instead of copying.** Set `click: 'copy'` to keep 3.2's click to copy. A page still configured through the 2.x `seguruDebugConfig` or `sdtConfig` keeps click to copy unless it sets `click`. With the card on, a label click fires `stadiaref:card`, not `stadiaref:address-click`; the card's Copy fires `stadiaref:address-click` with `source: 'card'`.
+- **The address chain panel opens on hover only with `click: 'copy'`.** The card shows the chain instead, so the two no longer show together.
+- The bundle-size budget is raised for the card (`scripts/check-size.mjs`).
+
 ## [3.2.0] — 2026-10-21
 
 The `titan` profile catches up with the Titan data-ref spec: it reads lists, loops and forms. This release also carries the security hardening done since 3.1.0. The Stadia Address core spec is now **1.1**.

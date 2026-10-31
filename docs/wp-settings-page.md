@@ -19,6 +19,7 @@ StadiaRef
 │ [x] Enable StadiaRef                              │
 ├ Display ──────────────────────────────────────────┤
 │ Default labels   (•) Full  ( ) Icons  ( ) Off     │
+│ Clicking a label (•) Opens its card  ( ) Copies   │
 │ [x] Start hidden. Press D to show the toolbar.    │
 │ Position         (•) Bottom right  ( ) …          │
 ├ Access ───────────────────────────────────────────┤
@@ -29,7 +30,7 @@ StadiaRef
 │ [ ] Class-to-ref converter                        │
 │ [ ] Auto-address                                  │
 ├ How it works ─────────────────────────────────────┤
-│ Keys, click to copy, what an address is, docs     │
+│ Keys, clicking a label, what an address is, docs  │
 └───────────────────────────────────────────────────┘
 [Save Changes]
 (icon) StadiaRef by Seguru Digital               v3.0.0
@@ -43,6 +44,7 @@ Each setting is a WordPress option. Values are cleaned on save: an unknown value
 |---|---|---|---|---|---|
 | Status | Enable StadiaRef | `stadiaref_enabled` | `1`, `0` | `0` | (loads the script at all) |
 | Display | Default labels | `stadiaref_labels` | `full`, `icons`, `off` | `full` | `labels` |
+| Display | Clicking a label | `stadiaref_click` | `card`, `copy` | `card` | `click` |
 | Display | Start hidden | `stadiaref_start_hidden` | `1`, `0` | `1` | `startHidden` |
 | Display | Position | `stadiaref_dock` | `bottom-right`, `bottom-left`, `top-right`, `top-left` | `bottom-right` | `dock` |
 | Access | Minimum role | `stadiaref_min_role` | `administrator`, `editor`, `author` | `administrator` | (who gets the script) |

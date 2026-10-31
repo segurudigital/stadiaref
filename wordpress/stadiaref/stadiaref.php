@@ -38,6 +38,7 @@ function stadiaref_defaults() {
         'stadiaref_class_converter' => '0',
         'stadiaref_auto_address'    => '0',
         'stadiaref_profile'         => 'generic',
+        'stadiaref_click'           => 'card',
     ];
 }
 
@@ -47,6 +48,7 @@ function stadiaref_choices() {
         'stadiaref_dock'     => [ 'bottom-right', 'bottom-left', 'top-right', 'top-left' ],
         'stadiaref_min_role' => [ 'administrator', 'editor', 'author' ],
         'stadiaref_profile'  => [ 'generic', 'titan', 'app' ],
+        'stadiaref_click'    => [ 'card', 'copy' ],
     ];
 }
 
@@ -361,6 +363,7 @@ function stadiaref_script_config() {
         'classConverter' => stadiaref_get( 'stadiaref_class_converter' ) === '1',
         'autoAddress'    => stadiaref_get( 'stadiaref_auto_address' ) === '1',
         'profile'        => stadiaref_get( 'stadiaref_profile' ),
+        'click'          => stadiaref_get( 'stadiaref_click' ),
     ];
 }
 
@@ -372,7 +375,7 @@ function stadiaref_script_config() {
 function stadiaref_inline_config( $config ) {
     return '(function (s) {'
         . 'var legacy = window.seguruDebugConfig || {};'
-        . 'var names = { labels: ["labels", "defaultMode"], dock: ["dock", "position"], startHidden: ["startHidden"], classConverter: ["classConverter"], autoAddress: ["autoAddress", "autoRef", "autoRefDepth"], profile: ["profile"] };'
+        . 'var names = { labels: ["labels", "defaultMode"], dock: ["dock", "position"], startHidden: ["startHidden"], click: ["click"], classConverter: ["classConverter"], autoAddress: ["autoAddress", "autoRef", "autoRefDepth"], profile: ["profile"] };'
         . 'for (var k in names) { for (var i = 0; i < names[k].length; i++) { if (names[k][i] in legacy) { delete s[k]; break; } } }'
         . 'window.stadiarefConfig = Object.assign(s, window.stadiarefConfig || {});'
         . '})(' . wp_json_encode( $config ) . ');';
@@ -422,6 +425,7 @@ function stadiaref_render_settings_page() {
     $profile         = stadiaref_get( 'stadiaref_profile' );
     $class_converter = stadiaref_get( 'stadiaref_class_converter' );
     $auto_address    = stadiaref_get( 'stadiaref_auto_address' );
+    $click           = stadiaref_get( 'stadiaref_click' );
 
     ?>
     <div class="wrap">
@@ -473,6 +477,24 @@ function stadiaref_render_settings_page() {
                             <label>
                                 <input type="radio" name="stadiaref_labels" value="<?php echo esc_attr( $val ); ?>" <?php checked( $labels, $val ); ?>>
                                 <span><?php echo wp_kses( $text, [ 'strong' => [], 'kbd' => [] ] ); ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <div class="stadiaref-field">
+                    <span class="stadiaref-field__label"><?php esc_html_e( 'Clicking a label', 'stadiaref' ); ?></span>
+                    <div class="stadiaref-radios">
+                        <?php
+                        $click_choices = [
+                            'card' => __( '<strong>Opens its card.</strong> The address, its text, what is above and inside it, and Copy.', 'stadiaref' ),
+                            'copy' => __( '<strong>Copies the address.</strong> As in StadiaRef 3.2.', 'stadiaref' ),
+                        ];
+                        foreach ( $click_choices as $val => $text ) :
+                        ?>
+                            <label>
+                                <input type="radio" name="stadiaref_click" value="<?php echo esc_attr( $val ); ?>" <?php checked( $click, $val ); ?>>
+                                <span><?php echo wp_kses( $text, [ 'strong' => [] ] ); ?></span>
                             </label>
                         <?php endforeach; ?>
                     </div>
@@ -570,7 +592,7 @@ function stadiaref_render_settings_page() {
             <div class="stadiaref-card stadiaref-help">
                 <h2><?php esc_html_e( 'How it works', 'stadiaref' ); ?></h2>
                 <p><?php echo wp_kses( __( '<strong>Keys.</strong> <kbd>D</kbd> shows or hides the toolbar. <kbd>L</kbd> cycles labels. <kbd>1</kbd>, <kbd>2</kbd> and <kbd>3</kbd> switch sections, blocks and elements. <kbd>P</kbd> starts Pick. <kbd>/</kbd> opens Find. <kbd>O</kbd> cycles Outline. <kbd>Esc</kbd> leaves Pick or Find, then hides everything. Keys pause while you type in a field.', 'stadiaref' ), [ 'strong' => [], 'kbd' => [] ] ); ?></p>
-                <p><?php echo wp_kses( __( '<strong>Click to copy.</strong> Click any label to copy its address.', 'stadiaref' ), [ 'strong' => [] ] ); ?></p>
+                <p><?php echo wp_kses( __( '<strong>Click a label.</strong> Its card opens, with the address, its text and Copy. Choose "Copies the address" above to copy on click instead.', 'stadiaref' ), [ 'strong' => [] ] ); ?></p>
                 <p><?php echo wp_kses( __( '<strong>What an address is.</strong> Each tagged part of the page carries a short code such as <code>home-hero</code>. Paste it into a note or a ticket and a developer finds the exact element.', 'stadiaref' ), [ 'strong' => [], 'code' => [] ] ); ?></p>
                 <p style="margin:0"><a href="https://github.com/segurudigital/stadiaref" target="_blank" rel="noopener"><?php esc_html_e( 'Read the docs on GitHub', 'stadiaref' ); ?></a></p>
             </div>

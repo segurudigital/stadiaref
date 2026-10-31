@@ -5,9 +5,10 @@ import { harness, open, countVisible, visibleFullLabelRefs, shadow } from './hel
 
 const DEMO_AUTHORED = ['home-01-hero-standard', 'home-02-features-grid', 'home-07-cta-banner', 'home-08-footer'];
 
+// Label clicks copy here, as in 3.2 (click: 'copy'); the card is in card.spec.mjs.
 async function demo(page, query = '') {
   await open(page, '/test/demo.html' + query);
-  await page.evaluate(() => window.stadiaref.show());
+  await page.evaluate(() => window.stadiaref.init({ click: 'copy' }).show());
 }
 
 test.describe('demo page label counts', () => {

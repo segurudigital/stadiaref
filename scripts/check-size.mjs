@@ -6,7 +6,10 @@ import zlib from 'node:zlib';
 
 const FILE = 'dist/stadiaref.min.js';
 // Measured for 3.0.0: 133,027 bytes, 36,964 gzipped (zlib level 9).
-const BUDGET = { raw: 146400, gzip: 40500 };
+// 3.3 raised it for the address card, which became the default click (the
+// card, its styles, setLookup): 3.2.0 measured 133,644 / 37,114 and the card
+// alone took it to 147,203 / 40,496. The 3.3 release sets the final figure.
+const BUDGET = { raw: 172000, gzip: 47000 };
 
 const buf = fs.readFileSync(FILE);
 const size = { raw: buf.length, gzip: zlib.gzipSync(buf, { level: 9 }).length };
