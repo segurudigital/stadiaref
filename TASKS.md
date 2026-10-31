@@ -22,6 +22,8 @@ Decisions made while building, which the prompt didn't settle:
 - `onAddress(fn, label)` adds one button to the card; its context carries the chain, tag and URL the roadmap's "copy for a developer or an agent" named.
 - The size budget is provisionally 172,000 / 47,000 bytes; set the final figure at the release.
 
+**3.3.0 release blocked (2026-10-31):** `main` is pushed (`6a1f469`), but GitHub Actions starts no job: "your account is locked due to a billing issue". The GitHub release is not created, because the release workflow (assets and npm publish) would not run. Once billing is fixed: re-run CI on `main`, then publish the `v3.3.0` release with `RELEASE_NOTES.md`.
+
 **The overlay layer moved to 3.4** (Samuel, 2026-10-31: ship 3.3.0 now). About 125 browser-test assertions, the 2.5.0 comparison spec and the host-page DOM tests read labels inside page elements, and the move needs clipping in scroll containers, top-layer modals and transformed or sticky elements solved. It is the next release. 3.3.0 is in every version location, `dist/` is built and the release notes are written; nothing is tagged, pushed or published. The CDN examples stay on 3.2.0 until 3.3.0 is on npm (the SRI hash comes from the published file).
 
 **Before that:** 2026-10-21 (Titan profile vocabulary; 3.2.0 released)
@@ -79,8 +81,25 @@ From the 2026-10-31 code prompt (UI Master spec 1.5, RF-023): a click on a label
 
 ### 3.4 — the overlay layer
 
-- [ ] One overlay layer for labels (see ROADMAP.md 3.4)
-- [ ] Drill-down drawn on it, out from behind `drill: true`
+Goal: while StadiaRef is shown, the page's DOM is unchanged apart from the addresses StadiaRef is asked to write (auto-address, the class converter) and the `data-stadiaref-*` attributes on `<html>`. Today, besides those, it writes labels and their void-element hosts (`labels.js`), `position: relative` on static elements (`labels.js`, `outline.js`), outline frames (`outline.js`), block-group and +N badges (`tiers.js`, `labels.js`) and the label stylesheet in `<head>`.
+
+**Design**
+- One layer, `layer.js`: a `position: fixed; inset: 0; pointer-events: none` container in StadiaRef's shadow root. Every label, badge and outline frame is drawn there from its element's `getBoundingClientRect()`, moved with `transform` (no layout writes). Labels take pointer events; the layer doesn't. Per-element state stays in `records.js`.
+- **Placement pass:** one per frame at most, all reads then all writes. Triggers: scroll (capture, so scroll containers count), resize, a `ResizeObserver` on labelled elements, the watcher's frame, `transitionend`, fonts and images loading. Animated and transformed elements are followed only while a pass is running; the docs state the limit.
+- **Clipping:** each element's clip box is the viewport intersected with its `overflow` ancestors, cached per survey. A label whose anchor falls outside it is hidden, as an in-page label is clipped today.
+- **Top layer:** the shadow host already moves into an open modal `<dialog>` (`dialogs.js`); the layer goes with it. Open `popover` elements get the same treatment.
+- **Stacking:** labels draw above the page, including fixed headers. A label whose element is covered at its anchor (an `elementFromPoint` check, only for labels in view) is hidden, so labels don't float over a header or modal backdrop.
+- **Styles:** the label CSS moves into the shadow root and reads the global state from the shadow host's attributes. The `data-stadiaref-*` attributes on `<html>` stay for hosts that read them.
+- **Removed:** void-element hosts, `position: relative`, the label stylesheet in `<head>`, relabelling after a re-render (labels no longer live where a re-render can delete them; a label goes when its element leaves the page).
+- **Tests:** helpers `labelFor(page, address)` and `visibleFullLabelRefs()` read the layer; the ~125 assertions on in-page label structure move to them; `legacy-vs-2.5.0` compares which addresses show a label; `host-page.spec` asserts the page DOM is unchanged while StadiaRef is shown, not only hidden. New: scroll containers, sticky and fixed elements, a covered element, a modal, a popover, 1,000 addresses within a frame budget.
+
+**Phases** (one commit each, every suite green at each)
+- [ ] 1. `layer.js` and the placement pass; full and icon labels drawn in the layer; test helpers read it
+- [ ] 2. Clipping, covered elements, visibility, dialogs and popovers
+- [ ] 3. Collisions, +N clusters, block groups and outline frames in the layer
+- [ ] 4. Remove every page write (void hosts, `position: relative`, the stylesheet in `<head>`, re-render repair); `host-page.spec` while shown
+- [ ] 5. Drill-down on the layer, out from behind `drill: true`; a performance test with 1,000 addresses
+- [ ] 6. Docs (`docs/design.md`, `apps-and-pwas.md`, AGENTS guardrails), CHANGELOG, 3.4.0
 
 ### 3.2.0 — Titan lists, loops and forms — done
 
