@@ -1,6 +1,6 @@
 # StadiaRef — agent context
 
-**Version:** 3.3.0
+**Version:** 3.4.0
 **Repo:** https://github.com/segurudigital/stadiaref
 **Maintained by:** Seguru Digital (hello@seguru.digital)
 **License:** MIT (see `LICENSE` and `NOTICE`)

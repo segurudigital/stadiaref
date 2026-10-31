@@ -1,7 +1,7 @@
 # Tasks
 
 **Project:** StadiaRef (was Seguru Debug Toolbar)
-**Current version:** 3.3.0 (ready to release, 2026-10-31)
+**Current version:** 3.4.0 (ready to release, 2026-10-31)
 
 > **How this file works**
 > TASKS.md is the canonical list of all open and recently-completed work, organised as **Sprints → Phases → subtasks**. Items are ticked off as they ship. At session end, completed items move from this file to **CHANGELOG.md** (the user-facing record) — only the most recent handoff note stays here as a starting point for the next session. **ROADMAP.md** is the forward view. Agent todo trackers (`TodoWrite`) mirror this file for the active session — they're never the source of truth on their own. All three docs (TASKS, CHANGELOG, ROADMAP) must be in sync at the start and end of every session.
@@ -21,6 +21,8 @@ Decisions made while building, which the prompt didn't settle:
 - `stadiaref:tree` fires in overlay mode too, with width 0.
 - `onAddress(fn, label)` adds one button to the card; its context carries the chain, tag and URL the roadmap's "copy for a developer or an agent" named.
 - The size budget is provisionally 172,000 / 47,000 bytes; set the final figure at the release.
+
+**3.4.0 ready (2026-10-31):** the overlay layer is built (phases 1–6 below), version 3.4.0 in every location, CHANGELOG `[3.4.0]`, release notes and `dist/` built; every local CI gate passes. Not tagged or published. npm has 3.2.0: 3.3.0 failed to publish because this machine isn't logged in to npm (`E401`; npm reports the publish as `E404`). Next: `npm login` as `samuel.d.clarke`, publish 3.3.0 (the tarball from its clean build) and 3.4.0 the same way, the GitHub release `v3.4.0`, then the CDN pins and SRI to 3.4.0.
 
 **3.3.0 released on GitHub (2026-10-31):** CI runs locally, not on GitHub Actions (Samuel). `npm run ci:local` passed on `6a1f469`; the release files were built from a clean clone of it and attached to the GitHub release `v3.3.0` by hand (SHA-256: `stadiaref.min.js` `15649a60…9a24`, `stadiaref-wp-v3.3.0.zip` `155a7db4…ae7b`, bridge `a5578d2c…573`); `dist/stadiaref-wp-v3.3.0.zip` is that asset, committed. **Still open:** `stadiaref@3.3.0` on npm (Samuel, from his own npm login: trusted publishing only runs from Actions), then the CDN examples and SRI move to 3.3.0. AGENTS.md's release flow now describes the local process.
 
@@ -80,7 +82,7 @@ From the 2026-10-31 code prompt (UI Master spec 1.5, RF-023): a click on a label
 - [x] GitHub release `v3.3.0` with its three assets, built locally; the release's plugin zip committed
 - [ ] npm `stadiaref@3.3.0` (Samuel); then the CDN examples and SRI move to 3.3.0
 
-### 3.4 — the overlay layer
+### 3.4.0 — the overlay layer
 
 Goal: while StadiaRef is shown, the page's DOM is unchanged apart from the addresses StadiaRef is asked to write (auto-address, the class converter) and the `data-stadiaref-*` attributes on `<html>`. Today, besides those, it writes labels and their void-element hosts (`labels.js`), `position: relative` on static elements (`labels.js`, `outline.js`), outline frames (`outline.js`), block-group and +N badges (`tiers.js`, `labels.js`) and the label stylesheet in `<head>`.
 
@@ -96,11 +98,12 @@ Goal: while StadiaRef is shown, the page's DOM is unchanged apart from the addre
 
 **Phases** (one commit each, every suite green at each)
 - [x] 1. `layer.js` and the placement pass; full and icon labels drawn in the layer; test helpers read it. Done with per-element slots: each slot sits over its element's box and holds what used to be appended inside the element, at the same offsets, so the overlap solver, clusters, block groups and outline frames moved with it (phase 3), and every page write but auto-address went (phase 4). The host's z-index went to 2147483646 so labels sit over the page's own fixed panels
-- [ ] 2. Clipping, covered elements, visibility, dialogs and popovers
+- [x] 2. Clipping (clip-path from the overflow ancestors, cached per survey), covered elements (only under fixed or sticky UI, checked 150ms after scrolling settles), popovers (the host moves into an open popover), modals centred with a transform
 - [x] 3. Collisions, +N clusters, block groups and outline frames in the layer (with phase 1)
 - [x] 4. Remove every page write (void hosts, `position: relative`, the stylesheet in `<head>`, re-render repair); `host-page.spec` while shown (with phase 1)
-- [ ] 5. Drill-down on the layer, out from behind `drill: true`; a performance test with 1,000 addresses
-- [ ] 6. Docs (`docs/design.md`, `apps-and-pwas.md`, AGENTS guardrails), CHANGELOG, 3.4.0
+- [x] 5. Drill-down on by default (`drill: false` turns it off); a performance test with 1,000 addresses. The overlap solver now measures each label once: 3.3.0 took about 3.4s to show 1,000 addresses, 3.4.0 about 0.35s
+- [x] 6. Docs (`docs/design.md`, `apps-and-pwas.md`, AGENTS guardrails), CHANGELOG, 3.4.0, release notes, `dist/`
+- [ ] Released: GitHub release `v3.4.0` with assets built locally; npm `stadiaref@3.3.0` and `@3.4.0` (Samuel's npm login); CDN examples and SRI to 3.4.0; the release's plugin zip committed
 
 ### 3.2.0 — Titan lists, loops and forms — done
 

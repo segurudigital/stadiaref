@@ -1,35 +1,27 @@
-# StadiaRef 3.3.0
+# StadiaRef 3.4.0
 
-**Click something. The address card.**
+**Your page stays yours.**
 
-StadiaRef shows each `data-ref` attribute on a page as a label. In 3.3 a click on a label opens a card beside it with everything about that one address, so turning StadiaRef on and clicking is all it takes.
+StadiaRef shows each `data-ref` attribute on a page as a label. Until now those labels were added inside your page's own elements. In 3.4 StadiaRef draws them in a layer of its own, over the page, so it no longer writes into your markup.
 
 ## What's new
 
-- **The address card.** The address and its tier, the element's text, the addresses it sits in and the ones it holds, and **Copy**, **Copy for a brief**, **Parent** and **Show in Tree**. It opens beside the label, flips above when there's no room, and closes on Esc, a click elsewhere or a scroll. It works from the keyboard.
-- **Copy for a brief.** One line for a ticket, a message or an agent: the page, the screen width, the address, its tier and its text.
-- **Your rows on the card.** `setLookup()` lets a site or app add what it knows about an address, such as lock state, format problems, notes or a link. `onAddress()` adds one action of your own, such as opening a GitHub or Linear issue.
-- **Inspect in Pick.** Press P and click anything: its card opens, or the card of the nearest thing with an address.
-- **A Tree that makes room.** With `tree: 'push'` the Tree opens as a column on the right and tells the page its width, so nothing is covered.
-- **The Tree finds problems.** A Problems tab lists duplicated addresses, addresses that don't fit the profile, and gaps in numbering. The Tree also has a search field and a tier filter.
-- **The toolbar in your own chrome.** `dock: 'host'` with `mount: '#selector'` draws the toolbar inside your app's own top bar or panel.
-- **A hint with labels off.** Rest the pointer on something and its address appears beside it.
-- **Drill-down,** behind `drill: true` while it settles: narrow the view to one section or block, with a breadcrumb.
+- **Nothing added to your elements.** Labels, badges and outline frames are drawn in StadiaRef's own layer, placed over each element. No label nodes inside your elements, no `position: relative` on them, no stylesheet in your `<head>`.
+- **Re-renders can't drop a label.** A framework can rewrite an element's contents as often as it likes: the label isn't in there.
+- **Labels behave as if they were in the page.** They follow scrolling, including inside scroll containers, are clipped by those containers, step aside under your fixed header or tab bar, and sit on top of open modals and popovers.
+- **Much faster on big screens.** A page with 1,000 addresses shows in about a third of a second, down from more than three.
+- **Drill-down is on.** **Drill in** on the address card narrows the view to one section or block, with a breadcrumb back out. `drill: false` turns it off.
 
 ## Upgrading
 
-A label click now opens the card instead of copying. The card has Copy, and `stadiaref:address-click` still fires when you copy from it (with `source: 'card'`). To keep 3.2's click to copy, set `click: 'copy'` in the config, or choose **Copies the address** under **Clicking a label** in the WordPress settings. Pages still configured through the 2.x `seguruDebugConfig` or `sdtConfig` keep click to copy unless they say otherwise.
+Nothing to change for most sites. Update the package (`npm install --save-dev stadiaref@3.4.0`) or the WordPress plugin as usual.
 
-If your site or app drew its own card or tooltip on `stadiaref:address-click`, you can drop it and use `setLookup()` to put your information on StadiaRef's card. TypeScript users who narrow `AddressSource` exhaustively get two new values, `'card'` and `'brief'`.
-
-Update the package (`npm install --save-dev stadiaref@3.3.0`) or the WordPress plugin as usual.
-
-The overlay layer for labels, planned for 3.3, moves to 3.4.
+If your own tests or tools look for StadiaRef's labels inside your elements, they're now in StadiaRef's shadow root: `#stadiaref-host`'s `shadowRoot`, in `.stadiaref-slot[data-stadiaref-for="<address>"]`. StadiaRef's host now sits at the top of the stacking order, so its labels draw over your own fixed panels.
 
 The full list of changes is in the [changelog](https://github.com/segurudigital/stadiaref/blob/main/CHANGELOG.md).
 
 ## Assets
 
 - `stadiaref.min.js`: the script-tag build
-- `stadiaref-wp-v3.3.0.zip`: the WordPress plugin
+- `stadiaref-wp-v3.4.0.zip`: the WordPress plugin
 - `seguru-debug-toolbar-wp-v2.5.1.zip`: the last Seguru Debug Toolbar release, for sites still on 2.x

@@ -44,10 +44,11 @@ Turn StadiaRef on and click something: that is where its value is (UI Master spe
 - [x] **An `onAddress(address, context)` hook,** with examples for GitHub Issues and Linear. StadiaRef still stores nothing itself.
 - [x] **Drill-down:** narrow the view to one section or block, with a breadcrumb of where you are. Behind `drill: true` first. Built on the in-page labels for now.
 
-## 3.4 — safe inside any app
+## 3.4.0 — safe inside any app
 
-- **One overlay layer for labels.** Since 3.0 labels are drawn inside the page's own elements, which a framework re-render can disturb. 3.4 draws them in one layer of StadiaRef's own, positioned from each element's box, so StadiaRef changes nothing in the page at all. This removes the void-element workaround and the label re-mounting after re-renders. It has to keep labels clipped inside scroll containers, on top of modal dialogs, and on transformed and sticky elements. Moved from 3.3 so the address card could ship first.
-- **Drill-down out from behind its flag,** drawn on the overlay layer.
+- [x] **One overlay layer for labels.** Since 3.0 labels were drawn inside the page's own elements, which a framework re-render could disturb. 3.4 draws them in one layer of StadiaRef's own, positioned from each element's box, so StadiaRef changes nothing in the page while it is shown. The void-element workaround and the label re-mounting after re-renders are gone. Labels stay clipped inside scroll containers, step aside under the page's fixed UI, and sit on top of modal dialogs and popovers.
+- [x] **Drill-down out from behind its flag,** drawn on the overlay layer.
+- [x] **Ten times faster surveys** on big screens: the overlap solver measures each label once.
 
 ## 3.5 — reach
 

@@ -8,10 +8,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 
 ## [Unreleased]
 
+## [3.4.0] — 2026-10-31
+
+StadiaRef stops writing into your page. Labels, badges and outline frames are drawn in an overlay layer of StadiaRef's own, so a framework re-render can't touch them and your elements are left exactly as you wrote them. Surveys of big screens are about ten times faster.
+
 ### Changed
 
-- **Labels are drawn in StadiaRef's own overlay layer** (the 3.4 work, in progress). Labels, `+N` and block-group badges and outline frames are drawn in one layer inside StadiaRef's shadow root, one slot per element placed over its box, and follow it when the page or a scroll container scrolls, the window resizes or the element changes size. Nothing is appended to the page's elements any more: no label nodes, no `position: relative` on static elements, no sibling host beside an `<img>`, and no `#stadiaref-styles` stylesheet in `<head>`. A framework re-render can no longer drop a label.
+- **Labels are drawn in StadiaRef's own overlay layer.** Labels, `+N` and block-group badges and outline frames are drawn in one layer inside StadiaRef's shadow root, one slot per element placed over its box. They follow it when the page or a scroll container scrolls, the window resizes or the element changes size, at most once per frame. Nothing is appended to the page's elements any more: no label nodes, no `position: relative` on static elements, no sibling host beside an `<img>`, and no `#stadiaref-styles` stylesheet in `<head>`. A framework re-render can no longer drop a label, so the re-render repair is gone.
+- **Labels are clipped by scroll containers** as they were inside the page: a label is cut to its element's scrolling and `overflow: hidden` ancestors and goes when the element is scrolled out.
+- **A label whose element is under the page's fixed or sticky UI hides** (a header, a tab bar, a banner) until the element comes out. Other overlaps leave it alone.
+- **Popovers:** while a popover is open StadiaRef moves into it, as it does for a modal dialog, so the labels of what it shows are on top.
+- **Drill-down is on by default.** `drill: false` takes **Drill in** off the card.
+- **Faster:** the overlap solver measures each label once instead of once per attempt. On a page with 1,000 addresses the first show and survey fell from about 3.4 s to 0.35 s.
 - StadiaRef's host sits at the top of the stacking order (`z-index: 2147483646`, was `99999`), so labels draw over the page's own fixed panels.
+- For tests and tools that read labels: they are in `#stadiaref-host`'s shadow root, inside `.stadiaref-slot[data-stadiaref-for="<address>"]`, not inside the element.
 
 ## [3.3.0] — 2026-10-31
 
