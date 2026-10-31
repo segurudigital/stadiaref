@@ -36,7 +36,7 @@
     <label><input type="checkbox" id="toggle-ar"> Auto-address</label>
     <hr class="demo-sep">
     <div>Keys: <strong>D</strong> show or hide, <strong>L</strong> labels, <strong>1 2 3</strong> sections, blocks, elements, <strong>P</strong> Pick, <strong>/</strong> Find, <strong>O</strong> outline, <strong>Esc</strong> close</div>
-    <div>Click any label to copy its address.</div>
+    <div>Click any label to open its card.</div>
     <hr class="demo-sep">
     <h3 style="margin-top:4px">API</h3>
     <div style="display:flex;flex-wrap:wrap;gap:4px;">
@@ -70,7 +70,7 @@
 
   <section class="features" data-ref="home-02-features-grid">
     <h2>Features</h2>
-    <p>Press L to cycle the labels through Off, Icons and Full. Click any label to copy its address. Press P and point at anything to see its address, or / to find one.</p>
+    <p>Press L to cycle the labels through Off, Icons and Full. Click any label to open its card: the address, its text, what it sits in and holds, and Copy. Press P and click anything to inspect it, or / to find an address.</p>
   </section>
 
   <!-- ─── Class Converter test: dataref- CSS class, no data-ref attr ─── -->
@@ -181,8 +181,26 @@
         }
       });
 
+      // The card's host rows (setLookup) and host action (onAddress), as a
+      // site or app would add them from what it knows about each address.
+      document.addEventListener('DOMContentLoaded', function () {
+        var api = window.stadiaref;
+        if (!api || !api.setLookup) return;
+        api.setLookup(function (address, el) {
+          var problems = api.validate(address).problems;
+          return [
+            { label: 'Tag', value: '<' + el.tagName.toLowerCase() + '>', tone: 'muted' },
+            problems.length
+              ? { label: 'Format', value: problems[0], tone: 'error' }
+              : { label: 'Format', value: 'Valid', tone: 'ok' },
+            { label: 'Docs', value: 'The address card', href: 'https://github.com/segurudigital/stadiaref/blob/main/docs/using-the-toolbar.md#the-address-card' }
+          ];
+        });
+        api.onAddress(function (address, ctx) { log('onAddress → ' + ctx.brief); }, 'Log it');
+      });
+
       // Event log: the public stadiaref:* events.
-      ['ready', 'show', 'hide', 'theme-change', 'user-change', 'labels-change', 'tiers-change', 'outline-change', 'address-click', 'address-hover'].forEach(function (name) {
+      ['ready', 'show', 'hide', 'theme-change', 'user-change', 'labels-change', 'tiers-change', 'outline-change', 'address-click', 'address-hover', 'card', 'tree'].forEach(function (name) {
         window.addEventListener('stadiaref:' + name, function (e) {
           var d = e.detail || {};
           var summary = name;
@@ -193,6 +211,8 @@
           else if (name === 'labels-change') summary += ' → ' + d.labels;
           else if (name === 'tiers-change') summary += ' → ' + d.tiers.join(', ');
           else if (name === 'outline-change') summary += ' → ' + d.outline;
+          else if (name === 'card') summary += ' → ' + (d.open ? 'open ' : 'closed ') + d.address;
+          else if (name === 'tree') summary += ' → ' + (d.open ? 'open' : 'closed');
           log(summary);
         });
       });

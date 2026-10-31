@@ -317,7 +317,7 @@ export function openCard(target, anchor, opts) {
   highlight('card', target);
   if (opts && opts.focus) {
     var first = c.box.querySelector('.stadiaref-card__btn--copy');
-    (first || c.box).focus();
+    (first || c.box).focus({ preventScroll: true });
   } else {
     c.box.focus({ preventScroll: true });
   }
@@ -370,7 +370,7 @@ function onCardKey(e) {
   var i = items.indexOf(active);
   var next = e.shiftKey ? (i <= 0 ? items.length - 1 : i - 1) : (i === -1 || i === items.length - 1 ? 0 : i + 1);
   e.preventDefault();
-  items[next].focus();
+  items[next].focus({ preventScroll: true });
 }
 
 function insideCard(e) {
