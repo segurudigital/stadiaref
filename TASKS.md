@@ -10,7 +10,21 @@
 
 ## Handoff notes
 
-**Last session:** 2026-10-21 (Titan profile vocabulary; 3.2.0 released)
+**Last session:** 2026-10-31 (3.3: the address card, from the 3.3 code prompt)
+
+Parts 1–8a of the 3.3 prompt are built, tested and committed on `main`, one commit per part: the address card (default on label click), `click: 'card' | 'copy'` (config, `data-click`, Astro/Vite options, WordPress setting), `setLookup()`, inspect in Pick, Tree push mode (`--stadiaref-tree-w`, `stadiaref:tree`), `dock: 'host'` with `mount`, the hover hint with labels off, the Tree's Problems tab, search and tier filter, `onAddress()`, and drill-down behind `drill: true`. The demo page shows the card with host rows and an action. Docs, types and CHANGELOG `[Unreleased]` are current.
+
+Decisions made while building, which the prompt didn't settle:
+- A page configured through a 2.x object (`seguruDebugConfig`, `sdtConfig`) keeps click to copy unless it sets `click`, so 2.x hosts listening for `sdt:dataref-click` keep working. The WordPress plugin hands its own `click` setting over in `stadiarefConfig`, so it wins on WordPress.
+- With the card on, a label click fires `stadiaref:card`, not `stadiaref:address-click`; the card's Copy fires `address-click` with `source: 'card'`, Copy for a brief with `source: 'brief'`.
+- The Address chain panel only opens on hover with `click: 'copy'`.
+- `stadiaref:tree` fires in overlay mode too, with width 0.
+- `onAddress(fn, label)` adds one button to the card; its context carries the chain, tag and URL the roadmap's "copy for a developer or an agent" named.
+- The size budget is provisionally 172,000 / 47,000 bytes; set the final figure at the release.
+
+**Open: the overlay layer (part 8b).** Not started. About 125 browser-test assertions, the 2.5.0 comparison spec and the host-page DOM tests read labels inside page elements, and the move needs clipping in scroll containers, top-layer modals and transformed or sticky elements solved. It is a release-sized change. Choose between shipping 3.3.0 now and moving the overlay layer to 3.4, or holding 3.3.0 until it is built. The version is still 3.2.0 in every location until that call.
+
+**Before that:** 2026-10-21 (Titan profile vocabulary; 3.2.0 released)
 
 The `titan` profile now knows the `list` element noun (Titan's list rule) and the `loop` and `form` slot wrappers (Titan data-ref 5.3), as core spec 1.1. Before, on the new fixture `test/fixtures/v5-data-ref/slots-and-lists.html`, the two list addresses showed as sections and the loop and form wrappers as unclassified. Version 3.2.0 in every location; the security hardening below ships in it. The overlay-layer release is now 3.3 and reach 3.4.
 
@@ -47,7 +61,7 @@ zero npm advisories and clean history/current-tree secret scans.
 
 ## Currently in flight
 
-### 3.3.0 — the address card, inspect, host lookup, push Tree, host mount
+### 3.3 — the address card, inspect, host lookup, push Tree, host mount
 
 From the 2026-10-31 code prompt (UI Master spec 1.5, RF-023): a click on a label opens a card by default, and 3.3 ships as one release. Tests first, one commit per part.
 
@@ -58,7 +72,8 @@ From the 2026-10-31 code prompt (UI Master spec 1.5, RF-023): a click on a label
 - [x] Part 5 — Tree `push` mode: `--stadiaref-tree-w`, `stadiaref:tree`; a Tree row opens the card
 - [x] Part 6 — `dock: 'host'` with `mount`: the toolbar inline in a host element, falling back to the corner
 - [x] Part 7 — hover hint with labels off (never on touch)
-- [ ] Part 8 — problems in the Tree, Tree search and filter, `onAddress(fn)`, drill-down behind a flag, the overlay layer for labels
+- [x] Part 8a — problems in the Tree, Tree search and filter, `onAddress(fn)`, drill-down behind `drill: true`
+- [ ] Part 8b — the overlay layer for labels. **Not started; needs Samuel's call** (see the handoff note)
 - [ ] Docs, types, demo, CHANGELOG, ROADMAP, version 3.3.0, `dist/`, release notes
 
 ### 3.2.0 — Titan lists, loops and forms — done

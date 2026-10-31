@@ -28,6 +28,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 - **A label click opens the card instead of copying.** Set `click: 'copy'` to keep 3.2's click to copy. A page still configured through the 2.x `seguruDebugConfig` or `sdtConfig` keeps click to copy unless it sets `click`. With the card on, a label click fires `stadiaref:card`, not `stadiaref:address-click`; the card's Copy fires `stadiaref:address-click` with `source: 'card'`.
 - **The address chain panel opens on hover only with `click: 'copy'`.** The card shows the chain instead, so the two no longer show together.
 - The bundle-size budget is raised for the card (`scripts/check-size.mjs`).
+- **Types:** `AddressSource` gains `'card'` and `'brief'`, so code that narrows it exhaustively needs the two new cases. `Config.dock` accepts `'host'` and `getDock()` can return it.
 
 ## [3.2.0] — 2026-10-21
 

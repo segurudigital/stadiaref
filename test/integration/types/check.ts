@@ -6,7 +6,10 @@ import stadiarefAstro from 'stadiaref/astro';
 import type { Plugin } from 'vite';
 import type { AstroIntegration } from 'astro';
 
-const config: Config = { profile: 'app', tiers: ['section', 'block'], dockOffset: { bottom: 72 }, keys: { pick: false }, watch: true };
+const config: Config = {
+  profile: 'app', tiers: ['section', 'block'], dockOffset: { bottom: 72 }, keys: { pick: false }, watch: true,
+  click: 'card', tree: 'push', dock: 'host', mount: '#bar', hint: false, drill: true,
+};
 
 async function useApi(api: StadiaRef): Promise<string[]> {
   await api.ready;
@@ -15,14 +18,31 @@ async function useApi(api: StadiaRef): Promise<string[]> {
   const tier: 'section' | 'block' | 'element' | 'unclassified' = api.classify('home-hero');
   const ok: boolean = api.validate('home-hero').valid;
   void tiers; void tier; void ok;
+  api.setLookup(async (address, el) => [{ label: 'Tag', value: el.tagName, tone: 'muted' }, { label: 'Spec', value: address, href: 'https://example.com' }]);
+  api.setLookup(null);
+  api.onAddress((address, ctx) => { const line: string = ctx.brief + address + ctx.chain.join('/'); void line; }, 'Send');
+  const opened: boolean = api.card('home-hero') || api.card(false);
+  const click: 'card' | 'copy' = api.getClick();
+  const width: number = api.getTreeWidth();
+  const drilled: string | null = api.drill('home-hero') ? api.getDrill() : null;
+  api.setDock({ mount: '#bar' });
+  void opened; void click; void width; void drilled;
   return api.find('home');
 }
 void useApi(stadiaref);
 
 window.addEventListener('stadiaref:address-click', (event) => {
   const { address, tier, element, source, copied } = event.detail;
-  const s: 'label' | 'pick' | 'find' | 'tree' = source;
+  const s: 'label' | 'pick' | 'find' | 'tree' | 'card' | 'brief' = source;
   void address; void tier; void element; void s; void copied;
+});
+window.addEventListener('stadiaref:card', (event) => {
+  const open: boolean = event.detail.open;
+  void open;
+});
+window.addEventListener('stadiaref:tree', (event) => {
+  const w: number = event.detail.width;
+  void w;
 });
 window.stadiaref?.hide();
 

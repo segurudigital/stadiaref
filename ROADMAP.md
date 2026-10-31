@@ -29,14 +29,21 @@ Seguru Debug Toolbar becomes **StadiaRef**, and gains what it needs to work in a
 - [x] **Distribution trust:** exact CDN versions with SRI; WordPress release name, URL and SHA-256 binding; esbuild updated past its advisory.
 - [x] **Least-privilege delivery:** unprivileged release and Pages builds, prebuilt npm publication, immutable action pins, dependency auditing and full-history secret scanning.
 
-## 3.3 — safe inside any app, and one address fast
+## 3.3 — the address card, and one address fast
 
-- **One overlay layer for labels.** In 3.0 labels are drawn inside the page's own elements, which a framework re-render can disturb. 3.3 draws them in one layer of StadiaRef's own, positioned from each element's box, so StadiaRef changes nothing in the page at all. This removes the void-element workaround and the label re-mounting after re-renders.
-- **Problems in the Tree:** duplicated addresses, unclassified addresses and gaps in numbering, in their own tab.
-- **Tree search and filter.**
-- **Copy for a developer or an agent:** the address, its tier, the page URL, the chain of addresses around it and the element's tag, as one block of text.
-- **An `onAddress(address, context)` hook,** with examples for GitHub Issues and Linear. StadiaRef still stores nothing itself.
-- **Drill-down:** narrow the view to one section or block, with a breadcrumb of where you are. Built on the overlay layer, behind a config flag first.
+Turn StadiaRef on and click something: that is where its value is (UI Master spec 1.5, RF-023).
+
+- [x] **The address card.** A label click opens a card beside it: the address, tier, text, the addresses above and inside it, the host's rows (`setLookup()`), and Copy, Copy for a brief, Parent and Show in Tree. `click: 'copy'` keeps 3.2's click to copy.
+- [x] **Inspect in Pick:** a click anywhere in Pick opens the card for the pick target.
+- [x] **Tree push mode:** `tree: 'push'`, with `--stadiaref-tree-w` and `stadiaref:tree` so the page can make room.
+- [x] **The toolbar in your own chrome:** `dock: 'host'` with `mount`.
+- [x] **Hover hint with labels off.**
+- [x] **Problems in the Tree:** duplicated addresses, unclassified addresses and gaps in numbering, in their own tab.
+- [x] **Tree search and filter.**
+- [x] **Copy for a developer or an agent:** **Copy for a brief** on the card (page, viewport width, address, tier, text), and the fuller context (chain, tag, URL) handed to `onAddress()`.
+- [x] **An `onAddress(address, context)` hook,** with examples for GitHub Issues and Linear. StadiaRef still stores nothing itself.
+- [x] **Drill-down:** narrow the view to one section or block, with a breadcrumb of where you are. Behind `drill: true` first. Built on the in-page labels for now.
+- [ ] **One overlay layer for labels.** In 3.0 labels are drawn inside the page's own elements, which a framework re-render can disturb. The overlay layer draws them in one layer of StadiaRef's own, positioned from each element's box, so StadiaRef changes nothing in the page at all. This removes the void-element workaround and the label re-mounting after re-renders. Not started: it needs its own scope decision (see TASKS.md).
 
 ## 3.4 — reach
 
