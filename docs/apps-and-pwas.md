@@ -71,6 +71,10 @@ Give the dialog its own address so it is easy to refer to:
 
 A dialog that your framework renders at the end of `<body>`, outside the screen's element, has no addressed ancestor. It shows as a section.
 
+## The toolbar in your app bar
+
+A fixed toolbar in a corner can sit over an app's own controls. `dock: 'host'` with `mount: '<selector>'` draws it inside an element of your app instead, inline, such as a slot in the top bar. See [Toolbar in your own chrome](api.md#toolbar-in-your-own-chrome).
+
 ## Making room for the Tree
 
 In an app the Tree covering the screen gets in the way. Set `tree: 'push'` and give the app shell the room StadiaRef asks for:

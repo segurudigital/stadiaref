@@ -85,6 +85,7 @@ export function goLive() {
 export function goHidden() {
   if (!S.mounted) return;
   S.shadowHost.style.display = 'none';
+  if (S.mountHost) S.mountHost.style.display = 'none';
   applyRootState();
   applyDialogScope();
 }

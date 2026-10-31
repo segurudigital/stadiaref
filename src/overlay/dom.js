@@ -35,6 +35,17 @@ export function rectsOverlap(a, b, gap) {
   return !(a.right + gap <= b.left || a.left >= b.right + gap || a.bottom + gap <= b.top || a.top >= b.bottom + gap);
 }
 
+// True for StadiaRef's own hosts (the shadow host, and the toolbar's host
+// inside a page element with dock: 'host') and anything inside them.
+export function isOwnHost(node) {
+  if (!node) return false;
+  var hosts = [S.shadowHost, S.mountHost];
+  for (var i = 0; i < hosts.length; i++) {
+    if (hosts[i] && (node === hosts[i] || hosts[i].contains(node))) return true;
+  }
+  return false;
+}
+
 export function closestMatch(el, selector) {
   while (el && el !== S.shadowHost && el !== document && el.nodeType === 1) {
     if (matchesSelector(el, selector)) return el;

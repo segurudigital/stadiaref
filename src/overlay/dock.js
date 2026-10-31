@@ -2,16 +2,18 @@ import { S } from './state.js';
 import { closeAllDropdowns } from './toolbar.js';
 import { isLive } from './mount.js';
 import { astroBarReach, toolbarHosted } from './host.js';
+import { isOwnHost, setClassState } from './dom.js';
 
 // ─── Position config ────────────────────────────────────────
 // `dock` is the canonical name; `position` is the legacy alias kept for back-compat.
 // 'auto' is resolved at runtime (after the DOM exists) — boot() records it
 // as a placeholder that init() resolves before applyDockPosition() runs.
 export const DOCK_VALUES = { 'bottom-right': 1, 'bottom-left': 1, 'top-right': 1, 'top-left': 1 };
+// 'host' draws the toolbar inside a page element (the `mount` selector).
 export function normalizeDock(value) {
   if (typeof value !== 'string') return null;
   var lower = value.toLowerCase();
-  return DOCK_VALUES[lower] ? lower : null;
+  return DOCK_VALUES[lower] || lower === 'host' ? lower : null;
 }
 // Distance from the viewport edges, and the gap between the toolbar and the
 // panels and toast that open beside it.
@@ -55,7 +57,70 @@ export function normalizeDockOffset(value) {
 }
 
 function isOwnNode(el) {
-  return !!S.shadowHost && (el === S.shadowHost || S.shadowHost.contains(el));
+  return isOwnHost(el);
+}
+
+// ─── Host mount ─────────────────────────────────────────────
+// dock: 'host' with mount: '<selector>' draws the toolbar inline inside that
+// page element, in a shadow root of its own, with no fixed positioning. The
+// panels and the toast keep to the bottom-right corner. When the selector
+// finds nothing the toolbar docks bottom-right as usual; each survey looks
+// again, so an element that mounts later (a route change) picks it up.
+export function mountTarget() {
+  if (S.position !== 'host' || typeof S.mountSelector !== 'string' || !S.mountSelector) return null;
+  var el = null;
+  try { el = document.querySelector(S.mountSelector); } catch (e) {
+    if (!S.warnedMount) { S.warnedMount = true; if (typeof console !== 'undefined' && console.warn) console.warn('[stadiaref] mount is not a valid selector:', S.mountSelector); }
+    return null;
+  }
+  if (!el || isOwnHost(el)) return null;
+  // While a host modal is open, the rest of the page is inert: the toolbar
+  // stays in StadiaRef's own host (which moves into the modal).
+  if (S.scopeModal && !S.scopeModal.contains(el)) return null;
+  return el;
+}
+
+function ensureMountHost() {
+  if (S.mountHost) return S.mountHost;
+  var host = document.createElement('div');
+  host.className = 'stadiaref-mount';
+  host.style.cssText = 'all:initial;display:inline-block;vertical-align:middle;max-width:100%;';
+  var root = host.attachShadow({ mode: 'open' });
+  var style = document.createElement('style');
+  style.textContent = S.shadowCss;
+  root.appendChild(style);
+  root.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!(t.closest && (t.closest('[data-stadiaref-toggle]') || t.closest('.stadiaref-toolbar__dropdown')))) closeAllDropdowns();
+  });
+  S.mountHost = host;
+  S.mountRoot = root;
+  return host;
+}
+
+// Put the toolbar where it belongs now: in the host element, or back in
+// StadiaRef's own shadow root. True when it is mounted in the page.
+function placeToolbar() {
+  var target = isLive() ? mountTarget() : null;
+  if (target) {
+    var host = ensureMountHost();
+    if (host.parentNode !== target) target.appendChild(host);
+    host.style.display = '';
+    setClassState(host, 'stadiaref-theme-dark', S.resolvedTheme === 'dark');
+    // The brand tip opens below a toolbar in the top half of the screen.
+    var half = target.getBoundingClientRect().top < window.innerHeight / 2 ? 'top' : 'bottom';
+    if (host.getAttribute('data-stadiaref-dock') !== half) host.setAttribute('data-stadiaref-dock', half);
+    if (S.toolbar.parentNode !== S.mountRoot) S.mountRoot.appendChild(S.toolbar);
+    setClassState(S.toolbar, 'stadiaref-toolbar--inline', true);
+    applyStyleSnippet(S.toolbar, '');
+    return true;
+  }
+  if (S.mountHost && S.toolbar.parentNode === S.mountRoot) {
+    S.shadowRoot.insertBefore(S.toolbar, S.shadowRoot.firstChild ? S.shadowRoot.firstChild.nextSibling : null);
+    setClassState(S.toolbar, 'stadiaref-toolbar--inline', false);
+  }
+  if (S.mountHost && S.mountHost.parentNode && !isLive()) S.mountHost.style.display = 'none';
+  return false;
 }
 
 // A fixed or sticky element at least 80% of the viewport wide that touches
@@ -111,25 +176,27 @@ function at(px, side, dockedV) {
 // wraps onto more rows); the address chain opens at the opposite edge so it
 // never covers the toolbar.
 export function applyDockPosition() {
+  var inline = S.toolbar ? placeToolbar() : false;
   var pos = DOCK_VALUES[S.position] ? S.position : 'bottom-right';
   var parts = pos.split('-');
   var v = parts[0];
   var h = parts[1];
   var opposite = v === 'top' ? 'bottom' : 'top';
   // With the toolbar drawn by a host, the panels take its place in the corner.
-  var near = toolbarHosted() ? EDGE : EDGE + ((S.toolbar && S.toolbar.offsetHeight) || 40) + GAP;
+  var near = toolbarHosted() || inline ? EDGE : EDGE + ((S.toolbar && S.toolbar.offsetHeight) || 40) + GAP;
   var status = S.dialogStatus && !S.dialogStatus.hidden ? S.dialogStatus.offsetHeight + GAP : 0;
   // A pushed Tree is a column on the right: what docks right moves left of it.
   var push = h === 'right' ? S.treeWidth || 0 : 0;
   var side = h + ':' + at(EDGE + push, h, v) + ';' + (h === 'left' ? 'right:auto;' : 'left:auto;');
-  applyStyleSnippet(S.toolbar, v + ':' + at(EDGE, v, v) + ';' + opposite + ':auto;' + side);
+  if (!inline) applyStyleSnippet(S.toolbar, v + ':' + at(EDGE, v, v) + ';' + opposite + ':auto;' + side);
   applyStyleSnippet(S.dialogStatus, v + ':' + at(near, v, v) + ';' + opposite + ':auto;' + side);
   applyStyleSnippet(S.toast, v + ':' + at(near + status, v, v) + ';' + opposite + ':auto;' + side);
   if (S.treeMode === 'push') applyStyleSnippet(S.treePanel, 'top:0;bottom:0;right:0;left:auto');
   else applyStyleSnippet(S.treePanel, v + ':' + at(near + status, v, v) + ';' + opposite + ':auto;' + side);
   applyStyleSnippet(S.findPanel, v + ':' + at(near + status, v, v) + ';' + opposite + ':auto;' + side);
   applyStyleSnippet(S.activeRefTree, opposite + ':' + at(EDGE, opposite, v) + ';' + v + ':auto;' + side);
-  if (S.shadowHost && S.shadowHost.getAttribute('data-stadiaref-dock') !== pos) S.shadowHost.setAttribute('data-stadiaref-dock', pos);
+  var dockAttr = S.position === 'host' ? (inline ? 'host' : pos) : pos;
+  if (S.shadowHost && S.shadowHost.getAttribute('data-stadiaref-dock') !== dockAttr) S.shadowHost.setAttribute('data-stadiaref-dock', dockAttr);
 }
 
 // Heuristic for `dock: 'auto'` — pick the corner least likely to collide
@@ -181,12 +248,16 @@ export function setDock(value) {
   var normalized;
   if (value === 'auto') {
     normalized = pickAutoDock();
+  } else if (value && typeof value === 'object' && value.mount) {
+    // setDock({ mount: '<selector>' }) mounts the toolbar in a host element.
+    S.mountSelector = String(value.mount);
+    normalized = 'host';
   } else {
     normalized = normalizeDock(value);
   }
   if (!normalized) {
     if (typeof console !== 'undefined' && console.warn) {
-      console.warn('[stadiaref] setDock expected auto/bottom-right/bottom-left/top-right/top-left, got', value);
+      console.warn('[stadiaref] setDock expected auto/bottom-right/bottom-left/top-right/top-left/host, got', value);
     }
     return;
   }

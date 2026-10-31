@@ -5,7 +5,7 @@ import { readConfig, readPersistedTheme } from './config.js';
 import { migrateLegacyStorage } from '../compat/aliases.js';
 import { VERSION } from './constants.js';
 import { applyDockPosition, normalizeDock, normalizeDockOffset, pickAutoDock } from './dock.js';
-import { closestMatch, forEachNode } from './dom.js';
+import { closestMatch, forEachNode, isOwnHost } from './dom.js';
 import { emitEvent } from './events.js';
 import { attachKeys, defaultKeys, mergeKeys } from './keys.js';
 import { applyHost } from './panel.js';
@@ -83,6 +83,7 @@ export function boot() {
     : normalizeDock(S.config.dock);
   S.position = S._initialDock === 'auto' ? 'bottom-right' : (S._initialDock || 'bottom-right');
   S.dockOffset = normalizeDockOffset(S.config.dockOffset);
+  S.mountSelector = typeof S.config.mount === 'string' ? S.config.mount : null;
   // Watch the page for changes once shown (watch.js). Default on.
   S.watch = !(S.config.watch === false || S.config.watch === '0');
 
@@ -282,9 +283,7 @@ function init() {
 
   // Close dropdowns on click outside (main document)
   document.addEventListener('click', function (e) {
-    if (!S.shadowHost.contains(e.target) && e.target !== S.shadowHost) {
-      closeAllDropdowns();
-    }
+    if (!isOwnHost(e.target)) closeAllDropdowns();
   });
 
   // The card closes on a press elsewhere, a scroll or a resize. Attached

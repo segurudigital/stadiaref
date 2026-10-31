@@ -74,8 +74,14 @@ export const S = {
   // The host modal StadiaRef is narrowed to and its status line (dialogs.js).
   scopeModal: null,
   dialogStatus: null,
-  // Docking (dock.js): extra offsets from config, per side.
+  // Docking (dock.js): extra offsets from config, per side; with dock:
+  // 'host', the selector of the element the toolbar mounts in, and the
+  // toolbar's own host and shadow root there.
   dockOffset: null,
+  mountSelector: null,
+  mountHost: null,
+  mountRoot: null,
+  warnedMount: false,
   // Pointer seen last, for touch Pick (pick.js).
   lastPointerType: null,
   finePointerSeen: false,

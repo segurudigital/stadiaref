@@ -77,6 +77,8 @@ function onMutations(mutations) {
           if (!removed.isConnected) need.heal = true;
           continue;
         }
+        // The page re-rendered the element the toolbar is mounted in.
+        if (removed === S.mountHost) { need.survey = true; continue; }
         if (isOwn(removed)) {
           if (S.selfRemoved.has(removed)) continue;
           // The page removed one of StadiaRef's labels: relabel.

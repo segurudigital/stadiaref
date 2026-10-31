@@ -166,7 +166,7 @@ Keys do nothing while you are typing in a field, and nothing when Cmd, Ctrl or A
 
 The toolbar follows the operating system's light or dark setting, and a `dark` class on `<html>` if your site uses one. Pin it with `theme: 'light'` or `theme: 'dark'`.
 
-It docks bottom-right by default. Use `dock` to move it to another corner, or `dock: 'auto'` to let it pick a corner that nothing else is using.
+It docks bottom-right by default. Use `dock` to move it to another corner, or `dock: 'auto'` to let it pick a corner that nothing else is using. To put it in your own top bar or panel, use `dock: 'host'` with `mount` set to that element. See [Toolbar in your own chrome](api.md#toolbar-in-your-own-chrome).
 
 ## Who is looking
 

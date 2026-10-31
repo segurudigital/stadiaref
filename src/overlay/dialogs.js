@@ -85,13 +85,17 @@ export function applyDialogScope() {
     var text = 'Dialog opened. Showing the ' + n + ' address' + (n === 1 ? '' : 'es') + ' inside it.';
     if (line.textContent !== text) line.textContent = text;
     line.hidden = false;
-    if (S.scopeModal !== modal) S.scopeModal = modal;
+    var changed = S.scopeModal !== modal;
+    if (changed) S.scopeModal = modal;
     placeHost(modal);
+    // A toolbar mounted in a host element outside the modal is inert now.
+    if (changed && S.position === 'host' && S.applyDockPosition) S.applyDockPosition();
   } else {
     line.hidden = true;
     if (S.scopeModal) {
       S.scopeModal = null;
       if (document.body) placeHost(document.body);
+      if (S.position === 'host' && S.applyDockPosition) S.applyDockPosition();
     }
   }
   markOutside(modal);

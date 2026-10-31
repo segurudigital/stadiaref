@@ -56,7 +56,7 @@ From the 2026-10-31 code prompt (UI Master spec 1.5, RF-023): a click on a label
 - [x] Part 3 — `setLookup(fn)`: host rows on the card, sync or async, text only
 - [x] Part 4 — Inspect in Pick: a click opens the card for the pick target
 - [x] Part 5 — Tree `push` mode: `--stadiaref-tree-w`, `stadiaref:tree`; a Tree row opens the card
-- [ ] Part 6 — `dock: 'host'` with `mount`: the toolbar inline in a host element, falling back to the corner
+- [x] Part 6 — `dock: 'host'` with `mount`: the toolbar inline in a host element, falling back to the corner
 - [ ] Part 7 — hover hint with labels off (never on touch)
 - [ ] Part 8 — problems in the Tree, Tree search and filter, `onAddress(fn)`, drill-down behind a flag, the overlay layer for labels
 - [ ] Docs, types, demo, CHANGELOG, ROADMAP, version 3.3.0, `dist/`, release notes

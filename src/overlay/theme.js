@@ -22,6 +22,7 @@ export function detectAutoTheme() {
 export function applyTheme() {
   var next = (S.theme === 'light' || S.theme === 'dark') ? S.theme : detectAutoTheme();
   setClassState(S.shadowHost, 'stadiaref-theme-dark', next === 'dark');
+  if (S.mountHost) setClassState(S.mountHost, 'stadiaref-theme-dark', next === 'dark');
   var prev = S.resolvedTheme;
   S.resolvedTheme = next;
   if (prev !== next) emitEvent('theme-change', { theme: next, mode: S.theme });

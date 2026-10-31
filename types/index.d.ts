@@ -50,7 +50,10 @@ export interface Config {
   startHidden?: boolean;
   watch?: boolean;
   theme?: Theme;
-  dock?: Dock | 'auto';
+  /** 'host' draws the toolbar inside the `mount` element. */
+  dock?: Dock | 'auto' | 'host';
+  /** With dock: 'host', a selector for the element the toolbar is drawn in. */
+  mount?: string;
   dockOffset?: DockOffset;
   keys?: Keys;
   user?: User | null;
@@ -99,8 +102,8 @@ export interface StadiaRef {
   setTheme(mode: Theme): void;
   /** The theme in use. */
   getTheme(): 'light' | 'dark';
-  setDock(corner: Dock | 'auto'): void;
-  getDock(): Dock;
+  setDock(corner: Dock | 'auto' | 'host' | { mount: string }): void;
+  getDock(): Dock | 'host';
   setKeys(keys: Keys): void;
   getKeys(): Record<KeyAction, string | false>;
   setUser(user: User | null): void;

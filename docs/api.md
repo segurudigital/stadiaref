@@ -30,7 +30,8 @@ Every way of loading StadiaRef takes the same keys. (The WordPress settings page
 | `startHidden` | `true`, `false` | `true` | Load hidden until the toggle key is pressed |
 | `watch` | `true`, `false` | `true` | Re-survey when the route changes or content mounts |
 | `theme` | `'auto'`, `'light'`, `'dark'` | `'auto'`, or the theme last chosen with `setTheme()` in this browser | Toolbar theme |
-| `dock` | `'bottom-right'`, `'bottom-left'`, `'top-right'`, `'top-left'`, `'auto'` | `'bottom-right'` | Which corner |
+| `dock` | `'bottom-right'`, `'bottom-left'`, `'top-right'`, `'top-left'`, `'auto'`, `'host'` | `'bottom-right'` | Which corner. `'host'` draws the toolbar inside your own page element (see `mount`) |
+| `mount` | A CSS selector | none | With `dock: 'host'`, the element the toolbar is drawn in, inline, with no fixed positioning. If the selector finds nothing the toolbar docks bottom-right; it moves in when the element appears. See [Toolbar in your own chrome](#toolbar-in-your-own-chrome) |
 | `dockOffset` | `{ top, right, bottom, left }` in pixels | none | Extra distance from the edges, on top of the device's safe area |
 | `keys` | See [Keys](#keys) | See below | Shortcut keys |
 | `user` | `{ name, role }` or `null` | `null` | The display-only identity pill. Other fields are discarded |
@@ -53,7 +54,7 @@ stadiaref.init({
 
 When the same key is set in more than one place, the order is: `init()` and the setters, then `window.stadiarefConfig`, then the WordPress settings, then `data-*` attributes on the script tag, then the defaults.
 
-The script tag accepts `data-profile`, `data-labels`, `data-theme`, `data-dock`, `data-click`, `data-tree` and `data-hotkey`.
+The script tag accepts `data-profile`, `data-labels`, `data-theme`, `data-dock`, `data-mount`, `data-click`, `data-tree` and `data-hotkey`.
 
 ## Keys
 
@@ -185,7 +186,17 @@ An empty array, `null`, a throw or a rejected promise shows no rows (the last tw
 | Method | What it does |
 |---|---|
 | `setTheme(mode)` / `getTheme()` | Set `'auto'`, `'light'` or `'dark'`. `getTheme()` returns the theme in use |
-| `setDock(corner)` / `getDock()` | Move the toolbar |
+| `setDock(corner)` / `getDock()` | Move the toolbar. `setDock({ mount: '#selector' })` draws it inside that element; `getDock()` then returns `'host'` |
+
+#### Toolbar in your own chrome
+
+An app with its own top bar or review panel can hold the toolbar itself:
+
+```js
+stadiaref.init({ dock: 'host', mount: '#review-bar .tools' });
+```
+
+The toolbar is drawn inside that element, in a shadow root of its own, so your CSS doesn't reach it and its CSS doesn't reach your page. It sits inline: no fixed positioning, no corner offsets. The Tree, Find, the card and the toast still open over the page, from the bottom-right corner. While one of your modal dialogs is open the toolbar moves into it, as it does from a corner, and comes back when it closes. When the element is removed (a route change) the toolbar docks in the corner until an element matching `mount` appears again.
 | `setKeys(keys)` / `getKeys()` | Change shortcut keys |
 | `setUser(user)` / `getUser()` | Set or clear the identity pill |
 

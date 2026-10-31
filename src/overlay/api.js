@@ -28,7 +28,9 @@ export function publicInit(opts) {
   if ('theme' in o && (o.theme === 'auto' || o.theme === 'light' || o.theme === 'dark')) {
     setTheme(o.theme);
   }
+  if ('mount' in o) S.mountSelector = typeof o.mount === 'string' ? o.mount : null;
   if ('dock' in o) setDock(o.dock);
+  else if ('mount' in o) applyDockPosition();
   if ('dockOffset' in o) {
     S.dockOffset = normalizeDockOffset(o.dockOffset);
     applyDockPosition();

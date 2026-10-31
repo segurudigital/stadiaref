@@ -46,6 +46,7 @@ export function buildShadowCss() {
   z-index: 3;
 }
 .stadiaref-toolbar *, .stadiaref-toolbar *::before, .stadiaref-toolbar *::after { box-sizing: border-box; }
+.stadiaref-toolbar--inline { position: relative; max-width: 100%; box-shadow: none; }
 .stadiaref-toolbar button {
   font-family: inherit;
   margin: 0;

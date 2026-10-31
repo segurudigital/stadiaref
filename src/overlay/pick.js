@@ -4,6 +4,7 @@ import { copyAddress } from './copy.js';
 import { highlight, unhighlight } from './highlight.js';
 import { applyRootState } from './mount.js';
 import { openCard } from './card.js';
+import { isOwnHost } from './dom.js';
 
 // ─── Pick ───────────────────────────────────────────────────
 // Point at something to get its address. Labels step aside; a chip follows
@@ -30,13 +31,13 @@ function addressedChain(el) {
 }
 
 function insideStadiaRef(node) {
-  return !!(S.shadowHost && node && (node === S.shadowHost || S.shadowHost.contains(node)));
+  return isOwnHost(node);
 }
 
 // The page element under the pointer, ignoring StadiaRef's own nodes.
 function pointTarget(e) {
   var path = typeof e.composedPath === 'function' ? e.composedPath() : [e.target];
-  if (path.indexOf(S.shadowHost) !== -1) return null;
+  if (path.indexOf(S.shadowHost) !== -1 || (S.mountHost && path.indexOf(S.mountHost) !== -1)) return null;
   var t = path[0];
   return t && t.nodeType === 1 ? t : (t && t.parentElement) || null;
 }
