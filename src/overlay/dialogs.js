@@ -37,7 +37,7 @@ var OUTSIDE = 'stadiaref-ref-outside';
 
 function labelNodes(el) {
   var r = rec(el);
-  return [r.icon, r.tooltip, r.fullLabel, r.link, r.clusterBadge, r.groupBadge, r.host];
+  return [r.icon, r.tooltip, r.fullLabel, r.link, r.clusterBadge, r.groupBadge];
 }
 
 function markOutside(modal) {

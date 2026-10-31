@@ -1,13 +1,12 @@
 import { FONT_MONO } from '../constants.js';
 
-// ─── Label CSS (injected into the page) ──────────────────────
-// Labels live beside the elements they name, in the page's DOM, so this
-// sheet goes into the page's <head> the first time StadiaRef is shown.
-// `all: initial` resets inherited page and page-builder styles before our
-// own properties are declared.
+// ─── Label CSS (in StadiaRef's shadow root) ───────────────────
+// Labels are drawn in the overlay layer (layer.js), one slot per element,
+// so this sheet is part of the shadow root's CSS and page CSS can't reach
+// it. `all: initial` keeps each node's styles its own.
 //
-// Global state is read from attributes on <html>, never from classes on
-// <body> or on the page's elements:
+// Global state is read from attributes on the layer, mirrored from <html>
+// (mount.js):
 //   data-stadiaref-visible       present while the toolbar is shown
 //   data-stadiaref-labels        full | icons | off
 //   data-stadiaref-hidden-tiers  the tiers Show is hiding
@@ -18,24 +17,28 @@ import { FONT_MONO } from '../constants.js';
 // 4.5:1; test/unit/contrast.test.mjs checks them, the translucent ones over
 // the worst backdrop of their surface.
 
-const LABEL_NODES = '.stadiaref-ref-icon, .stadiaref-ref-tooltip, .stadiaref-ref-full-label, .stadiaref-ref-link, .stadiaref-cluster-badge, .stadiaref-block-group-badge, .stadiaref-outline, .stadiaref-ref-void-host';
+const LABEL_NODES = '.stadiaref-ref-icon, .stadiaref-ref-tooltip, .stadiaref-ref-full-label, .stadiaref-ref-link, .stadiaref-cluster-badge, .stadiaref-block-group-badge, .stadiaref-outline';
 
-export const LABEL_CSS = `
+export const LABEL_CSS = (`
+/* --- The layer and the slots (layer.js) --- */
+.stadiaref-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow: visible; pointer-events: none; z-index: 1; }
+.stadiaref-slot { position: absolute; top: 0; left: 0; pointer-events: none; }
+
 /* --- What is drawn --- */
-html:not([data-stadiaref-visible]) :is(${LABEL_NODES}) { display: none !important; }
-html[data-stadiaref-labels="off"] :is(.stadiaref-ref-icon, .stadiaref-ref-tooltip, .stadiaref-ref-full-label, .stadiaref-ref-link, .stadiaref-cluster-badge, .stadiaref-block-group-badge) { display: none !important; }
-html[data-stadiaref-labels="full"] :is(.stadiaref-ref-icon, .stadiaref-ref-tooltip) { display: none !important; }
-html:not([data-stadiaref-labels="full"]) .stadiaref-ref-full-label { display: none !important; }
-html[data-stadiaref-hidden-tiers~="section"] .stadiaref-tier-section,
-html[data-stadiaref-hidden-tiers~="block"] .stadiaref-tier-block,
-html[data-stadiaref-hidden-tiers~="element"] .stadiaref-tier-element,
-html[data-stadiaref-hidden-tiers] .stadiaref-tier-unclassified { display: none !important; }
+LAYER:not([data-stadiaref-visible]) :is(${LABEL_NODES}) { display: none !important; }
+LAYER[data-stadiaref-labels="off"] :is(.stadiaref-ref-icon, .stadiaref-ref-tooltip, .stadiaref-ref-full-label, .stadiaref-ref-link, .stadiaref-cluster-badge, .stadiaref-block-group-badge) { display: none !important; }
+LAYER[data-stadiaref-labels="full"] :is(.stadiaref-ref-icon, .stadiaref-ref-tooltip) { display: none !important; }
+LAYER:not([data-stadiaref-labels="full"]) .stadiaref-ref-full-label { display: none !important; }
+LAYER[data-stadiaref-hidden-tiers~="section"] .stadiaref-tier-section,
+LAYER[data-stadiaref-hidden-tiers~="block"] .stadiaref-tier-block,
+LAYER[data-stadiaref-hidden-tiers~="element"] .stadiaref-tier-element,
+LAYER[data-stadiaref-hidden-tiers] .stadiaref-tier-unclassified { display: none !important; }
 .stadiaref-ref-hidden, .stadiaref-ref-clustered, .stadiaref-collapsed { display: none !important; }
 /* Outside the open host dialog (dialogs.js). */
 .stadiaref-ref-outside { display: none !important; }
 .stadiaref-ref-outside-drill { display: none !important; }
 /* Labels step aside while Pick is on */
-html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important; }
+LAYER[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important; }
 
 /* --- Full label: a tier tag and the address --- */
 .stadiaref-ref-full-label {
@@ -195,13 +198,6 @@ html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important;
 .stadiaref-ref-link.stadiaref-on-dark { background: #BEF264; }
 
 /* --- Void elements: labels mount in a host over the element's box --- */
-.stadiaref-ref-void-host {
-  all: initial;
-  box-sizing: border-box;
-  position: absolute;
-  pointer-events: none;
-  z-index: 95;
-}
 
 /* --- Outline guides: StadiaRef's own frame inside the element --- */
 .stadiaref-outline {
@@ -327,4 +323,4 @@ html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-`;
+`).replace(/LAYER/g, '.stadiaref-layer');

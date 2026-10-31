@@ -121,14 +121,18 @@ async function checkDevPage(page, url) {
   await page.goto(url);
   await page.waitForFunction(() => window.stadiaref && window.__setupRan, null, { timeout: 15000 });
   await page.evaluate(() => window.stadiaref.ready);
-  await page.waitForFunction(() => document.querySelectorAll('.stadiaref-ref-full-label').length === 3, null, { timeout: 15000 });
+  // Labels are drawn in StadiaRef's overlay layer, in its shadow root (3.4).
+  await page.waitForFunction(() => {
+    const host = document.getElementById('stadiaref-host');
+    return !!host && host.shadowRoot.querySelectorAll('.stadiaref-slot > .stadiaref-ref-full-label').length === 3;
+  }, null, { timeout: 15000 });
   const state = await page.evaluate(() => ({
     root: !!document.querySelector('[data-stadiaref-root]'),
     profile: window.stadiaref.getProfile(),
     setupSawDefault: window.__setupRan.profileBefore,
     coreSees: window.__setupRan.coreSees,
     classify: window.stadiaref.classify('zeta-s01-b01'),
-    tiers: Array.from(document.querySelectorAll('.stadiaref-ref-full-label')).map((l) => l.parentElement.getAttribute('data-ref') + ':' + (l.className.match(/stadiaref-tier-(\w+)/) || [])[1]).sort(),
+    tiers: Array.from(document.getElementById('stadiaref-host').shadowRoot.querySelectorAll('.stadiaref-slot > .stadiaref-ref-full-label')).map((l) => l.parentElement.getAttribute('data-stadiaref-for') + ':' + (l.className.match(/stadiaref-tier-(\w+)/) || [])[1]).sort(),
   }));
   assert(state.root, 'no data-stadiaref-root on the dev page');
   assert(state.profile === 'zeta', 'profile is ' + state.profile + ', expected zeta');

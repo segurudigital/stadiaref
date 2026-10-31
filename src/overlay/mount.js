@@ -1,5 +1,6 @@
 import { S } from './state.js';
-import { injectLabels, resolveLabelOverlaps, syncAllVoidHosts } from './labels.js';
+import { injectLabels, resolveLabelOverlaps } from './labels.js';
+import { ensureLayer, placeSlots, setLayerAttr } from './layer.js';
 import { applyOutlineMode } from './outline.js';
 import { autoRefSections, clearAutoRefs, convertClassRefs } from './survey.js';
 import { TIER_NAMES } from './tiers.js';
@@ -26,8 +27,8 @@ export function isLive() {
 
 function mount() {
   if (S.mounted) return;
-  document.head.appendChild(S.labelCss);
   document.body.appendChild(S.shadowHost);
+  ensureLayer();
   S.mounted = true;
   startWatching();
 }
@@ -40,16 +41,23 @@ function setRootAttr(root, name, value) {
   }
 }
 
-// Global state as attributes on <html>, read by the label stylesheet.
+// Global state as attributes on <html>, for hosts that read it, and the
+// same on the overlay layer, where the label stylesheet reads it.
 export function applyRootState() {
   if (!S.mounted) return;
   // Compared before set, so re-asserting them (watch.js) causes no change.
   var root = document.documentElement;
   var hidden = TIER_NAMES.filter(function (t) { return !S.tiers[t]; });
-  setRootAttr(root, 'data-stadiaref-visible', S.presentationMode ? null : '');
-  setRootAttr(root, 'data-stadiaref-labels', LABEL_NAMES[S.state] || 'full');
-  setRootAttr(root, 'data-stadiaref-mode', S.pickMode ? 'pick' : null);
-  setRootAttr(root, 'data-stadiaref-hidden-tiers', hidden.length ? hidden.join(' ') : null);
+  var attrs = [
+    ['data-stadiaref-visible', S.presentationMode ? null : ''],
+    ['data-stadiaref-labels', LABEL_NAMES[S.state] || 'full'],
+    ['data-stadiaref-mode', S.pickMode ? 'pick' : null],
+    ['data-stadiaref-hidden-tiers', hidden.length ? hidden.join(' ') : null]
+  ];
+  for (var i = 0; i < attrs.length; i++) {
+    setRootAttr(root, attrs[i][0], attrs[i][1]);
+    setLayerAttr(attrs[i][0], attrs[i][1]);
+  }
 }
 
 // One survey: automatic addresses, labels, tiers, overlaps, outlines.
@@ -62,7 +70,7 @@ export function survey() {
   resolveLabelOverlaps();
   applyOutlineMode();
   if (S.treeOpen) buildTreePanel();
-  syncAllVoidHosts();
+  placeSlots();
   applyDialogScope();
   if (S.drillRoot) applyDrill();
   applyHost();

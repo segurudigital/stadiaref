@@ -81,7 +81,7 @@ for (const mode of ['full', 'icons', 'off']) {
     await open(page, harness({ body: 'nesting', page: { startHidden: false, labels: mode, autoAddress: true } }));
     await settle(page);
     if (mode === 'full') {
-      for (const [tier, surface, sel] of [['section', 'light', '[data-ref="home-plans"]'], ['block', 'light', '[data-ref="home-plans-card-01"]'], ['element', 'light', '[data-ref="home-plans-card-01-cta"]'], ['unclassified', 'light', '[data-ref="Bad_Address"]']]) {
+      for (const [tier, surface, sel] of [['section', 'light', '[data-stadiaref-for="home-plans"]'], ['block', 'light', '[data-stadiaref-for="home-plans-card-01"]'], ['element', 'light', '[data-stadiaref-for="home-plans-card-01-cta"]'], ['unclassified', 'light', '[data-stadiaref-for="Bad_Address"]']]) {
         const l = LABELS[tier][surface];
         const label = page.locator(sel + ' > .stadiaref-ref-full-label');
         expect(await style(label, ['background-color', 'color', 'font-size', 'border-top-left-radius', 'padding-left']), tier).toEqual({
@@ -90,18 +90,18 @@ for (const mode of ['full', 'icons', 'off']) {
         // One line, however narrow the element.
         expect((await label.boundingBox()).height).toBeLessThan(20);
       }
-      expect(await style(page.locator('[data-ref="Bad_Address"] > .stadiaref-ref-full-label'), ['border-top-style'])).toEqual({ 'border-top-style': 'dashed' });
-      const auto = page.locator('[data-stadiaref-auto] > .stadiaref-ref-full-label').first();
+      expect(await style(page.locator('[data-stadiaref-for="Bad_Address"] > .stadiaref-ref-full-label'), ['border-top-style'])).toEqual({ 'border-top-style': 'dashed' });
+      const auto = page.locator('.stadiaref-ref-full-label.stadiaref-auto').first();
       await expect(auto.locator('.stadiaref-ref-tag')).toHaveText('AUTO');
       expect(await style(auto, ['border-top-style'])).toEqual({ 'border-top-style': 'dashed' });
     }
     if (mode === 'icons') {
-      const dot = page.locator('[data-ref="home-plans"] > .stadiaref-ref-icon');
+      const dot = page.locator('[data-stadiaref-for="home-plans"] > .stadiaref-ref-icon');
       await expect(dot).toHaveText('S');
       const box = await dot.boundingBox();
       expect([box.width, box.height]).toEqual([16, 16]);
-      await expect(page.locator('[data-ref="home-plans-card-01"] > .stadiaref-ref-icon')).toHaveText('B');
-      await expect(page.locator('[data-ref="Bad_Address"] > .stadiaref-ref-icon')).toHaveText('?');
+      await expect(page.locator('[data-stadiaref-for="home-plans-card-01"] > .stadiaref-ref-icon')).toHaveText('B');
+      await expect(page.locator('[data-stadiaref-for="Bad_Address"] > .stadiaref-ref-icon')).toHaveText('?');
     }
     if (mode === 'off') {
       expect(await page.locator('.stadiaref-ref-full-label, .stadiaref-ref-icon').evaluateAll((ls) => ls.filter((l) => getComputedStyle(l).display !== 'none').length)).toBe(0);
@@ -113,7 +113,7 @@ for (const mode of ['full', 'icons', 'off']) {
 test('dark surface labels use their dark versions', async ({ page }) => {
   await open(page, harness({ page: { startHidden: false } }));
   const l = LABELS.section.dark;
-  expect(await style(page.locator('[data-ref="home-features"] > .stadiaref-ref-full-label'), ['background-color', 'color'])).toEqual({ 'background-color': rgb(l.bg), color: rgb(l.fg) });
+  expect(await style(page.locator('[data-stadiaref-for="home-features"] > .stadiaref-ref-full-label'), ['background-color', 'color'])).toEqual({ 'background-color': rgb(l.bg), color: rgb(l.fg) });
 });
 
 test('accessible names and states', async ({ page }) => {

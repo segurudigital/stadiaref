@@ -15,7 +15,9 @@ import { isPicking, notePointer, stopPick, togglePick } from './pick.js';
 import { closeFind, isFinding, openFind } from './find.js';
 import { isLive, survey } from './mount.js';
 import { selectProfile } from './profile.js';
-import { isLabelled, resolveLabelOverlaps, syncAllVoidHosts, syncVoidHost } from './labels.js';
+import { isLabelled, resolveLabelOverlaps } from './labels.js';
+import { placeSlots, schedulePlace } from './layer.js';
+import { placeHighlights } from './highlight.js';
 import { applyVisibility, show } from './lifecycle.js';
 import { LABEL_MODES, applyState, setState } from './mode.js';
 import { setOutline } from './outline.js';
@@ -93,12 +95,6 @@ export function boot() {
   // Watch the page for changes once shown (watch.js). Default on.
   S.watch = !(S.config.watch === false || S.config.watch === '0');
 
-  // ─── Label CSS ──────────────────────────────────────────────
-  // Built now, added to the page's <head> on first show (see mount.js).
-  S.labelCss = document.createElement('style');
-  S.labelCss.id = 'stadiaref-styles';
-  S.labelCss.textContent = LABEL_CSS;
-
 
   // ─── Shadow DOM for toolbar + toast (isolated from page CSS) ─
   // The host carries data-stadiaref-root: the marker to search a production
@@ -108,8 +104,12 @@ export function boot() {
   S.shadowHost.setAttribute('data-stadiaref-root', '');
   // Astro's client router keeps an element with this attribute across a swap.
   S.shadowHost.setAttribute('data-astro-transition-persist', 'stadiaref');
-  S.shadowHost.style.cssText = 'all:initial;position:fixed;top:0;left:0;width:0;height:0;overflow:visible;z-index:99999;pointer-events:none;';
-  S.shadowCss = buildShadowCss();
+  // At the top of the stacking order: labels are drawn in this host's
+  // overlay layer (layer.js), and must sit over the page's own fixed panels.
+  S.shadowHost.style.cssText = 'all:initial;position:fixed;top:0;left:0;width:0;height:0;overflow:visible;z-index:2147483646;pointer-events:none;';
+  // The label stylesheet is part of the shadow CSS: labels are drawn in the
+  // overlay layer (layer.js), not in the page.
+  S.shadowCss = buildShadowCss() + LABEL_CSS;
   S.shadowRoot = S.shadowHost.attachShadow({ mode: 'open' });
 
 
@@ -318,15 +318,14 @@ function init() {
   window.addEventListener('resize', function () {
     refreshTreeWidth();
     if (isLive()) applyDockPosition();
-    syncAllVoidHosts();
+    placeSlots();
     applyLabelVisibilityState();
     resolveLabelOverlaps();
   });
-  // Images settle their box after load; keep the void hosts on them.
-  window.addEventListener('load', syncAllVoidHosts);
-  forEachNode(document.querySelectorAll('img'), function (img) {
-    if (!img.complete) img.addEventListener('load', function () { if (isLive()) syncVoidHost(img); }, { once: true });
-  });
+  // Images and fonts settle boxes after load; the slots follow (and the
+  // ResizeObserver in layer.js catches each element that changes size).
+  window.addEventListener('load', schedulePlace);
+  S.placeHighlights = placeHighlights;
   // The pointer in use decides whether Pick shows its sheet (touch) or
   // the chip that follows the pointer. Reading events writes nothing.
   window.addEventListener('pointerdown', notePointer, true);

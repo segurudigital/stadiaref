@@ -34,15 +34,19 @@ export const S = {
   currentUser: null,
   _initialDock: null,
   position: null,
-  labelCss: null,
+  // The overlay layer (layer.js): the layer, the elements with a slot, the
+  // ResizeObserver on them, whether a placement pass is due.
+  layer: null,
+  slotted: null,
+  slotObserver: null,
+  placeScheduled: false,
+  placeHighlights: null,
   shadowHost: null,
   shadowRoot: null,
-  // Mounted: the host and label stylesheet have been added to the page.
+  // Mounted: the host has been added to the page.
   mounted: false,
   // Per-element records (records.js).
   records: new WeakMap(),
-  // StadiaRef's own nodes it has removed itself (records.js removeOwn).
-  selfRemoved: new WeakSet(),
   shadowCss: null,
   toolbar: null,
   toast: null,

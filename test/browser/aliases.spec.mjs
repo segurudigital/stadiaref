@@ -181,7 +181,7 @@ test.describe('2.x methods', () => {
       const stamped = await page.evaluate(() => Array.from(document.querySelectorAll('[data-stadiaref-auto]')).map((e) => e.tagName.toLowerCase() + ':' + e.getAttribute('data-stadiaref-auto-tier')));
       expect(stamped, v).toEqual(want[v]);
       // authored addresses keep their labels whatever the depth
-      expect(await page.evaluate(() => ['home-hero', 'home-features'].map((r) => !!document.querySelector('[data-ref="' + r + '"] > .stadiaref-ref-full-label')))).toEqual([true, true]);
+      expect(await page.evaluate(() => ['home-hero', 'home-features'].map((r) => !!document.getElementById('stadiaref-host').shadowRoot.querySelector('[data-stadiaref-for="' + r + '"] > .stadiaref-ref-full-label')))).toEqual([true, true]);
     }
     expect((await O.events(page, 'depth-change')).map((e) => e.detail.depth)).toEqual(['section', 'block', 'element', 'all', 'off']);
   });
@@ -258,7 +258,7 @@ test.describe('2.x events', () => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await recordAll(page);
     await N.open(page, N.harness({ page: { startHidden: false, click: 'copy' } }));
-    const label = page.locator('[data-ref="home-hero"] > .stadiaref-ref-full-label');
+    const label = page.locator('[data-stadiaref-for="home-hero"] > .stadiaref-ref-full-label');
     await label.hover();
     await page.mouse.move(5, 890);
     await label.click();
@@ -322,7 +322,7 @@ test('a page that uses only 2.x names works, with one console notice', async ({ 
       "window.addEventListener('sdt:ready',function(){window.seguruDebugToolbar.setDepth('section');});",
   }));
   await page.waitForFunction(() => window.seguruDebugToolbar && window.seguruDebugToolbar.getDepth() === 'section');
-  await page.locator('[data-ref="home-hero"] > .stadiaref-ref-full-label').click();
+  await page.locator('[data-stadiaref-for="home-hero"] > .stadiaref-ref-full-label').click();
   await expect.poll(() => page.evaluate(() => window.__clicks)).toEqual(['home-hero']);
   expect(await page.evaluate(() => document.querySelectorAll('[data-stadiaref-auto-tier="section"]').length)).toBe(1);
   await expect(shadow(page, '.stadiaref-toolbar')).toBeVisible();

@@ -23,11 +23,9 @@ export function forget(el) {
   S.records.delete(el);
 }
 
-// Remove one of StadiaRef's own nodes from the page. The watcher (watch.js)
-// ignores removals made this way; a label node removed any other way was
-// removed by the host page, and the element is relabelled.
+// Remove one of StadiaRef's own nodes (a label, a badge, an outline frame
+// in the overlay layer).
 export function removeOwn(node) {
   if (!node || !node.parentNode) return;
-  S.selfRemoved.add(node);
   node.parentNode.removeChild(node);
 }

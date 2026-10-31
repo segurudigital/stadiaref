@@ -2,25 +2,30 @@ import { S } from './state.js';
 import { OUTLINE_LABELS } from './constants.js';
 import { arrayContainsNode, forEachNode } from './dom.js';
 import { isLive } from './mount.js';
-import { removeOwn } from './records.js';
+import { rec, removeOwn } from './records.js';
 import { emitEvent } from './events.js';
 import { collectTargetsByDepth } from './survey.js';
 import { updateDropdown } from './toolbar.js';
 import { getEffectiveBgLuminance } from './visibility.js';
+import { dropSlot, layerAll, slotFor } from './layer.js';
 
-// Outline guides are StadiaRef's own frames, appended inside each section
-// or block, so nothing is added to the page's own classes.
+// Outline guides are StadiaRef's own frames, drawn in each section's or
+// block's slot in the overlay layer (layer.js), so nothing is added to the
+// page.
 export function clearOutlines() {
-  forEachNode(document.querySelectorAll('.stadiaref-outline'), function (o) {
+  var owners = [];
+  forEachNode(layerAll('.stadiaref-outline'), function (o) {
+    if (rec(o).owner) owners.push(rec(o).owner);
     removeOwn(o);
   });
+  for (var i = 0; i < owners.length; i++) dropSlot(owners[i]);
 }
 
 export function addOutline(el, kind) {
   var frame = document.createElement('span');
   frame.className = 'stadiaref-outline stadiaref-outline--' + kind + (getEffectiveBgLuminance(el) < 0.40 ? ' stadiaref-on-dark' : '');
-  if (window.getComputedStyle(el).position === 'static') el.style.position = 'relative';
-  el.appendChild(frame);
+  rec(frame).owner = el;
+  slotFor(el).appendChild(frame);
 }
 
 export function applyOutlineMode() {

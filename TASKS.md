@@ -95,10 +95,10 @@ Goal: while StadiaRef is shown, the page's DOM is unchanged apart from the addre
 - **Tests:** helpers `labelFor(page, address)` and `visibleFullLabelRefs()` read the layer; the ~125 assertions on in-page label structure move to them; `legacy-vs-2.5.0` compares which addresses show a label; `host-page.spec` asserts the page DOM is unchanged while StadiaRef is shown, not only hidden. New: scroll containers, sticky and fixed elements, a covered element, a modal, a popover, 1,000 addresses within a frame budget.
 
 **Phases** (one commit each, every suite green at each)
-- [ ] 1. `layer.js` and the placement pass; full and icon labels drawn in the layer; test helpers read it
+- [x] 1. `layer.js` and the placement pass; full and icon labels drawn in the layer; test helpers read it. Done with per-element slots: each slot sits over its element's box and holds what used to be appended inside the element, at the same offsets, so the overlap solver, clusters, block groups and outline frames moved with it (phase 3), and every page write but auto-address went (phase 4). The host's z-index went to 2147483646 so labels sit over the page's own fixed panels
 - [ ] 2. Clipping, covered elements, visibility, dialogs and popovers
-- [ ] 3. Collisions, +N clusters, block groups and outline frames in the layer
-- [ ] 4. Remove every page write (void hosts, `position: relative`, the stylesheet in `<head>`, re-render repair); `host-page.spec` while shown
+- [x] 3. Collisions, +N clusters, block groups and outline frames in the layer (with phase 1)
+- [x] 4. Remove every page write (void hosts, `position: relative`, the stylesheet in `<head>`, re-render repair); `host-page.spec` while shown (with phase 1)
 - [ ] 5. Drill-down on the layer, out from behind `drill: true`; a performance test with 1,000 addresses
 - [ ] 6. Docs (`docs/design.md`, `apps-and-pwas.md`, AGENTS guardrails), CHANGELOG, 3.4.0
 

@@ -8,6 +8,7 @@ import { getElementContext } from './survey.js';
 import { applyBlockGroupCollapse, clearBlockGroupCollapse, tierShown } from './tiers.js';
 import { applyLabelVisibilityState, getEffectiveBgLuminance } from './visibility.js';
 import { isLive } from './mount.js';
+import { dropSlot, layerAll, placeSlots, slotFor, syncSlotAddress } from './layer.js';
 
 // Label injection
 export const LABEL_BASE_TOP = 2;
@@ -85,6 +86,8 @@ export function resolveLabelOverlaps() {
   var placedSlots = [];
 
   if (!isLive()) return;
+  // Slots first: the overlap checks below measure labels on the screen.
+  placeSlots();
   resetLabelOffsets();
   clearClusters();
   clearBlockGroupCollapse();
@@ -173,9 +176,9 @@ export function resolveLabelOverlaps() {
 // the same body.stadiaref-hide / stadiaref-presentation rules as the labels.
 
 export function clearClusters() {
-  var clustered = document.querySelectorAll('.stadiaref-ref-clustered');
+  var clustered = layerAll('.stadiaref-ref-clustered');
   forEachNode(clustered, function (n) { n.classList.remove('stadiaref-ref-clustered'); });
-  var badges = document.querySelectorAll('.stadiaref-cluster-badge');
+  var badges = layerAll('.stadiaref-cluster-badge');
   forEachNode(badges, removeOwn);
   // Clear per-owner cluster lists from the previous resolution pass.
   var refs = document.querySelectorAll('[data-ref]');
@@ -211,9 +214,8 @@ export function renderClusterBadgeIfNeeded(ownerEl) {
   badge.title = cluster.length + ' more ref' + (cluster.length === 1 ? '' : 's') + ' here — hover to expand';
 
   // Position the badge just to the right of the active label. Both
-  // the badge and the active label are absolutely positioned children
-  // of the same owner element, so the badge inherits the same
-  // containing block.
+  // the badge and the active label are absolutely positioned in the
+  // owner's slot, so they share a containing block.
   var anchorTop = parseFloat(anchor.style.top || '2');
   var anchorLeft = parseFloat(anchor.style.left || '2');
   var anchorWidth = anchor.getBoundingClientRect().width;
@@ -249,74 +251,31 @@ export function renderClusterBadgeIfNeeded(ownerEl) {
   }
   badge.appendChild(popover);
 
-  ownerEl.appendChild(badge);
+  slotFor(ownerEl).appendChild(badge);
   rec(ownerEl).clusterBadge = badge;
 }
 
-// ─── Void-element label hosts (v2.5.0) ──────────────────────
-// Labels are appended as children of the [data-ref] element. Void and
-// replaced elements (<img> above all) accept appended nodes in the DOM but
-// never render them, so image refs were labelled yet invisible. For those
-// tags the labels mount in a sibling <span class="stadiaref-ref-void-host"> that
-// is absolutely positioned over the element's box inside its parent.
-export const VOID_HOST_TAGS = { IMG: 1, VIDEO: 1, AUDIO: 1, IFRAME: 1, CANVAS: 1, INPUT: 1, SELECT: 1, TEXTAREA: 1, HR: 1, BR: 1, EMBED: 1, OBJECT: 1, svg: 1, SVG: 1 };
-
-export function needsVoidHost(el) {
-  return !!VOID_HOST_TAGS[el.tagName];
-}
-
-export function syncVoidHost(el) {
-  var host = rec(el).host;
-  if (!host || !host.parentNode) return;
-  host.style.left = el.offsetLeft + 'px';
-  host.style.top = el.offsetTop + 'px';
-  host.style.width = Math.max(el.offsetWidth, 20) + 'px';
-  host.style.height = Math.max(el.offsetHeight, 20) + 'px';
-}
-
-export function syncAllVoidHosts() {
-  if (!isLive()) return;
-  var hosts = document.querySelectorAll('.stadiaref-ref-void-host');
-  forEachNode(hosts, function (host) {
-    var owner = rec(host).owner;
-    if (!owner || !owner.isConnected) { removeOwn(host); return; }
-    syncVoidHost(owner);
-  });
-}
-
+// ─── Slots ──────────────────────────────────────────────────
+// An element's labels live in its slot in the overlay layer (layer.js).
+// Before 3.4 they were appended inside the element, which needed
+// position: relative on static elements and a sibling host for void
+// elements such as <img>, which never render children. The slot needs
+// neither.
 export function labelHostFor(el) {
-  if (!needsVoidHost(el)) return el;
-  if (rec(el).host && rec(el).host.parentNode) return rec(el).host;
-  var parent = el.parentNode;
-  if (!parent || parent.nodeType !== 1) return el;
-  var host = document.createElement('span');
-  host.className = 'stadiaref-ref-void-host';
-  host.setAttribute('data-stadiaref-host-for', el.getAttribute('data-ref') || '');
-  rec(host).owner = el;
-  var pPos = window.getComputedStyle(parent).position;
-  if (pPos === 'static') parent.style.position = 'relative';
-  parent.insertBefore(host, el.nextSibling);
-  rec(el).host = host;
-  syncVoidHost(el);
-  return host;
+  return slotFor(el);
 }
 
-export function removeVoidHost(el) {
-  var host = rec(el).host;
-  removeOwn(host);
-  rec(el).host = null;
-}
-
-// An element is labelled when its label nodes are still attached and were
-// made for the address it carries now. A framework that re-renders an
-// element's children deletes them; a reused node can get a new address.
+// An element is labelled when its label nodes are still in the layer and
+// were made for the address it carries now; a reused node can get a new
+// address.
 export function isLabelled(el) {
   if (!hasRecord(el)) return false;
   var r = rec(el);
   return !!(r.fullLabel && r.fullLabel.isConnected && r.icon && r.icon.isConnected && r.address === el.getAttribute('data-ref'));
 }
 
-// Remove an element's label nodes and forget everything about it.
+// Remove an element's label nodes and forget everything about it. Its slot
+// goes too, unless an outline frame is still drawn in it.
 export function unlabel(el) {
   if (!hasRecord(el)) return;
   var r = rec(el);
@@ -324,8 +283,13 @@ export function unlabel(el) {
   for (var i = 0; i < nodes.length; i++) {
     removeOwn(nodes[i]);
   }
-  removeVoidHost(el);
-  forget(el);
+  dropSlot(el);
+  // An outline frame can still be drawn in the slot: keep the slot then,
+  // and forget only the labels.
+  if (!r.slot) { forget(el); return; }
+  var keep = r.slot;
+  for (var k in r) if (Object.prototype.hasOwnProperty.call(r, k)) delete r[k];
+  r.slot = keep;
 }
 
 // The tag a label carries: the tier, or AUTO for an automatic address.
@@ -368,10 +332,7 @@ export function injectLabels() {
     var autoClass = auto ? ' stadiaref-auto' : '';
 
     var host = labelHostFor(el);
-    if (host === el) {
-      var pos = window.getComputedStyle(el).position;
-      if (pos === 'static') el.style.position = 'relative';
-    }
+    syncSlotAddress(el);
 
     var icon = document.createElement('span');
     icon.className = 'stadiaref-ref-icon ' + bgClass + autoClass;
@@ -460,7 +421,7 @@ export function reclassifyLabels() {
 }
 
 // Each label node carries its tier, so Show can hide it wherever it is
-// mounted (inside the element, or in a void host beside it).
+// mounted.
 var TIER_CLASSES = ['stadiaref-tier-section', 'stadiaref-tier-block', 'stadiaref-tier-element', 'stadiaref-tier-unclassified'];
 
 export function setLabelTier(el, tier) {

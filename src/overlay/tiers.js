@@ -1,6 +1,7 @@
 import { S } from './state.js';
 import { hasRecord, rec, removeOwn } from './records.js';
 import { labelClick } from './card.js';
+import { layerAll, slotFor } from './layer.js';
 import { forEachNode, toArray } from './dom.js';
 import { emitEvent } from './events.js';
 import { getActiveLabel, injectLabels, recordedTier, resolveLabelOverlaps } from './labels.js';
@@ -148,8 +149,8 @@ export function getDirectBlockRefs(sectionEl) {
 }
 
 export function clearBlockGroupCollapse() {
-  forEachNode(document.querySelectorAll('.stadiaref-collapsed'), function (n) { n.classList.remove('stadiaref-collapsed'); });
-  var badges = document.querySelectorAll('.stadiaref-block-group-badge');
+  forEachNode(layerAll('.stadiaref-collapsed'), function (n) { n.classList.remove('stadiaref-collapsed'); });
+  var badges = layerAll('.stadiaref-block-group-badge');
   forEachNode(badges, removeOwn);
   forEachNode(document.querySelectorAll('[data-ref]'), function (el) {
     if (!hasRecord(el)) return;
@@ -219,7 +220,7 @@ export function applyBlockGroupCollapse() {
       popover.appendChild(row);
     }
     badge.appendChild(popover);
-    (rec(sectionEl).host || sectionEl).appendChild(badge);
+    slotFor(sectionEl).appendChild(badge);
     rec(sectionEl).groupBadge = badge;
 
     // Mark block members so the overlap solver skips them

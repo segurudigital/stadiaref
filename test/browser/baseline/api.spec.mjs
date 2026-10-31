@@ -203,7 +203,7 @@ test('refresh() picks up nodes added after boot (with watch off)', async ({ page
   expect(await countVisible(page, '.stadiaref-ref-full-label')).toBe(3);
   // refresh is idempotent: no double injection
   await page.evaluate(() => window.stadiaref.refresh());
-  expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-ref-full-label').length)).toBe(3);
+  expect(await page.evaluate(() => ((document.getElementById('stadiaref-host') || {}).shadowRoot || document).querySelectorAll('.stadiaref-ref-full-label').length)).toBe(3);
 });
 
 test('nodes added after boot are labelled without refresh() (watch on)', async ({ page }) => {
@@ -216,5 +216,5 @@ test('nodes added after boot are labelled without refresh() (watch on)', async (
   });
   await expect.poll(() => countVisible(page, '.stadiaref-ref-full-label')).toBe(3);
   await page.evaluate(() => window.stadiaref.refresh());
-  expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-ref-full-label').length)).toBe(3);
+  expect(await page.evaluate(() => ((document.getElementById('stadiaref-host') || {}).shadowRoot || document).querySelectorAll('.stadiaref-ref-full-label').length)).toBe(3);
 });

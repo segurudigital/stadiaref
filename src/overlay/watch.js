@@ -7,21 +7,19 @@ import { eagerHideDescendantLabels, scheduleVisibilityRecheck } from './visibili
 // ─── Watching the page ───────────────────────────────────────
 // One MutationObserver on <html> keeps StadiaRef in step with an app that
 // owns its DOM: nodes added and removed, an address changed on a reused
-// node, a late dataref- class, visibility changes, dialogs opening, a label
-// deleted by a re-render, the host or the stylesheet removed by a router
-// that swaps <body>. Changes are gathered and handled once per frame, so a
-// page that adds a thousand nodes in one tick gets one survey. StadiaRef's
-// own nodes are ignored, except a label node the page removed, which means
-// its element needs relabelling. With `watch: false` only visibility,
+// node, a late dataref- class, visibility changes, dialogs opening, the
+// host removed by a router that swaps <body>. Changes are gathered and
+// handled once per frame, so a page that adds a thousand nodes in one tick
+// gets one survey. Labels are drawn in StadiaRef's own layer (layer.js), so
+// a re-render can't delete them. With `watch: false` only visibility,
 // dialogs and self-repair are followed; call refresh() after changes.
 
-var LABEL_NODE = /(^|\s)stadiaref-(ref-icon|ref-tooltip|ref-full-label|ref-link|ref-void-host)(\s|$)/;
 var WATCHED_ATTRS = ['data-ref', 'class', 'style', 'hidden', 'open', 'role', 'aria-modal',
   'data-stadiaref-visible', 'data-stadiaref-labels', 'data-stadiaref-hidden-tiers', 'data-stadiaref-mode'];
 
 function isOwn(node) {
   if (!node) return false;
-  if (node === S.shadowHost || node === S.labelCss) return true;
+  if (node === S.shadowHost) return true;
   if (node.nodeType !== 1) return false;
   var c = node.getAttribute('class');
   return !!(c && /(^|\s)stadiaref-/.test(c));
@@ -73,18 +71,13 @@ function onMutations(mutations) {
         var removed = m.removedNodes[r];
         // The host moves into an open dialog and back (dialogs.js); only a
         // host or stylesheet that has left the page needs putting back.
-        if (removed === S.shadowHost || removed === S.labelCss) {
+        if (removed === S.shadowHost) {
           if (!removed.isConnected) need.heal = true;
           continue;
         }
         // The page re-rendered the element the toolbar is mounted in.
         if (removed === S.mountHost) { need.survey = true; continue; }
-        if (isOwn(removed)) {
-          if (S.selfRemoved.has(removed)) continue;
-          // The page removed one of StadiaRef's labels: relabel.
-          if (LABEL_NODE.test(removed.getAttribute('class') || '')) need.survey = true;
-          continue;
-        }
+        if (isOwn(removed)) continue;
         need.survey = true;
         if (removed.nodeType === 1 && S.shadowHost && removed.contains(S.shadowHost)) need.heal = true;
       }
@@ -135,22 +128,17 @@ export function startWatching() {
 }
 
 // Forget the mutations StadiaRef's own writes just caused (stamping
-// automatic addresses, adding labels), so a survey doesn't schedule another.
+// automatic addresses), so a survey doesn't schedule another.
 export function quiet() {
   if (!S.observer) return;
   S.observer.takeRecords();
-  if (document.body && (!S.shadowHost.isConnected || !S.labelCss.isConnected)) request({ heal: true });
+  if (document.body && !S.shadowHost.isConnected) request({ heal: true });
 }
 
-// Put the host and the label stylesheet back if the page removed them, and
-// re-survey.
+// Put the host back if the page removed it, and re-survey.
 export function heal() {
   if (!S.mounted) return;
   var healed = false;
-  if (!S.labelCss.isConnected && document.head) {
-    document.head.appendChild(S.labelCss);
-    healed = true;
-  }
   if (!S.shadowHost.isConnected && document.body) {
     document.body.appendChild(S.shadowHost);
     S.scopeModal = null;

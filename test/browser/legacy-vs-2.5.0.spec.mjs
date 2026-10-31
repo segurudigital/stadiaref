@@ -62,15 +62,23 @@ async function load(page, url, which) {
 function onScreen(page) {
   return page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => {
     const out = {};
-    document.querySelectorAll('.sdt-ref-full-label, .stadiaref-ref-full-label').forEach((label) => {
+    // 2.5.0 draws labels in the page; 3.4 in the overlay layer, one slot per
+    // element, carrying its address.
+    const host = document.getElementById('stadiaref-host');
+    const layer = host && host.shadowRoot ? Array.from(host.shadowRoot.querySelectorAll('.stadiaref-ref-full-label')) : [];
+    Array.from(document.querySelectorAll('.sdt-ref-full-label')).concat(layer).forEach((label) => {
       const folded = ['sdt-ref-clustered', 'stadiaref-ref-clustered'].filter((c) => label.classList.contains(c));
       folded.forEach((c) => label.classList.remove(c));
       const shown = getComputedStyle(label).display !== 'none' && label.getClientRects().length > 0;
       folded.forEach((c) => label.classList.add(c));
       if (!shown) return;
-      const host = label.parentElement;
-      const isVoidHost = host.classList.contains('sdt-ref-void-host') || host.classList.contains('stadiaref-ref-void-host');
-      const owner = host._sdtOwner || (isVoidHost ? host.previousElementSibling : host);
+      const parent = label.parentElement;
+      let owner;
+      if (parent.classList.contains('stadiaref-slot')) {
+        owner = document.querySelector('[data-ref="' + CSS.escape(parent.getAttribute('data-stadiaref-for')) + '"]');
+      } else {
+        owner = parent._sdtOwner || (parent.classList.contains('sdt-ref-void-host') ? parent.previousElementSibling : parent);
+      }
       out[owner.getAttribute('data-tid')] = { tag: owner.tagName.toLowerCase(), address: owner.getAttribute('data-ref') };
     });
     resolve(out);
@@ -78,9 +86,10 @@ function onScreen(page) {
 }
 
 // Differences 3.0 makes on purpose.
-//   void: an <img>, <input> and so on keeps its label in a host beside it.
-//         2.5.0's Level filter matched labels inside the element, so a
-//         void element's label escaped it. Show hides it like any other.
+//   void: an <img>, <input> and so on. 2.5.0 kept its label in a host
+//         beside it and its Level filter matched labels inside the element,
+//         so a void element's label escaped it. Show hides it like any other
+//         (since 3.4 every label is in the overlay layer).
 const VOID = new Set(['img', 'video', 'audio', 'iframe', 'canvas', 'input', 'select', 'textarea', 'hr', 'br', 'embed', 'object', 'svg']);
 function explained(entry, call) {
   if (!call.startsWith('setLevelFilter') || call.includes("'all'")) return null;

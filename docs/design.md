@@ -1,6 +1,6 @@
 # Design
 
-How StadiaRef looks, and why. This is the implementation-level reference for the toolbar, its panels and the labels it draws on the page. The values live in code: colours in [`src/overlay/styles/tokens.js`](../src/overlay/styles/tokens.js), the toolbar and panel CSS in [`src/overlay/styles/shadow.js`](../src/overlay/styles/shadow.js), and the label CSS in [`src/overlay/styles/labels.js`](../src/overlay/styles/labels.js). When this page and the code disagree, the code is right and this page needs fixing.
+How StadiaRef looks, and why. This is the implementation-level reference for the toolbar, its panels and the labels it draws over the page (in its own overlay layer since 3.4). The values live in code: colours in [`src/overlay/styles/tokens.js`](../src/overlay/styles/tokens.js), the toolbar and panel CSS in [`src/overlay/styles/shadow.js`](../src/overlay/styles/shadow.js), and the label CSS in [`src/overlay/styles/labels.js`](../src/overlay/styles/labels.js). When this page and the code disagree, the code is right and this page needs fixing.
 
 ## Principles
 

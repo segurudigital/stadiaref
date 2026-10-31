@@ -6,7 +6,7 @@ import { makeHelpers, NEW, shadow, settle, press } from './helpers.mjs';
 const { harness, open, recordEvents, events, eventsSoon, clearEvents } = makeHelpers(NEW);
 
 const cardPage = (cfg = {}) => harness({ body: 'card', cfg: { startHidden: false, ...cfg } });
-const label = (page, ref) => page.locator(`[data-ref="${ref}"] > .stadiaref-ref-full-label`);
+const label = (page, ref) => page.locator(`[data-stadiaref-for="${ref}"] > .stadiaref-ref-full-label`);
 const card = (page) => shadow(page, '.stadiaref-card');
 const cardEvents = (page) => page.evaluate(() => window.__cards);
 
@@ -440,7 +440,7 @@ test.describe('onAddress', () => {
 });
 
 test.describe('drill-down (drill: true)', () => {
-  const visibleLabels = (page) => page.evaluate(() => Array.from(document.querySelectorAll('.stadiaref-ref-full-label'))
+  const visibleLabels = (page) => page.evaluate(() => Array.from(((document.getElementById('stadiaref-host') || {}).shadowRoot || document).querySelectorAll('.stadiaref-ref-full-label'))
     .filter((l) => getComputedStyle(l).display !== 'none').length);
 
   test('off by default: no Drill in on the card, drill() does nothing', async ({ page }) => {

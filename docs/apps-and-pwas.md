@@ -122,14 +122,14 @@ stadiaref.init({ startHidden: false });
 
 StadiaRef reads the DOM. It can't see native views: screens built with SwiftUI, Jetpack Compose, React Native or Flutter. If part of your app is native and part is a web view, it covers the web view part.
 
-## Known limits in 3.0
+## Your DOM stays yours
 
-StadiaRef 3.0 draws its labels inside your page's own elements. Two things follow from that in an app:
+Since 3.4 StadiaRef draws labels, badges and outline frames in a layer of its own, inside its shadow root, placed over each element's box. Nothing is appended to your elements and no style is changed on them, so:
 
-- **A re-render can drop a label.** When your framework rewrites the contents of an element, the label inside it goes too. StadiaRef notices and puts it back, usually within a frame. You may see a flicker on a part of the screen that updates often.
-- **Nothing is added until you first show it.** While it is hidden, StadiaRef adds nothing to the page and changes none of your elements, so it can't disturb hydration or your first render. Labels are added when you press **D** for the first time. The one exception is the class converter: if you turn it on, it sets `data-ref` from your `dataref-` classes when the page loads.
+- **A re-render can't drop a label.** Your framework can rewrite an element's contents as often as it likes; the label isn't in there.
+- **Hydration isn't disturbed,** shown or hidden. While StadiaRef is hidden it adds nothing at all; the host is added when you first press **D**. What it does write, it is asked to: `data-ref` on elements when auto-address or the class converter is on, and `data-stadiaref-*` attributes on `<html>`.
 
-A later release moves labels into a layer of their own and removes both limits.
+Labels follow their elements when the page or a scroll container scrolls, the window is resized, or an element changes size, at most once per frame. An element that is animated with a transform is followed when the animation ends.
 
 ## Clashing shortcut keys
 

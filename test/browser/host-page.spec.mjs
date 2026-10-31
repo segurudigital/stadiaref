@@ -73,13 +73,13 @@ test('the class converter handles SVG and other non-string className values', as
   }))).toEqual({ svg: 'home-icon', math: 'home-equation', visible: true });
 });
 
-test('no classes or state on the page\'s own elements', async ({ page }) => {
+test('shown, StadiaRef adds nothing to the page\'s own elements: labels and outlines are in its layer (3.4)', async ({ page }) => {
   await open(page, '/test/fixtures/v5-data-ref/block-bearing-dense.html');
   const snapshot = () => page.evaluate(() => {
     const out = {};
     let n = 0;
     document.body.querySelectorAll('*').forEach((el) => {
-      if (el.closest('[data-stadiaref-root]') || /\bstadiaref-/.test(el.className)) return;
+      if (el.closest('[data-stadiaref-root]')) return;
       const attrs = {};
       Array.from(el.attributes).forEach((a) => { attrs[a.name] = a.value; });
       out[++n + ':' + el.tagName] = attrs;
@@ -97,14 +97,10 @@ test('no classes or state on the page\'s own elements', async ({ page }) => {
   const after = await snapshot();
   expect(after.body).toBe(before.body);
   expect(after.bodyAttrs).toEqual(before.bodyAttrs);
-  for (const key of Object.keys(before.els)) {
-    const was = before.els[key];
-    const now = after.els[key];
-    // Allowed: position: relative on a static element that hosts labels or
-    // an outline frame.
-    if (now.style !== was.style) expect(now.style, key).toMatch(/position: relative;?$/);
-    expect({ ...now, style: undefined }, key).toEqual({ ...was, style: undefined });
-  }
+  // The same elements, with the same attributes, style included: no label
+  // nodes, outline frames, badges or position: relative.
+  expect(after.els).toEqual(before.els);
+  expect(await page.locator('#stadiaref-host .stadiaref-layer .stadiaref-outline').count()).toBeGreaterThan(0);
 });
 
 test('global state lives on <html> as data-stadiaref-* attributes', async ({ page }) => {

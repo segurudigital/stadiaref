@@ -7,14 +7,14 @@ const { harness, open, recordEvents, events } = makeHelpers(NEW);
 // Tier of every rendered full label.
 async function shownTiers(page) {
   await settle(page);
-  return page.evaluate(() => Array.from(document.querySelectorAll('.stadiaref-ref-full-label')).filter((l) => {
+  return page.evaluate(() => Array.from(((document.getElementById('stadiaref-host') || {}).shadowRoot || document).querySelectorAll('.stadiaref-ref-full-label')).filter((l) => {
     const cs = getComputedStyle(l);
     return cs.display !== 'none' && l.getClientRects().length > 0;
   }).map((l) => (l.className.match(/stadiaref-tier-(\w+)/) || [])[1]));
 }
 
 // Tiers present on the page, whatever Show says.
-const presentTiers = (page) => page.evaluate(() => Array.from(new Set(Array.from(document.querySelectorAll('.stadiaref-ref-full-label')).map((l) => (l.className.match(/stadiaref-tier-(\w+)/) || [])[1]))));
+const presentTiers = (page) => page.evaluate(() => Array.from(new Set(Array.from(((document.getElementById('stadiaref-host') || {}).shadowRoot || document).querySelectorAll('.stadiaref-ref-full-label')).map((l) => (l.className.match(/stadiaref-tier-(\w+)/) || [])[1]))));
 
 const COMBOS = [
   ['section', 'block', 'element'], ['section', 'block'], ['section', 'element'], ['block', 'element'],

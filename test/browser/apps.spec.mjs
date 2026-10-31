@@ -6,7 +6,7 @@ import { makeHelpers, NEW, shadow, settle, press, visibleFullLabelRefs, HOST_ID 
 const { harness, open, recordEvents, eventsSoon } = makeHelpers(NEW);
 
 const surveys = (page) => page.evaluate(() => performance.getEntriesByName('stadiaref:survey').length);
-const labelCount = (page) => page.evaluate(() => document.querySelectorAll('.stadiaref-ref-full-label').length);
+const labelCount = (page) => page.evaluate(() => ((document.getElementById('stadiaref-host') || {}).shadowRoot || document).querySelectorAll('.stadiaref-ref-full-label').length);
 
 test.describe('watching the page', () => {
   test('a route change: labels appear for the new screen and go for the old one, with no refresh()', async ({ page }) => {
@@ -23,20 +23,22 @@ test.describe('watching the page', () => {
     expect(await labelCount(page)).toBe(3);
   });
 
-  test('a framework-style text update wipes a label, and it is back within two frames', async ({ page }) => {
+  test('a framework-style text update leaves the label alone: it is in the overlay layer, not the element (3.4)', async ({ page }) => {
     await open(page, harness({ body: 'spa', page: { startHidden: false } }));
     await settle(page);
-    const back = await page.evaluate(() => new Promise((resolve) => {
+    await page.evaluate(() => {
+      const label = () => document.getElementById('stadiaref-host').shadowRoot.querySelector('[data-stadiaref-for="ops-app-jobs-card-01-status"] > .stadiaref-ref-full-label');
+      window.__label = label;
+      window.__before = label();
       const el = document.getElementById('status');
       // What a framework does on a re-render: replace the children, rewrite the class.
       el.textContent = 'Done';
       el.className = 'status status--done';
-      const wiped = !el.querySelector('.stadiaref-ref-full-label');
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        resolve({ wiped, back: !!el.querySelector('.stadiaref-ref-full-label'), text: el.firstChild.nodeValue });
-      }));
-    }));
-    expect(back).toEqual({ wiped: true, back: true, text: 'Done' });
+    });
+    await settle(page);
+    // The same label node, still there; the element holds only its own text.
+    expect(await page.evaluate(() => !!window.__before && window.__before === window.__label())).toBe(true);
+    expect(await page.evaluate(() => [document.getElementById('status').childNodes.length, document.getElementById('status').firstChild.nodeValue])).toEqual([1, 'Done']);
     expect(await visibleFullLabelRefs(page)).toContain('ops-app-jobs-card-01-status');
     // StadiaRef's own nodes aren't in the element's class.
     expect(await page.locator('#status').getAttribute('class')).toBe('status status--done');
@@ -46,7 +48,8 @@ test.describe('watching the page', () => {
     await open(page, harness({ body: 'spa', page: { startHidden: false } }));
     await page.evaluate(() => document.getElementById('status').setAttribute('data-ref', 'ops-app-jobs-card-01-state'));
     await expect.poll(() => visibleFullLabelRefs(page)).toEqual(['ops-app-jobs', 'ops-app-jobs-card-01', 'ops-app-jobs-card-01-state']);
-    expect(await page.locator('#status .stadiaref-ref-full-label').count()).toBe(1);
+    expect(await shadow(page, '[data-stadiaref-for="ops-app-jobs-card-01-state"] > .stadiaref-ref-full-label').count()).toBe(1);
+    expect(await shadow(page, '[data-stadiaref-for="ops-app-jobs-card-01-status"]').count()).toBe(0);
   });
 
   test('one survey per frame: a page that adds 1,000 nodes in one tick gets one survey', async ({ page }) => {
@@ -97,7 +100,7 @@ test.describe('watching the page', () => {
     await open(page, harness({ body: 'spa' }));
     await page.locator('#to-settings').click();
     await settle(page);
-    expect(await page.evaluate(() => [document.querySelectorAll('.stadiaref-ref-full-label').length, !!document.getElementById('stadiaref-host')])).toEqual([0, false]);
+    expect(await page.evaluate(() => [((document.getElementById('stadiaref-host') || {}).shadowRoot || document).querySelectorAll('.stadiaref-ref-full-label').length, !!document.getElementById('stadiaref-host')])).toEqual([0, false]);
     await press(page, 'd');
     expect(await visibleFullLabelRefs(page)).toEqual(['ops-app-settings', 'ops-app-settings-users', 'ops-app-settings-users-role']);
   });
@@ -118,18 +121,16 @@ test.describe('self-repair', () => {
     await expect(shadow(page, '.stadiaref-tree-panel')).toBeVisible();
   });
 
-  test('the label stylesheet and the <html> attributes are put back if removed', async ({ page }) => {
+  test('the <html> attributes are put back if removed', async ({ page }) => {
     await open(page, harness({ body: 'spa', page: { startHidden: false } }));
     await page.evaluate(() => {
-      document.getElementById('stadiaref-styles').remove();
       document.documentElement.removeAttribute('data-stadiaref-visible');
       document.documentElement.removeAttribute('data-stadiaref-labels');
     });
     await expect.poll(() => page.evaluate(() => [
-      !!document.getElementById('stadiaref-styles'),
       document.documentElement.hasAttribute('data-stadiaref-visible'),
       document.documentElement.getAttribute('data-stadiaref-labels'),
-    ])).toEqual([true, true, 'full']);
+    ])).toEqual([true, 'full']);
     expect(await visibleFullLabelRefs(page)).toHaveLength(3);
   });
 

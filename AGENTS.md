@@ -38,6 +38,7 @@ src/
     state.js            the one mutable state object
     mount.js            nothing written while hidden; survey()
     watch.js            the MutationObserver, one survey per frame, self-repair
+    layer.js            the overlay layer: one slot per element, placed over its box
     labels.js tiers.js survey.js pick.js find.js dialogs.js dock.js tree.js chain.js
     toolbar.js panel.js host.js keys.js theme.js user.js events.js …
     styles/             CSS as strings; tokens.js holds every colour
@@ -135,9 +136,9 @@ npm run build:wp-bridge   # dist/seguru-debug-toolbar-wp-v2.5.1.zip
 - **CI runs locally first.** `npm run ci:local -- --quick` before every commit you hand over for a push; the full `npm run ci:local` when a change touches the browser behaviour, the integrations, the WordPress plugin or dependencies, and before a release. GitHub Actions is not used: the local run is the CI result. The secret scan and the demo-page build exist only as workflows, so run TruffleHog by hand before a release if it matters.
 - **The `data-ref` attribute and the `dataref-` class prefix never change.**
 - **No runtime dependencies, no network requests.** The overlay ships as one file. Source may use modules and modern syntax; esbuild bundles it.
-- **Nothing is written to the page while StadiaRef is hidden** (class converter aside). The host and the label stylesheet are created on first show.
-- **No state on the page's own elements.** Per-element state lives in a `WeakMap` (`records.js`) and on StadiaRef's own nodes; global state is `data-stadiaref-*` attributes on `<html>`. Exceptions: `position: relative` on a static element that gets labels, an automatic address's `data-ref` with its `data-stadiaref-auto` markers, and the `--stadiaref-tree-w` custom property on `<html>` with `tree: 'push'`.
-- **Shadow DOM split.** The toolbar, panels and toast are in a shadow root; labels are in the page's DOM (moving them to an overlay layer is planned for 3.4, not before).
+- **Nothing is written to the page while StadiaRef is hidden** (class converter aside). The host and its overlay layer are created on first show.
+- **No state on the page's own elements.** Per-element state lives in a `WeakMap` (`records.js`) and on StadiaRef's own nodes; global state is `data-stadiaref-*` attributes on `<html>`. Exceptions: an automatic address's `data-ref` with its `data-stadiaref-auto` markers, and the `--stadiaref-tree-w` custom property on `<html>` with `tree: 'push'`.
+- **Everything drawn is in the shadow root.** The toolbar, panels, toast and card, and, since 3.4, labels, badges and outline frames, which are drawn in the overlay layer (`layer.js`): one slot per element, placed over its box. Nothing is appended to the page's elements, and no stylesheet goes into the page.
 - **The shadow host carries `data-stadiaref-root`**, the marker a production build is searched for. It appears in the overlay builds and nowhere else.
 - **Config merge order, per key:** `init()` and the setters, then `window.stadiarefConfig`, then the 2.x objects (`seguruDebugConfig`, then `sdtConfig`), then script-tag attributes, then defaults. See `readConfig()` in `src/overlay/config.js`.
 - **2.x names live in `src/compat/aliases.js` only**, each with a test. `test/unit/names.test.mjs` fails if one appears elsewhere in `src/`.
@@ -164,7 +165,7 @@ npm run build:wp-bridge   # dist/seguru-debug-toolbar-wp-v2.5.1.zip
 - **Keys** (one keymap, each rebindable or `false`): D toggles StadiaRef, L cycles labels (Off → Icons → Full), 1 2 3 toggle sections, blocks and elements in Show, P Pick, / Find, O cycles Outline (Off → Sections → Blocks), Esc hides. Keys match `event.key` (Shift allowed), ignore typing targets (from `composedPath()[0]`) and Cmd, Ctrl or Alt.
 - **Esc:** leaves Pick or Find first; otherwise is left to an open modal of the host page; otherwise closes menus, the Tree and the chain and hides StadiaRef in one press.
 - **Click any label** to copy the address; `stadiaref:address-click` carries `source` and `copied`.
-- **Watching:** route changes, re-renders and new content are surveyed at most once per frame; labels a re-render deletes come back.
+- **Watching:** route changes, re-renders and new content are surveyed at most once per frame; slots follow scrolling, resizing and layout shifts at most once per frame.
 - **Dialogs:** labels narrow to an open host modal, a status line counts them, and the host moves into the modal.
 - **Automatic addresses** are valid, numbered from a counter, and stable per element for the page view; they never change an authored address's tier.
 

@@ -25,7 +25,7 @@ test.describe('demo page label counts', () => {
     expect(await countVisible(page, '.stadiaref-ref-icon')).toBe(4);
     expect(await countVisible(page, '.stadiaref-ref-full-label')).toBe(0);
     // tooltips are laid out but transparent until hover
-    expect(await page.evaluate(() => Array.from(document.querySelectorAll('.stadiaref-ref-tooltip')).map((t) => getComputedStyle(t).opacity))).toEqual(['0', '0', '0', '0']);
+    expect(await page.evaluate(() => Array.from(((document.getElementById('stadiaref-host') || {}).shadowRoot || document).querySelectorAll('.stadiaref-ref-tooltip')).map((t) => getComputedStyle(t).opacity))).toEqual(['0', '0', '0', '0']);
   });
 
   test('Off mode shows nothing', async ({ page }) => {
@@ -56,7 +56,7 @@ test.describe('demo page label counts', () => {
     for (const r of DEMO_AUTHORED) expect(await page.locator(`[data-ref="${r}"]`).count()).toBe(1);
     // Every label is shown or folded into a "+N" badge; which ones fold
     // depends on label size (2.5.0 folded two).
-    const folded = await page.evaluate(() => document.querySelectorAll('.stadiaref-ref-full-label.stadiaref-ref-clustered').length);
+    const folded = await page.evaluate(() => ((document.getElementById('stadiaref-host') || {}).shadowRoot || document).querySelectorAll('.stadiaref-ref-full-label.stadiaref-ref-clustered').length);
     expect(await countVisible(page, '.stadiaref-ref-full-label') + folded).toBe(4 + AUTO_COUNT_DEMO);
     if (folded) expect(await countVisible(page, '.stadiaref-cluster-badge')).toBeGreaterThan(0);
   });
@@ -76,7 +76,7 @@ test.describe('click to copy', () => {
   test('clicking a full label copies its address and shows the toast', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await demo(page);
-    await page.locator('[data-ref="home-02-features-grid"] > .stadiaref-ref-full-label').click();
+    await page.locator('[data-stadiaref-for="home-02-features-grid"] > .stadiaref-ref-full-label').click();
     await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe('home-02-features-grid');
     const toast = shadow(page, '.stadiaref-toast');
     await expect(toast).toHaveText('Copied: home-02-features-grid');
@@ -94,7 +94,9 @@ test.describe('click to copy', () => {
       window.__hostClicks = 0;
       document.querySelector('[data-ref="home-08-footer"]').addEventListener('click', () => { window.__hostClicks++; });
     });
-    await page.locator('[data-ref="home-08-footer"] > .stadiaref-ref-full-label').click();
+    // Labels follow their elements in the overlay layer: bring it on screen.
+    await page.locator('[data-ref="home-08-footer"]').scrollIntoViewIfNeeded();
+    await page.locator('[data-stadiaref-for="home-08-footer"] > .stadiaref-ref-full-label').click();
     expect(await page.evaluate(() => window.__hostClicks)).toBe(0);
   });
 
@@ -109,7 +111,7 @@ test.describe('click to copy', () => {
       };
     });
     await demo(page);
-    await page.locator('[data-ref="home-01-hero-standard"] > .stadiaref-ref-full-label').click();
+    await page.locator('[data-stadiaref-for="home-01-hero-standard"] > .stadiaref-ref-full-label').click();
     expect(await page.evaluate(() => window.__execCopy)).toEqual(['home-01-hero-standard']);
     await expect(shadow(page, '.stadiaref-toast')).toHaveText('Copied: home-01-hero-standard');
   });
@@ -122,49 +124,59 @@ test.describe('click to copy', () => {
       Object.defineProperty(Navigator.prototype, 'clipboard', { get: () => ({ writeText: () => Promise.reject(new Error('denied')) }), configurable: true });
     });
     await demo(page);
-    await page.locator('[data-ref="home-01-hero-standard"] > .stadiaref-ref-full-label').click();
+    await page.locator('[data-stadiaref-for="home-01-hero-standard"] > .stadiaref-ref-full-label').click();
     await expect.poll(() => page.evaluate(() => window.__execCopy)).toBe(1);
   });
 });
 
 test.describe('label structure', () => {
-  test('each address gets link, icon, tooltip and full label once', async ({ page }) => {
+  test('each address gets link, icon, tooltip and full label once, in its slot in the overlay layer', async ({ page }) => {
     await open(page, harness({ page: { startHidden: false } }));
-    const kinds = await page.evaluate(() => Array.from(document.querySelector('[data-ref="home-hero"]').children)
-      .map((c) => c.className.split(' ')[0]).filter((c) => c.startsWith('stadiaref-')));
+    const kinds = await page.evaluate(() => Array.from(document.getElementById('stadiaref-host').shadowRoot.querySelector('[data-stadiaref-for="home-hero"]').children)
+      .map((c) => c.className.split(' ')[0]));
     expect(kinds).toEqual(['stadiaref-ref-link', 'stadiaref-ref-icon', 'stadiaref-ref-tooltip', 'stadiaref-ref-full-label']);
+    // The slot sits over the element's box.
+    const [slot, el] = await page.evaluate(() => [document.getElementById('stadiaref-host').shadowRoot.querySelector('[data-stadiaref-for="home-hero"]'), document.querySelector('[data-ref="home-hero"]')]
+      .map((n) => { const r = n.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)]; }));
+    expect(slot).toEqual(el);
     // 3.0: a tier tag and the address (2.5.0: "section · home-hero").
-    const label = page.locator('[data-ref="home-hero"] > .stadiaref-ref-full-label');
+    const label = page.locator('[data-stadiaref-for="home-hero"] > .stadiaref-ref-full-label');
     await expect(label.locator('.stadiaref-ref-tag')).toHaveText('SEC');
     await expect(label.locator('.stadiaref-ref-address')).toHaveText('home-hero');
-    await expect(page.locator('[data-ref="home-hero"] > .stadiaref-ref-icon')).toHaveText('S');
+    await expect(page.locator('[data-stadiaref-for="home-hero"] > .stadiaref-ref-icon')).toHaveText('S');
   });
 
   test('luminance check marks labels on dark backgrounds', async ({ page }) => {
     await open(page, harness({ page: { startHidden: false } }));
-    await expect(page.locator('[data-ref="home-features"] > .stadiaref-ref-full-label')).toHaveClass(/stadiaref-on-dark/);
-    await expect(page.locator('[data-ref="home-hero"] > .stadiaref-ref-full-label')).toHaveClass(/stadiaref-on-light/);
+    await expect(page.locator('[data-stadiaref-for="home-features"] > .stadiaref-ref-full-label')).toHaveClass(/stadiaref-on-dark/);
+    await expect(page.locator('[data-stadiaref-for="home-hero"] > .stadiaref-ref-full-label')).toHaveClass(/stadiaref-on-light/);
   });
 
-  test('static hosts get position: relative', async ({ page }) => {
+  test('nothing is added to a labelled element: no label nodes, no position: relative (3.4)', async ({ page }) => {
     await open(page, harness({ page: { startHidden: false } }));
-    expect(await page.evaluate(() => document.querySelector('[data-ref="home-hero"]').style.position)).toBe('relative');
+    expect(await page.evaluate(() => {
+      const el = document.querySelector('[data-ref="home-hero"]');
+      return [el.style.position, Array.from(el.querySelectorAll('*')).filter((c) => /stadiaref-/.test(c.getAttribute('class') || '')).length];
+    })).toEqual(['', 0]);
   });
 
-  test('labels mount in the page DOM; toolbar and toast in the shadow root', async ({ page }) => {
+  test('labels, toolbar and toast are in the shadow root; no stylesheet in the page (3.4)', async ({ page }) => {
     await open(page, harness({ page: { startHidden: false } }));
-    expect(await page.evaluate(() => !!document.getElementById('stadiaref-styles'))).toBe(true);
+    expect(await page.evaluate(() => !!document.getElementById('stadiaref-styles'))).toBe(false);
+    expect(await page.evaluate(() => document.querySelectorAll('[class*="stadiaref-"]').length)).toBe(0);
+    expect(await shadow(page, '.stadiaref-layer .stadiaref-ref-full-label').count()).toBeGreaterThan(0);
     expect(await page.evaluate(() => !!document.querySelector('.stadiaref-toolbar'))).toBe(false);
     expect(await shadow(page, '.stadiaref-toolbar').count()).toBe(1);
     expect(await shadow(page, '.stadiaref-toast').count()).toBe(1);
   });
 
-  test('void elements get a sibling label host', async ({ page }) => {
+  test('a void element (an <img>) is labelled in its slot, with nothing added beside it (3.4)', async ({ page }) => {
     await open(page, harness({ page: { startHidden: false }, pre: "document.addEventListener('DOMContentLoaded',function(){document.querySelector('main').insertAdjacentHTML('beforeend','<div id=wrap><img data-ref=\"home-photo\" width=200 height=100 alt=\"\" src=\"data:image/gif;base64,R0lGODlhAQABAAAAACw=\"></div>');});" }));
-    const host = page.locator('#wrap > .stadiaref-ref-void-host');
-    await expect(host).toHaveCount(1);
-    await expect(host).toHaveAttribute('data-stadiaref-host-for', 'home-photo');
-    await expect(host.locator('.stadiaref-ref-full-label .stadiaref-ref-address')).toHaveText('home-photo');
+    const slot = shadow(page, '[data-stadiaref-for="home-photo"]');
+    await expect(slot.locator('.stadiaref-ref-full-label .stadiaref-ref-address')).toHaveText('home-photo');
+    expect(await page.evaluate(() => document.getElementById('wrap').children.length)).toBe(1);
+    const [s, img] = [await slot.boundingBox(), await page.locator('[data-ref="home-photo"]').boundingBox()];
+    expect([Math.round(s.width), Math.round(s.height)]).toEqual([Math.round(img.width), Math.round(img.height)]);
     expect(await visibleFullLabelRefs(page)).toContain('home-photo');
   });
 

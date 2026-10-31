@@ -104,39 +104,44 @@ export function settle(page) {
   return page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
 }
 
-// Count elements matching a selector that are actually rendered.
+// Count elements matching a selector that are actually rendered, in the
+// page and in StadiaRef's shadow root (labels are drawn in its overlay
+// layer since 3.4).
 export async function countVisible(page, selector) {
   await settle(page);
-  return page.evaluate((sel) => Array.from(document.querySelectorAll(sel)).filter((el) => {
-    const cs = getComputedStyle(el);
-    return cs.display !== 'none' && cs.visibility !== 'hidden' && el.getClientRects().length > 0;
-  }).length, selector);
+  return page.evaluate((sel) => {
+    const host = document.getElementById('stadiaref-host');
+    const nodes = Array.from(document.querySelectorAll(sel)).concat(host && host.shadowRoot ? Array.from(host.shadowRoot.querySelectorAll(sel)) : []);
+    return nodes.filter((el) => {
+      const cs = getComputedStyle(el);
+      return cs.display !== 'none' && cs.visibility !== 'hidden' && el.getClientRects().length > 0;
+    }).length;
+  }, selector);
 }
 
-// Addresses whose full label is rendered. A label's owner is its parent,
-// or, for a void element (an <img> and so on), the element just before
-// the label host StadiaRef puts beside it.
+// Addresses whose full label is rendered. A label sits in its element's
+// slot in the overlay layer, which carries the address.
 export async function visibleFullLabelRefs(page) {
   await settle(page);
-  return page.evaluate(() => Array.from(document.querySelectorAll('.stadiaref-ref-full-label')).filter((el) => {
-    const cs = getComputedStyle(el);
-    return cs.display !== 'none' && el.getClientRects().length > 0;
-  }).map((el) => {
-    const host = el.parentElement;
-    const owner = host.classList.contains('stadiaref-ref-void-host') ? host.previousElementSibling : host;
-    return owner.getAttribute('data-ref');
-  }).sort());
+  return page.evaluate(() => {
+    const host = document.getElementById('stadiaref-host');
+    if (!host) return [];
+    return Array.from(host.shadowRoot.querySelectorAll('.stadiaref-slot > .stadiaref-ref-full-label')).filter((el) => {
+      const cs = getComputedStyle(el);
+      return cs.display !== 'none' && el.getClientRects().length > 0;
+    }).map((el) => el.parentElement.getAttribute('data-stadiaref-for')).sort();
+  });
 }
 
 // { address: tier } for every labelled element, read from its full label.
 export function labelTiers(page) {
   return page.evaluate(() => {
     const out = {};
-    document.querySelectorAll('.stadiaref-ref-full-label').forEach((el) => {
-      const host = el.parentElement;
-      const owner = host.classList.contains('stadiaref-ref-void-host') ? host.previousElementSibling : host;
+    const host = document.getElementById('stadiaref-host');
+    if (!host) return out;
+    host.shadowRoot.querySelectorAll('.stadiaref-slot > .stadiaref-ref-full-label').forEach((el) => {
       const m = el.className.match(/stadiaref-tier-(\w+)/);
-      out[owner.getAttribute('data-ref')] = m ? m[1] : null;
+      out[el.parentElement.getAttribute('data-stadiaref-for')] = m ? m[1] : null;
     });
     return out;
   });

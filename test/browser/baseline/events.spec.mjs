@@ -69,7 +69,7 @@ test('no labels-change at start', async ({ page }) => {
 test('address-hover, address-leave, address-click from the full label', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, harness({ page: { startHidden: false, click: 'copy' } }));
-  const label = page.locator('[data-ref="home-hero"] > .stadiaref-ref-full-label');
+  const label = page.locator('[data-stadiaref-for="home-hero"] > .stadiaref-ref-full-label');
   await label.hover();
   await page.mouse.move(5, 890);
   await label.click();
@@ -93,7 +93,7 @@ test('address-hover, address-leave, address-click from the full label', async ({
 test('address-click from the icon (icons mode)', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, harness({ page: { startHidden: false, labels: 'icons', click: 'copy' } }));
-  await page.locator('[data-ref="home-features"] > .stadiaref-ref-icon').click();
+  await page.locator('[data-stadiaref-for="home-features"] > .stadiaref-ref-icon').click();
   const click = await eventsSoon(page, 'address-click');
   expect(click).toHaveLength(1);
   expect(click[0].detail).toMatchObject({ address: 'home-features', tier: 'section', source: 'label' });
@@ -153,7 +153,7 @@ test('hovering a label opens the address chain; a chain row click emits address-
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await open(page, '/test/fixtures/v5-data-ref/block-bearing-small.html');
   await page.evaluate(() => window.stadiaref.init({ click: 'copy' }).show());
-  await page.locator('[data-ref="home-hero-card-02"] > .stadiaref-ref-full-label').hover();
+  await page.locator('[data-stadiaref-for="home-hero-card-02"] > .stadiaref-ref-full-label').hover();
   const tree = shadow(page, '.stadiaref-active-ref-tree');
   await expect(tree).toHaveClass(/stadiaref-active-ref-tree--open/);
   await expect(shadow(page, '.stadiaref-active-ref-tree__row-ref')).toHaveText(['home-hero', 'home-hero-card-02']);

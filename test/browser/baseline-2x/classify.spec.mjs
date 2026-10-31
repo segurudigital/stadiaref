@@ -64,7 +64,7 @@ test('mixed fixture: level filter hides by stamped class', async ({ page }) => {
   await open(page, '/test/fixtures/v5-data-ref/mixed.html');
   await page.evaluate(() => window.seguruDebugToolbar.show());
   // Folded "+N" labels count as on screen; which ones fold depends on label size.
-  const all = await countVisible(page, '.stadiaref-ref-full-label') + await page.evaluate(() => document.querySelectorAll('.stadiaref-ref-full-label.stadiaref-ref-clustered').length);
+  const all = await countVisible(page, '.stadiaref-ref-full-label') + await page.evaluate(() => ((document.getElementById('stadiaref-host') || {}).shadowRoot || document).querySelectorAll('.stadiaref-ref-full-label.stadiaref-ref-clustered').length);
   await page.evaluate(() => window.seguruDebugToolbar.setLevelFilter('section'));
   const sections = await countVisible(page, '.stadiaref-ref-full-label');
   await page.evaluate(() => window.seguruDebugToolbar.setLevelFilter('section-block'));

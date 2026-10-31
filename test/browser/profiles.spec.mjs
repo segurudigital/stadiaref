@@ -140,7 +140,7 @@ test('an invalid address is unclassified in its label and its events', async ({ 
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await recordEvents(page);
   await open(page, harness({ body: 'nesting', page: { startHidden: false, click: 'copy' } }));
-  await page.locator('[data-ref="Bad_Address"] > .stadiaref-ref-full-label').click();
+  await page.locator('[data-stadiaref-for="Bad_Address"] > .stadiaref-ref-full-label').click();
   const [click] = await eventsSoon(page, 'address-click');
   expect(click.detail).toMatchObject({ address: 'Bad_Address', tier: 'unclassified' });
 });

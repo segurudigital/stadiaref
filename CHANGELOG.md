@@ -8,6 +8,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 
 ## [Unreleased]
 
+### Changed
+
+- **Labels are drawn in StadiaRef's own overlay layer** (the 3.4 work, in progress). Labels, `+N` and block-group badges and outline frames are drawn in one layer inside StadiaRef's shadow root, one slot per element placed over its box, and follow it when the page or a scroll container scrolls, the window resizes or the element changes size. Nothing is appended to the page's elements any more: no label nodes, no `position: relative` on static elements, no sibling host beside an `<img>`, and no `#stadiaref-styles` stylesheet in `<head>`. A framework re-render can no longer drop a label.
+- StadiaRef's host sits at the top of the stacking order (`z-index: 2147483646`, was `99999`), so labels draw over the page's own fixed panels.
+
 ## [3.3.0] — 2026-10-31
 
 Turn StadiaRef on and click something: a label click now opens an **address card** with everything about that one address, and Copy. The Tree can push the page over, the toolbar can live in your own top bar, and the Tree lists what needs fixing. The overlay layer for labels moves to 3.4.

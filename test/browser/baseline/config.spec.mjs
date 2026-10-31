@@ -87,7 +87,7 @@ test.describe('per-page config (stadiarefConfig)', () => {
     await open(page, harness({ page: { startHidden: false, outline: 'section' } }));
     expect(await get(page, 'getOutline')).toBe('section');
     // Outline frames are StadiaRef's own nodes inside each section.
-    expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-outline--section').length)).toBeGreaterThan(0);
+    expect(await page.evaluate(() => ((document.getElementById('stadiaref-host') || {}).shadowRoot || document).querySelectorAll('.stadiaref-outline--section').length)).toBeGreaterThan(0);
   });
 
   test('tiers', async ({ page }) => {
@@ -200,14 +200,14 @@ test('nothing is written to the page while hidden; the first show mounts and lab
   await open(page, harness({ page: { autoAddress: true, outline: 'section' } }));
   expect(await get(page, 'isVisible')).toBe(false);
   expect(await page.evaluate(() => ({
-    labels: document.querySelectorAll('.stadiaref-ref-full-label, .stadiaref-outline').length,
+    labels: ((document.getElementById('stadiaref-host') || {}).shadowRoot || document).querySelectorAll('.stadiaref-ref-full-label, .stadiaref-outline').length,
     host: !!document.querySelector('[data-stadiaref-root]'),
     style: !!document.getElementById('stadiaref-styles'),
     auto: document.querySelectorAll('[data-stadiaref-auto]').length,
     attrs: Array.from(document.documentElement.attributes).map((a) => a.name).filter((n) => n.startsWith('data-stadiaref')),
   }))).toEqual({ labels: 0, host: false, style: false, auto: 0, attrs: [] });
   await page.evaluate(() => window.stadiaref.show());
-  expect(await page.evaluate(() => document.querySelectorAll('.stadiaref-ref-full-label').length)).toBeGreaterThan(2);
+  expect(await page.evaluate(() => ((document.getElementById('stadiaref-host') || {}).shadowRoot || document).querySelectorAll('.stadiaref-ref-full-label').length)).toBeGreaterThan(2);
   expect(await page.evaluate(() => !!document.querySelector('[data-stadiaref-root]'))).toBe(true);
   await page.evaluate(() => window.stadiaref.hide());
   expect(await countVisible(page, '.stadiaref-ref-full-label, .stadiaref-outline')).toBe(0);

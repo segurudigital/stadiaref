@@ -17,7 +17,7 @@ var OUTSIDE = 'stadiaref-ref-outside-drill';
 
 function labelNodes(el) {
   var r = rec(el);
-  return [r.icon, r.tooltip, r.fullLabel, r.link, r.clusterBadge, r.groupBadge, r.host];
+  return [r.icon, r.tooltip, r.fullLabel, r.link, r.clusterBadge, r.groupBadge];
 }
 
 // Mark every label outside the drilled element. Called after each survey.
