@@ -19,6 +19,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 - **Hover hint with labels off:** rest the pointer on something and its address and tier appear beside it after a short delay (the nearest addressed element). Never on touch, in Pick or Find, or with a card open; `hint: false` turns it off.
 - **Problems in the Tree:** a Problems tab, with a count, lists duplicated addresses (a row for each element), unclassified addresses and gaps in numbering (`card-01`, `card-02`, `card-05`: `card-03` and `card-04` missing). Automatic addresses are left out.
 - **Tree search and filter:** a filter field and All / Sections / Blocks / Elements. The search keeps its text and focus while the page changes.
+- **`onAddress(fn, label)`:** one host button on every card; `fn(address, context)` gets the tier, element, text, chain, tag, URL, title, viewport and the brief. StadiaRef still stores and sends nothing. [Integrations](docs/integrations.md) has GitHub Issues and Linear examples.
+- **Drill-down, behind `drill: true`:** **Drill in** on the card narrows the labels to one section or block, dims the rest, and shows a breadcrumb to move up or leave (**All**, or **Esc**). `drill()`, `getDrill()`, `stadiaref:drill`.
 - **`click: 'card' | 'copy'`** in the config, the `data-click` script attribute, the Astro and Vite options and the WordPress settings (**Clicking a label**), and `getClick()`.
 
 ### Changed

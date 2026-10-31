@@ -111,6 +111,8 @@ export function resolveLabelOverlaps() {
     // Skip block-group-collapsed members and tiers Show is hiding — their
     // labels are hidden by CSS and must not take part in collision detection.
     if (rec(el).blockGroupMember || rec(el).collapsed) return;
+    // Outside a drill-down: hidden, so it takes no slot.
+    if (S.drillRoot && el !== S.drillRoot && !S.drillRoot.contains(el)) return;
     if (!tierShown(rec(el).tier)) return;
 
     var anchor = getActiveLabel(el);

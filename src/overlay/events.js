@@ -14,6 +14,7 @@ import { tierOf } from './classify.js';
 //   stadiaref:address-click / -hover / -leave → { address, tier, element, … }
 //   stadiaref:card           → the address card opened or closed { open, address, tier, element }
 //   stadiaref:tree           → the Tree opened or closed { open, width }
+//   stadiaref:drill          → drill-down entered or left { address, tier, element }
 // compat/aliases.js fires the 2.x twin of each through S.legacyEmit.
 export function dispatchWindowEvent(type, detail) {
   if (typeof window === 'undefined' || !window.dispatchEvent) return;

@@ -63,6 +63,21 @@ export interface Config {
   tree?: TreeMode;
   /** With labels off, the address and tier beside the pointer. Default true. */
   hint?: boolean;
+  /** Drill-down on the card. Behind a flag; default false. */
+  drill?: boolean;
+}
+
+/** What an onAddress() action receives with the address. */
+export interface AddressContext {
+  tier: TierOrUnclassified;
+  element: Element;
+  text: string;
+  chain: string[];
+  tag: string;
+  url: string;
+  title: string;
+  viewport: { width: number; height: number };
+  brief: string;
 }
 
 export interface StadiaRef {
@@ -100,6 +115,12 @@ export interface StadiaRef {
   getTreeWidth(): number;
   /** Rows for the card from the host, sync or async; setLookup(null) removes them. */
   setLookup(fn: Lookup | null): void;
+  /** One host button on every card; onAddress(null) removes it. */
+  onAddress(fn: ((address: string, context: AddressContext) => unknown) | null, label?: string): void;
+  /** With drill: true, narrow the view to an address or element; drill(false) leaves. */
+  drill(target: string | Element | false): boolean;
+  /** The address drilled into, or null. */
+  getDrill(): string | null;
 
   setTheme(mode: Theme): void;
   /** The theme in use. */
@@ -142,6 +163,7 @@ export interface StadiaRefEventMap {
   'stadiaref:address-leave': CustomEvent<AddressDetail>;
   'stadiaref:card': CustomEvent<CardDetail>;
   'stadiaref:tree': CustomEvent<{ open: boolean; width: number }>;
+  'stadiaref:drill': CustomEvent<{ address: string | null; tier: TierOrUnclassified | null; element: Element | null }>;
   'stadiaref:labels-change': CustomEvent<{ labels: LabelMode }>;
   'stadiaref:tiers-change': CustomEvent<{ tiers: Tier[] }>;
   'stadiaref:auto-address-change': CustomEvent<{ autoAddress: boolean }>;

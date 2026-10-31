@@ -409,3 +409,74 @@ test.describe('hover hint on touch', () => {
     await expect(shadow(page, '.stadiaref-hint')).toHaveCount(0);
   });
 });
+
+test.describe('onAddress', () => {
+  test("one host action on the card, called with the address and its context", async ({ page }) => {
+    await open(page, cardPage());
+    await page.evaluate(() => {
+      window.__sent = [];
+      window.stadiaref.onAddress((address, ctx) => window.__sent.push({ address, tier: ctx.tier, tag: ctx.tag, text: ctx.text, chain: ctx.chain, brief: ctx.brief, el: ctx.element.id, url: ctx.url, width: ctx.viewport.width }), 'Open an issue');
+    });
+    await label(page, 'home-hero-cta').click();
+    await shadow(page, '.stadiaref-card__btn--host').click();
+    expect(await page.evaluate(() => window.__sent)).toEqual([{
+      address: 'home-hero-cta', tier: 'element', tag: 'a', text: 'Start now', chain: ['home-hero'],
+      brief: 'harness | 1280px | home-hero-cta | element | "Start now"', el: 'cta', url: page.url(), width: 1280,
+    }]);
+    await expect(shadow(page, '.stadiaref-card__btn--host')).toHaveText('Open an issue');
+    await page.evaluate(() => window.stadiaref.onAddress(null));
+    await page.evaluate(() => window.stadiaref.card('home-hero'));
+    await expect(shadow(page, '.stadiaref-card__btn--host')).toHaveCount(0);
+  });
+
+  test('without a label it reads Send; a throw is caught', async ({ page }) => {
+    await open(page, cardPage());
+    await page.evaluate(() => window.stadiaref.onAddress(() => { throw new Error('nope'); }));
+    await page.evaluate(() => window.stadiaref.card('home-hero'));
+    await expect(shadow(page, '.stadiaref-card__btn--host')).toHaveText('Send');
+    await shadow(page, '.stadiaref-card__btn--host').click();
+    await expect(card(page)).toBeVisible();
+  });
+});
+
+test.describe('drill-down (drill: true)', () => {
+  const visibleLabels = (page) => page.evaluate(() => Array.from(document.querySelectorAll('.stadiaref-ref-full-label'))
+    .filter((l) => getComputedStyle(l).display !== 'none').length);
+
+  test('off by default: no Drill in on the card, drill() does nothing', async ({ page }) => {
+    await open(page, cardPage());
+    await page.evaluate(() => window.stadiaref.card('list-grid'));
+    await expect(shadow(page, '.stadiaref-card__btn').filter({ hasText: 'Drill in' })).toHaveCount(0);
+    expect(await page.evaluate(() => window.stadiaref.drill('list-grid'))).toBe(false);
+  });
+
+  test('Drill in narrows labels to the element, with a breadcrumb; All and Esc leave', async ({ page }) => {
+    await page.addInitScript(() => { window.__drills = []; window.addEventListener('stadiaref:drill', (e) => window.__drills.push(e.detail.address)); });
+    await open(page, cardPage({ drill: true }));
+    const all = await visibleLabels(page);
+    await page.evaluate(() => window.stadiaref.card('list-grid'));
+    await shadow(page, '.stadiaref-card__btn').filter({ hasText: 'Drill in' }).click();
+    await expect(card(page)).toBeHidden();
+    expect(await page.evaluate(() => window.stadiaref.getDrill())).toBe('list-grid');
+    expect(await visibleLabels(page)).toBe(17);
+    expect(all).toBeGreaterThan(17);
+    await expect(shadow(page, '.stadiaref-drill__crumb')).toHaveText(['All', 'list-grid']);
+    await expect(shadow(page, '.stadiaref-highlight--drill')).toBeVisible();
+    // Deeper, then back up by the breadcrumb.
+    await page.evaluate(() => window.stadiaref.drill('list-grid-card-03'));
+    await expect(shadow(page, '.stadiaref-drill__crumb')).toHaveText(['All', 'list-grid', 'list-grid-card-03']);
+    expect(await visibleLabels(page)).toBe(1);
+    await shadow(page, '.stadiaref-drill__crumb').nth(1).click();
+    expect(await visibleLabels(page)).toBe(17);
+    // A survey keeps it.
+    await page.evaluate(() => window.stadiaref.refresh());
+    expect(await visibleLabels(page)).toBe(17);
+    await press(page, 'Escape');
+    expect(await page.evaluate(() => [window.stadiaref.getDrill(), window.stadiaref.isVisible()])).toEqual([null, true]);
+    expect(await visibleLabels(page)).toBe(all);
+    await page.evaluate(() => window.stadiaref.drill('home-hero'));
+    await shadow(page, '.stadiaref-drill__crumb').first().click();
+    await expect(shadow(page, '.stadiaref-drill')).toBeHidden();
+    expect(await page.evaluate(() => window.__drills)).toEqual(['list-grid', 'list-grid-card-03', 'list-grid', null, 'home-hero', null]);
+  });
+});

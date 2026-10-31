@@ -37,6 +37,7 @@ Every way of loading StadiaRef takes the same keys. (The WordPress settings page
 | `user` | `{ name, role }` or `null` | `null` | The display-only identity pill. Other fields are discarded |
 | `classConverter` | `true`, `false` | `false` | Turn `dataref-` classes into `data-ref` attributes |
 | `pageSlug` | A string | From the URL | The slug auto-address builds on |
+| `drill` | `true`, `false` | `false` | Drill-down: **Drill in** on the card narrows the labels to one section or block, with a breadcrumb. Behind a flag while it settles |
 | `hint` | `true`, `false` | `true` | With labels off, show the address and tier beside the pointer after it rests for a moment. Never on touch |
 | `tree` | `'overlay'`, `'push'` | `'overlay'` | How the Tree opens. `'push'` makes it a full-height column on the right and tells the page its width, so the page can make room. See [Tree push mode](#tree-push-mode) |
 | `click` | `'card'`, `'copy'` | `'card'` | What a label click does: open the [address card](#the-address-card), or copy the address as before 3.3. A page still configured through a 2.x object (`seguruDebugConfig`, `sdtConfig`) keeps `'copy'` unless it sets `click` |
@@ -160,6 +161,8 @@ The toolbar, when docked on the right, moves left of the column. Nothing is writ
 | `card(address)` | Open the card for an address (the first element that carries it) or an element. Returns `true` if a card opened. `card(false)` closes it. Works with `click: 'copy'` too |
 | `getClick()` | `'card'` or `'copy'`. Set it with `init({ click })` |
 | `setLookup(fn)` | Add rows to every card. `setLookup(null)` removes them |
+| `onAddress(fn, label)` | Add one button, `label` (default `'Send'`), to every card. A click calls `fn(address, context)`. `onAddress(null)` removes it. See [Integrations](integrations.md#5-your-action-on-the-address-card-onaddress) |
+| `drill(address)` / `getDrill()` | With `drill: true`, narrow the view to an address or element. `drill(false)` leaves. `getDrill()` is the address drilled into, or `null` |
 
 `fn(address, element)` returns an array of rows, or a promise of one. While a promise is pending the card shows *Looking up…*; an answer that arrives after the card has moved on is dropped.
 
@@ -235,6 +238,7 @@ window.addEventListener('stadiaref:address-click', (event) => {
 | `stadiaref:address-hover` | The pointer entered a label | `{ address, tier, element }` |
 | `stadiaref:address-leave` | The pointer left a label | `{ address, tier, element }` |
 | `stadiaref:card` | The address card opened or closed | `{ open, address, tier, element }` |
+| `stadiaref:drill` | Drill-down entered, moved or left | `{ address, tier, element }`, all `null` when left |
 | `stadiaref:tree` | The Tree opened or closed, or its pushed width changed | `{ open, width }`. `width` is 0 with `tree: 'overlay'` |
 | `stadiaref:labels-change` | Label mode changed | `{ labels }` |
 | `stadiaref:tiers-change` | The Show control changed | `{ tiers }` |

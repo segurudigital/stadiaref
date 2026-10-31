@@ -10,6 +10,7 @@ import { getTheme, setTheme } from './theme.js';
 import { applyAutoAddress, getAutoAddress, getTiers, setAutoAddress, setTiers } from './tiers.js';
 import { setTreeMode, toggleTree } from './tree.js';
 import { closeCard, openCard } from './card.js';
+import { drillInto, exitDrill } from './drill.js';
 import { startPick, stopPick } from './pick.js';
 import { closeFind, openFind } from './find.js';
 import { getUser, setUser } from './user.js';
@@ -38,6 +39,10 @@ export function publicInit(opts) {
   if ('watch' in o) S.watch = !(o.watch === false || o.watch === '0');
   if ('click' in o) setClick(o.click);
   if ('tree' in o) setTreeMode(o.tree);
+  if ('drill' in o) {
+    S.drillEnabled = o.drill === true || o.drill === '1';
+    if (!S.drillEnabled) exitDrill();
+  }
   if ('hint' in o) S.hintEnabled = !(o.hint === false || o.hint === '0');
   if ('user' in o) setUser(o.user);
   if ('labels' in o) setLabels(o.labels);
@@ -115,6 +120,15 @@ function findAddressed(address) {
   return null;
 }
 
+// drill(addressOrElement) narrows the view to it (with drill: true);
+// drill(false) leaves. True when it drilled.
+export function drill(target) {
+  if (target === false) { exitDrill(); return false; }
+  if (!S.booted) return false;
+  if (typeof target === 'string') target = findAddressed(target);
+  return drillInto(target);
+}
+
 // setLookup(fn): fn(address, element) returns rows for the card, or a
 // promise of them. setLookup(null) removes it.
 export function setLookup(fn) {
@@ -168,6 +182,8 @@ export const api = {
   onAddress: onAddress,
   getClick: function () { return S.clickMode; },
   getTreeWidth: function () { return S.treeWidth; },
+  drill: drill,
+  getDrill: function () { return S.drillRoot ? S.drillRoot.getAttribute('data-ref') : null; },
   pick: queueable(pick),
   find: find,
   setTheme: queueable(setTheme),

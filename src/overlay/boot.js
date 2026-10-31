@@ -1,6 +1,7 @@
 import { S } from './state.js';
 import { attachCardDismiss, closeCard, isCardOpen } from './card.js';
 import { attachHint } from './hint.js';
+import { drillInto, exitDrill, isDrilled } from './drill.js';
 import { dismissActiveRefTree, hideActiveRefTree, showActiveRefTree } from './chain.js';
 import { readConfig, readPersistedTheme } from './config.js';
 import { migrateLegacyStorage } from '../compat/aliases.js';
@@ -51,6 +52,8 @@ export function boot() {
   S.clickMode = S.config.click === 'copy' ? 'copy' : 'card';
   // The hover hint with labels off. Default on.
   S.hintEnabled = !(S.config.hint === false || S.config.hint === '0');
+  // Drill-down, behind a flag while it settles.
+  S.drillEnabled = S.config.drill === true || S.config.drill === '1';
   // Auto-ref is OFF by default — only the WordPress plugin sets autoRef: true
   // via its injected config. Standard hosts label elements manually
   // with data-ref; auto-tagging is opt-in via the autoRef config key.
@@ -260,11 +263,14 @@ function init() {
   };
   S.dismissChain = dismissActiveRefTree;
   S.applyDockPosition = applyDockPosition;
+  S.drillInto = drillInto;
+  S.closeCard = closeCard;
   S.showInTree = showInTree;
   S.leaveMode = function () {
     if (isCardOpen()) { closeCard(); return true; }
     if (isPicking()) { stopPick(); return true; }
     if (isFinding()) { closeFind(); return true; }
+    if (isDrilled()) { exitDrill(); return true; }
     return false;
   };
 

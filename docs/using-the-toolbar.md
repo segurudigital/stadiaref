@@ -73,6 +73,10 @@ The card opens below the label, or above it when there isn't room below, and alw
 
 From the keyboard, the card takes focus when it opens, **Tab** moves through its buttons and stays inside it, and focus goes back where it was when it closes.
 
+### Drill-down
+
+With `drill: true` in the config the card has **Drill in**. It narrows the view to that section or block: labels outside it are hidden and the rest of the page is dimmed. A breadcrumb at the top shows where you are; click a level to move up to it, or **All** to leave. **Esc** leaves too. Drill-down is behind the flag while it settles.
+
 ## Show (1, 2, 3)
 
 The Show button opens a menu with a tick box for each tier: sections, blocks, elements. Tick any mix.
@@ -163,7 +167,7 @@ While it is on, the **AUTO** chip shows on the toolbar and temporary addresses c
 | **P** | Pick |
 | **/** | Find |
 | **O** | Cycle Outline: Off, Sections, Blocks |
-| **Esc** | Close the card, or leave Pick or Find. With none open, hide everything |
+| **Esc** | Close the card, leave Pick or Find, or leave a drill-down. With none of them open, hide everything |
 
 Keys do nothing while you are typing in a field, and nothing when Cmd, Ctrl or Alt is held. While one of your app's own modal dialogs is open, Esc is left to the dialog. Every key can be changed or turned off. See the [API](api.md#keys).
 

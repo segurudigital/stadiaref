@@ -2,11 +2,11 @@
 
 StadiaRef is built to sit alongside other tools on the page: review sidebars, feedback widgets, devtools panels. It exposes enough for a host to keep it in step with its own theme and sign-in state, and to hear when someone clicks an address.
 
-Three patterns cover most cases. Each works against any host. The [API](api.md) has the full reference.
+Three patterns cover most cases, and the address card takes two more: your own rows on it, and your own action. Each works against any host. The [API](api.md) has the full reference.
 
 ## 1. Send clicked addresses to your own tool
 
-`stadiaref:address-click` fires whenever someone copies an address: from a label, from Pick, from Find or from the Tree.
+`stadiaref:address-click` fires whenever someone copies an address: from the card, from Pick or a label with `click: 'copy'`, from Find or from the Tree. To hear the card open and close, listen for `stadiaref:card`.
 
 ```js
 window.addEventListener('stadiaref:address-click', (event) => {
@@ -40,6 +40,69 @@ window.addEventListener('stadiaref:address-click', async ({ detail }) => {
   window.open(url, '_blank', 'noopener');
 });
 ```
+
+## 4. Your rows on the address card
+
+Since 3.3 a label click opens StadiaRef's [address card](using-the-toolbar.md#the-address-card). A host that drew its own card or tooltip on `stadiaref:address-click` can drop it and add what it knows to StadiaRef's card instead, with [`setLookup()`](api.md#the-address-card):
+
+```js
+window.stadiaref?.setLookup(async (address) => {
+  const entry = await registry.lookup(address);   // your own data
+  if (!entry) return [{ label: 'Registry', value: 'Not in the registry', tone: 'warn' }];
+  return [
+    { label: 'Lock', value: entry.locked ? 'Locked' : 'Draft', tone: entry.locked ? 'ok' : 'warn' },
+    ...entry.problems.map((p) => ({ label: 'Format', value: p, tone: 'error' })),
+    { label: 'Notes', value: String(entry.notes.length), tone: 'muted' },
+    { label: 'Spec', value: 'Open', href: entry.specUrl },
+  ];
+});
+```
+
+Values are shown as text, never HTML, and only `http`, `https` and `mailto` links are kept.
+
+## 5. Your action on the address card: `onAddress`
+
+`onAddress(fn, label)` adds one button to every card. A click calls `fn(address, context)`. StadiaRef still stores nothing and sends nothing; what `fn` does is up to you.
+
+| `context` field | What it is |
+|---|---|
+| `tier` | `'section'`, `'block'`, `'element'` or `'unclassified'` |
+| `element` | The page element |
+| `text` | Its text, first 140 characters |
+| `chain` | The addresses above it, outermost first |
+| `tag` | Its tag name, lower case |
+| `url`, `title` | The page's URL and title |
+| `viewport` | `{ width, height }` |
+| `brief` | The one-line brief that **Copy for a brief** copies |
+
+A GitHub issue, prefilled:
+
+```js
+window.stadiaref?.onAddress((address, ctx) => {
+  const url = new URL('https://github.com/your-org/your-repo/issues/new');
+  url.searchParams.set('title', `[${address}] `);
+  url.searchParams.set('body', [
+    `Address: \`${address}\` (${ctx.tier})`,
+    `Inside: ${ctx.chain.join(' / ') || 'nothing'}`,
+    `Page: ${ctx.url} at ${ctx.viewport.width}px`,
+    ctx.text ? `Text: "${ctx.text}"` : '',
+  ].filter(Boolean).join('\n'));
+  window.open(url, '_blank', 'noopener');
+}, 'Open an issue');
+```
+
+A Linear issue, prefilled (Linear's `linear.app/new` link takes `title` and `description`; add `team` to choose the team):
+
+```js
+window.stadiaref?.onAddress((address, ctx) => {
+  const url = new URL('https://linear.app/new');
+  url.searchParams.set('title', `[${address}] `);
+  url.searchParams.set('description', `\`${address}\` (${ctx.tier}) on ${ctx.url}\n\n${ctx.brief}`);
+  window.open(url, '_blank', 'noopener');
+}, 'Linear issue');
+```
+
+`onAddress(null)` removes the button. A throw in `fn` is caught and logged.
 
 ## 2. Show who is reviewing
 

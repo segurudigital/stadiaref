@@ -1,6 +1,7 @@
 import { S } from './state.js';
 import { closeCard } from './card.js';
 import { hideHint } from './hint.js';
+import { exitDrill } from './drill.js';
 import { dismissActiveRefTree } from './chain.js';
 import { goHidden, goLive } from './mount.js';
 import { emitEvent } from './events.js';
@@ -25,6 +26,7 @@ export function hide() {
   dismissActiveRefTree();
   closeCard();
   hideHint();
+  exitDrill();
   if (S.stopPick) S.stopPick();
   if (S.closeFind) S.closeFind();
   S.presentationMode = true;

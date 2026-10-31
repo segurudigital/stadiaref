@@ -9,6 +9,7 @@ import { applyDockPosition } from './dock.js';
 import { applyDialogScope } from './dialogs.js';
 import { markSurvey, quiet, startWatching } from './watch.js';
 import { applyHost } from './panel.js';
+import { applyDrill } from './drill.js';
 
 // ─── Nothing is written to the page while StadiaRef is hidden ─────
 // Until the toolbar is first shown, StadiaRef keeps everything in memory:
@@ -63,6 +64,7 @@ export function survey() {
   if (S.treeOpen) buildTreePanel();
   syncAllVoidHosts();
   applyDialogScope();
+  if (S.drillRoot) applyDrill();
   applyHost();
   applyDockPosition();
   if (S.afterSurvey) S.afterSurvey();

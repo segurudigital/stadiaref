@@ -33,6 +33,7 @@ html[data-stadiaref-hidden-tiers] .stadiaref-tier-unclassified { display: none !
 .stadiaref-ref-hidden, .stadiaref-ref-clustered, .stadiaref-collapsed { display: none !important; }
 /* Outside the open host dialog (dialogs.js). */
 .stadiaref-ref-outside { display: none !important; }
+.stadiaref-ref-outside-drill { display: none !important; }
 /* Labels step aside while Pick is on */
 html[data-stadiaref-mode="pick"] :is(${LABEL_NODES}) { display: none !important; }
 

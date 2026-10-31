@@ -468,6 +468,7 @@ ${tierTags()}
 [class*="stadiaref-highlight--pick-"]:not(.stadiaref-highlight--pick-current) { outline: 1px dashed #3F6212; outline-offset: 4px; box-shadow: 0 0 0 4px rgba(163, 230, 53, 0.35); }
 /* Find: the match framed, the rest of the page dimmed by this one layer */
 .stadiaref-highlight--card { outline: 2px solid #3F6212; outline-offset: 2px; box-shadow: 0 0 0 2px #A3E635; }
+.stadiaref-highlight--drill { outline: 2px dashed #3F6212; outline-offset: 4px; box-shadow: 0 0 0 100vmax rgba(17, 24, 39, 0.35); }
 .stadiaref-highlight--find { outline: 2px solid #3F6212; outline-offset: 6px; box-shadow: 0 0 0 6px #A3E635, 0 0 0 100vmax rgba(17, 24, 39, 0.45); }
 
 /* --- Dialog status line --- */
@@ -626,6 +627,38 @@ ${tierTags()}
 .stadiaref-find__note { margin-left: auto; padding: 0 6px; border-radius: 999px; background: var(--sr-chipBg); color: var(--sr-chipFg); font-family: ${FONT_UI}; font-size: 10px; font-weight: 600; }
 .stadiaref-find__status { padding: 7px 12px; border-top: 1px solid var(--sr-barBd); font-size: 11px; color: var(--sr-muted); }
 @media (max-width: 479px), (pointer: coarse) { .stadiaref-find__row { min-height: 44px; } .stadiaref-find__input { height: 44px; } }
+/* --- Drill-down breadcrumb --- */
+.stadiaref-drill {
+  all: initial;
+  box-sizing: border-box;
+  position: fixed;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: calc(100vw - 24px);
+  padding: 4px 6px;
+  background: var(--sr-barBg);
+  border: 1px solid var(--sr-barBd);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  font-family: ${FONT_MONO};
+  font-size: 11px;
+  color: var(--sr-fg);
+  pointer-events: auto;
+  z-index: 6;
+}
+.stadiaref-drill[hidden] { display: none; }
+.stadiaref-drill__sep { color: var(--sr-muted); }
+.stadiaref-drill__crumb { all: initial; box-sizing: border-box; min-height: 24px; padding: 0 6px; border-radius: 4px; color: var(--sr-fg); font-family: inherit; font-size: 11px; cursor: pointer; }
+.stadiaref-drill__crumb:hover { background: var(--sr-hover); }
+.stadiaref-drill__crumb[aria-current="true"] { background: var(--sr-wash); color: var(--sr-accent); font-weight: 700; }
+.stadiaref-drill__crumb:focus-visible { outline: 2px solid var(--sr-focus); outline-offset: 2px; box-shadow: 0 0 0 2px var(--sr-focusHalo); }
+@media (pointer: coarse) { .stadiaref-drill__crumb { min-height: 44px; } }
+
 /* --- Hover hint (labels off) --- */
 .stadiaref-hint {
   all: initial;

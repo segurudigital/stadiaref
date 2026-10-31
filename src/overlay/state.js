@@ -105,6 +105,10 @@ export const S = {
   card: null,
   lookup: null,
   onAddress: null,
+  // Drill-down (drill.js), behind drill: true.
+  drillEnabled: false,
+  drillRoot: null,
+  drillBar: null,
   // Host (host.js, panel.js): the panel in Astro's Dev Toolbar, and what
   // to run after each survey.
   panel: null,
