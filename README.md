@@ -51,8 +51,8 @@ The shortest path, for any HTML page:
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/stadiaref@3.2.0/dist/stadiaref.min.js"
-  integrity="sha384-GMtW/j4RJENnGjai/T/KJZuMckSD+W1ujX34pwhF5MOi3QjvVf3DLr0On8Sw8vPl"
+  src="https://cdn.jsdelivr.net/npm/stadiaref@3.4.0/dist/stadiaref.min.js"
+  integrity="sha384-qb0OagXqCjNMRrR+h4s0mgHFCbDFex2ITjHAcCrwm8wFR8Epnq1gdLZ6dFkVkhq6"
   crossorigin="anonymous"
   defer></script>
 ```

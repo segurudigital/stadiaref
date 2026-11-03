@@ -1,7 +1,7 @@
 # Tasks
 
 **Project:** StadiaRef (was Seguru Debug Toolbar)
-**Current version:** 3.4.0 (released on GitHub 2026-10-31; npm pending)
+**Current version:** 3.4.0 (released 2026-10-31: GitHub and npm)
 
 > **How this file works**
 > TASKS.md is the canonical list of all open and recently-completed work, organised as **Sprints → Phases → subtasks**. Items are ticked off as they ship. At session end, completed items move from this file to **CHANGELOG.md** (the user-facing record) — only the most recent handoff note stays here as a starting point for the next session. **ROADMAP.md** is the forward view. Agent todo trackers (`TodoWrite`) mirror this file for the active session — they're never the source of truth on their own. All three docs (TASKS, CHANGELOG, ROADMAP) must be in sync at the start and end of every session.
@@ -22,9 +22,9 @@ Decisions made while building, which the prompt didn't settle:
 - `onAddress(fn, label)` adds one button to the card; its context carries the chain, tag and URL the roadmap's "copy for a developer or an agent" named.
 - The size budget is provisionally 172,000 / 47,000 bytes; set the final figure at the release.
 
-**3.4.0 released on GitHub (2026-10-31):** the overlay layer (phases 1–6 below). Every local CI gate passed on `169674c`; the GitHub release `v3.4.0` carries the assets built from a clean clone of it. npm has 3.2.0: 3.3.0 failed to publish because this machine isn't logged in to npm (`E401`; npm reports the publish as `E404`). Next: `npm login` as `samuel.d.clarke`, publish 3.3.0 then 3.4.0 from their clean-build tarballs, then the CDN pins and SRI to 3.4.0.
+**3.4.0 released (2026-10-31):** the overlay layer (phases 1-6 below). Every local CI gate passed on `169674c`. The GitHub release `v3.4.0` was published with assets built from a clean clone. Actions was running again by then, so the release event started the Release workflow, which replaced the zips with its own builds and published `stadiaref@3.4.0` to npm by trusted publishing, with provenance (`stadiaref.min.js` was byte-identical). No npm login was needed. Two calls are open in the 3.4.0 list below: 3.3.0 on npm, and whether the Release workflow stays on.
 
-**3.3.0 released on GitHub (2026-10-31):** CI runs locally, not on GitHub Actions (Samuel). `npm run ci:local` passed on `6a1f469`; the release files were built from a clean clone of it and attached to the GitHub release `v3.3.0` by hand (SHA-256: `stadiaref.min.js` `15649a60…9a24`, `stadiaref-wp-v3.3.0.zip` `155a7db4…ae7b`, bridge `a5578d2c…573`); `dist/stadiaref-wp-v3.3.0.zip` is that asset, committed. **Still open:** `stadiaref@3.3.0` on npm (Samuel, from his own npm login: trusted publishing only runs from Actions), then the CDN examples and SRI move to 3.3.0. AGENTS.md's release flow now describes the local process.
+**3.3.0 released on GitHub (2026-10-31):** CI runs locally, not on GitHub Actions (Samuel). `npm run ci:local` passed on `6a1f469`; the release files were built from a clean clone of it and attached to the GitHub release `v3.3.0` by hand (SHA-256: `stadiaref.min.js` `15649a60…9a24`, `stadiaref-wp-v3.3.0.zip` `155a7db4…ae7b`, bridge `a5578d2c…573`); `dist/stadiaref-wp-v3.3.0.zip` is that asset, committed. `stadiaref@3.3.0` never reached npm (see 3.4.0 above). AGENTS.md's release flow now describes the local process.
 
 **The overlay layer moved to 3.4** (Samuel, 2026-10-31: ship 3.3.0 now). About 125 browser-test assertions, the 2.5.0 comparison spec and the host-page DOM tests read labels inside page elements, and the move needs clipping in scroll containers, top-layer modals and transformed or sticky elements solved. It is the next release. 3.3.0 is in every version location, `dist/` is built and the release notes are written; nothing is tagged, pushed or published. The CDN examples stay on 3.2.0 until 3.3.0 is on npm (the SRI hash comes from the published file).
 
@@ -103,8 +103,11 @@ Goal: while StadiaRef is shown, the page's DOM is unchanged apart from the addre
 - [x] 4. Remove every page write (void hosts, `position: relative`, the stylesheet in `<head>`, re-render repair); `host-page.spec` while shown (with phase 1)
 - [x] 5. Drill-down on by default (`drill: false` turns it off); a performance test with 1,000 addresses. The overlap solver now measures each label once: 3.3.0 took about 3.4s to show 1,000 addresses, 3.4.0 about 0.35s
 - [x] 6. Docs (`docs/design.md`, `apps-and-pwas.md`, AGENTS guardrails), CHANGELOG, 3.4.0, release notes, `dist/`
-- [x] GitHub release `v3.4.0` (latest, tag at `169674c`) with its three assets, built from a clean clone; `dist/stadiaref-wp-v3.4.0.zip` is that asset (SHA-256 `4dabca07…43d2`)
-- [ ] npm `stadiaref@3.3.0` and `@3.4.0` (Samuel's npm login); then the CDN examples and SRI to 3.4.0
+- [x] GitHub release `v3.4.0` (latest, tag at `169674c`) with its three assets, built from a clean clone; the Release workflow then rebuilt and replaced both zips (same contents, different archive bytes), so `dist/stadiaref-wp-v3.4.0.zip` is the workflow's asset now on the release (SHA-256 `d318b474…21a8`)
+- [x] npm `stadiaref@3.4.0`: published by the Release workflow on the `release` event (2026-10-31, trusted publishing, with provenance); `latest`. Package files byte-identical to `169674c`'s `dist/`
+- [x] CDN examples and SRI pinned to 3.4.0, from the file on npm
+- [ ] Decide: `stadiaref@3.3.0` was never on npm (its Release run failed, billing lock); `latest` is 3.4.0. Skip it, or publish with `--tag` from Samuel's login so `latest` doesn't move back
+- [ ] Decide: the Release workflow ran on Actions although CI is meant to be local. Keep it (then don't attach assets by hand) or disable it (then AGENTS' local flow stands)
 
 ### 3.2.0 — Titan lists, loops and forms — done
 
