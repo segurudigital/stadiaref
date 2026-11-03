@@ -22,7 +22,7 @@ Decisions made while building, which the prompt didn't settle:
 - `onAddress(fn, label)` adds one button to the card; its context carries the chain, tag and URL the roadmap's "copy for a developer or an agent" named.
 - The size budget is provisionally 172,000 / 47,000 bytes; set the final figure at the release.
 
-**3.4.0 released (2026-10-31):** the overlay layer (phases 1-6 below). Every local CI gate passed on `169674c`. The GitHub release `v3.4.0` was published with assets built from a clean clone. Actions was running again by then, so the release event started the Release workflow, which replaced the zips with its own builds and published `stadiaref@3.4.0` to npm by trusted publishing, with provenance (`stadiaref.min.js` was byte-identical). No npm login was needed. Two calls are open in the 3.4.0 list below: 3.3.0 on npm, and whether the Release workflow stays on.
+**3.4.0 released (2026-10-31):** the overlay layer (phases 1-6 below). Every local CI gate passed on `169674c`. The GitHub release `v3.4.0` was published with assets built from a clean clone. Actions was running again by then, so the release event started the Release workflow, which replaced the zips with its own builds and published `stadiaref@3.4.0` to npm by trusted publishing, with provenance (`stadiaref.min.js` was byte-identical). No npm login was needed. The Release workflow has since been disabled. One call is open in the 3.4.0 list below: 3.3.0 on npm.
 
 **3.3.0 released on GitHub (2026-10-31):** CI runs locally, not on GitHub Actions (Samuel). `npm run ci:local` passed on `6a1f469`; the release files were built from a clean clone of it and attached to the GitHub release `v3.3.0` by hand (SHA-256: `stadiaref.min.js` `15649a60…9a24`, `stadiaref-wp-v3.3.0.zip` `155a7db4…ae7b`, bridge `a5578d2c…573`); `dist/stadiaref-wp-v3.3.0.zip` is that asset, committed. `stadiaref@3.3.0` never reached npm (see 3.4.0 above). AGENTS.md's release flow now describes the local process.
 
@@ -107,7 +107,7 @@ Goal: while StadiaRef is shown, the page's DOM is unchanged apart from the addre
 - [x] npm `stadiaref@3.4.0`: published by the Release workflow on the `release` event (2026-10-31, trusted publishing, with provenance); `latest`. Package files byte-identical to `169674c`'s `dist/`
 - [x] CDN examples and SRI pinned to 3.4.0, from the file on npm
 - [ ] Decide: `stadiaref@3.3.0` was never on npm (its Release run failed, billing lock); `latest` is 3.4.0. Skip it, or publish with `--tag` from Samuel's login so `latest` doesn't move back
-- [ ] Decide: the Release workflow ran on Actions although CI is meant to be local. Keep it (then don't attach assets by hand) or disable it (then AGENTS' local flow stands)
+- [x] The Release workflow ran on Actions although CI is local: disabled on GitHub (Samuel, 2026-11-03). AGENTS' local flow stands: assets attached by hand, npm from Samuel's login, no provenance
 
 ### 3.2.0 — Titan lists, loops and forms — done
 

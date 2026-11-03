@@ -103,12 +103,12 @@ When the version changes, update all of these:
 
 For reference; the maintainer does this.
 
-CI runs locally, not on GitHub Actions (from 3.3.0).
+CI runs locally, not on GitHub Actions (from 3.3.0). The Release workflow is disabled on GitHub (2026-11-03), so publishing a release starts nothing; its file stays as the record of the build steps.
 
 1. Bump the version in every location above, run the full `npm run ci:local`, commit, push to `main`.
 2. Build the release files from a clean clone of the release commit, as `.github/workflows/release-assets.yml` does: `npm ci`, `npm run build`, `npm run size`, `npm run build:wp`, `npm run build:wp-bridge`, `npm pack --ignore-scripts`.
 3. Publish a GitHub release tagged `v<version>` (it must match `package.json`), with the notes in `RELEASE_NOTES.md` and the three assets attached: `stadiaref.min.js`, `stadiaref-wp-v<version>.zip` and the bridge `seguru-debug-toolbar-wp-v2.5.1.zip`.
-4. Publish the packed `stadiaref-<version>.tgz` to npm from the maintainer's own npm login. npm trusted publishing (and provenance) only works from the Actions workflow, which isn't used.
+4. Publish the packed `stadiaref-<version>.tgz` to npm from the maintainer's own npm login. npm trusted publishing (and provenance) only works from the Actions workflow, which is disabled, so a local publish has neither.
 5. Then pin the CDN examples and their SRI hash to the new version (from the file on npm), and force-add the release's `dist/stadiaref-wp-v<version>.zip`. The unit tests rebuild the zips in `dist/`, so copy the asset in last and check its SHA-256 against the release's digest before committing.
 
 WordPress installs see a new release when the `stadiaref_github_release` transient expires (six hours).
