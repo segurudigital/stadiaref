@@ -152,6 +152,18 @@ test('setUser / getUser retain only display fields', async ({ page }) => {
   await expect(shadow(page, '[data-stadiaref-user-name]')).toHaveText('');
 });
 
+test('init({ user }) and setUser() drop the deprecated id and email', async ({ page }) => {
+  await open(page, harness({ page: { startHidden: false } }));
+  await page.evaluate(() => window.stadiaref.init({ user: { name: 'Ada', role: 'reviewer', id: 'u1', email: 'ada@example.com' } }));
+  expect(await page.evaluate(() => window.stadiaref.getUser())).toEqual({ name: 'Ada', role: 'reviewer' });
+  await page.evaluate(() => window.stadiaref.setUser({ name: 'Bo', role: 'editor', id: 'u2', email: 'bo@example.com' }));
+  expect(await page.evaluate(() => window.stadiaref.getUser())).toEqual({ name: 'Bo', role: 'editor' });
+  expect((await events(page, 'user-change')).map((e) => e.detail)).toEqual([
+    { user: { name: 'Ada', role: 'reviewer' } },
+    { user: { name: 'Bo', role: 'editor' } },
+  ]);
+});
+
 test('setDock / getDock move the toolbar', async ({ page }) => {
   await open(page, harness({ page: { startHidden: false } }));
   expect(await page.evaluate(() => window.stadiaref.getDock())).toBe('bottom-right');

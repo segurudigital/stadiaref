@@ -26,6 +26,14 @@ async function useApi(api: StadiaRef): Promise<string[]> {
   const width: number = api.getTreeWidth();
   const drilled: string | null = api.drill('home-hero') ? api.getDrill() : null;
   api.setDock({ mount: '#bar' });
+  // 3.1 callers pass id and email: accepted (deprecated, ignored), never given back.
+  api.setUser({ name: 'Ada', role: 'reviewer', id: 'u1', email: 'ada@example.com' });
+  api.init({ user: { name: 'Ada', role: 'reviewer', id: 'u1' } });
+  const me = api.getUser();
+  // @ts-expect-error getUser() has name and role only
+  void me?.id;
+  // @ts-expect-error getUser() has name and role only
+  void me?.email;
   void opened; void click; void width; void drilled;
   return api.find('home');
 }
@@ -39,6 +47,12 @@ window.addEventListener('stadiaref:address-click', (event) => {
 window.addEventListener('stadiaref:card', (event) => {
   const open: boolean = event.detail.open;
   void open;
+});
+window.addEventListener('stadiaref:user-change', (event) => {
+  const name: string | undefined = event.detail.user?.name;
+  // @ts-expect-error the event carries name and role only
+  void event.detail.user?.id;
+  void name;
 });
 window.addEventListener('stadiaref:tree', (event) => {
   const w: number = event.detail.width;

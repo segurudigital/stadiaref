@@ -34,7 +34,7 @@ Every way of loading StadiaRef takes the same keys. (The WordPress settings page
 | `mount` | A CSS selector | none | With `dock: 'host'`, the element the toolbar is drawn in, inline, with no fixed positioning. If the selector finds nothing the toolbar docks bottom-right; it moves in when the element appears. See [Toolbar in your own chrome](#toolbar-in-your-own-chrome) |
 | `dockOffset` | `{ top, right, bottom, left }` in pixels | none | Extra distance from the edges, on top of the device's safe area |
 | `keys` | See [Keys](#keys) | See below | Shortcut keys |
-| `user` | `{ name, role }` or `null` | `null` | The display-only identity pill. Other fields are discarded |
+| `user` | `{ name, role }` or `null` | `null` | The display-only identity pill. Other fields are discarded (`id` and `email` are still accepted by the types, deprecated, until 4.0) |
 | `classConverter` | `true`, `false` | `false` | Turn `dataref-` classes into `data-ref` attributes |
 | `pageSlug` | A string | From the URL | The slug auto-address builds on |
 | `drill` | `true`, `false` | `true` | Drill-down: **Drill in** on the card narrows the labels to one section or block, with a breadcrumb. `false` takes the button off the card |
@@ -209,6 +209,11 @@ The identity is deliberately display-only. StadiaRef retains only `name` and
 The display fields are also visible to other scripts on the page through
 `getUser()` and the `stadiaref:user-change` event, so pass a pseudonym when a
 real name is unnecessary.
+
+In TypeScript, `init({ user })` and `setUser()` take `UserInput`, which still
+lists `id` and `email` (deprecated: ignored since 3.2.0, removed in 4.0) so code
+written for 3.1 compiles. `getUser()` and the event give back `User`, which has
+only `name` and `role`.
 
 ### Addresses and profiles
 

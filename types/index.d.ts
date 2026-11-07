@@ -13,9 +13,18 @@ export type KeyAction = 'toggle' | 'labels' | 'section' | 'block' | 'element' | 
 /** A key (matched on the character typed), or false to turn the action off. */
 export type Keys = Partial<Record<KeyAction, string | false>>;
 
+/** The reviewer identity StadiaRef keeps: what getUser() and stadiaref:user-change give back. */
 export interface User {
   name?: string;
   role?: string;
+}
+
+/** What init({ user }) and setUser() accept. Only name and role are kept. */
+export interface UserInput extends User {
+  /** @deprecated Ignored since 3.2.0: setUser() and init({ user }) keep only name and role. Will be removed in 4.0. */
+  id?: string;
+  /** @deprecated Ignored since 3.2.0: setUser() and init({ user }) keep only name and role. Will be removed in 4.0. */
+  email?: string;
 }
 
 export interface DockOffset {
@@ -56,7 +65,7 @@ export interface Config {
   mount?: string;
   dockOffset?: DockOffset;
   keys?: Keys;
-  user?: User | null;
+  user?: UserInput | null;
   classConverter?: boolean;
   pageSlug?: string;
   click?: ClickMode;
@@ -129,7 +138,7 @@ export interface StadiaRef {
   getDock(): Dock | 'host';
   setKeys(keys: Keys): void;
   getKeys(): Record<KeyAction, string | false>;
-  setUser(user: User | null): void;
+  setUser(user: UserInput | null): void;
   getUser(): User | null;
 
   classify(address: string): TierOrUnclassified;
