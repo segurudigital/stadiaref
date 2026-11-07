@@ -1,7 +1,7 @@
 # Tasks
 
 **Project:** StadiaRef (was Seguru Debug Toolbar)
-**Current version:** 3.4.0 (released 2026-10-31: GitHub and npm)
+**Current version:** 3.4.1 (in release, 2026-11-07)
 
 > **How this file works**
 > TASKS.md is the canonical list of all open and recently-completed work, organised as **Sprints → Phases → subtasks**. Items are ticked off as they ship. At session end, completed items move from this file to **CHANGELOG.md** (the user-facing record) — only the most recent handoff note stays here as a starting point for the next session. **ROADMAP.md** is the forward view. Agent todo trackers (`TodoWrite`) mirror this file for the active session — they're never the source of truth on their own. All three docs (TASKS, CHANGELOG, ROADMAP) must be in sync at the start and end of every session.
@@ -64,6 +64,19 @@ zero npm advisories and clean history/current-tree secret scans.
 ---
 
 ## Currently in flight
+
+### 3.4.1 — the old User fields, accepted again
+
+3.2.0 removed `id` and `email` from the `User` type along with the runtime change that drops them, so TypeScript callers stopped compiling on a minor update (found moving the Seguru HUB from 3.1.0 to 3.4.0: "'id' does not exist in type 'User'").
+
+- [x] `types/index.d.ts`: `UserInput` (for `init({ user })` and `setUser()`) with `id` and `email` as `@deprecated`; `User` (for `getUser()` and `stadiaref:user-change`) stays `name` and `role`. Runtime unchanged
+- [x] Type test in `test/integration/types/check.ts` (`@ts-expect-error` on `getUser()?.id`); it reproduces the error against the 3.4.0 types
+- [x] Browser test: `init({ user })` and `setUser()` with `id` and `email` give back `{ name, role }`, on the event too
+- [x] CHANGELOG 3.4.1 and a pointer from 3.2.0; `docs/api.md`; release notes; 3.4.1 in every version location
+- [ ] Push; GitHub release `v3.4.1` with its three assets, built from a clean clone
+- [ ] npm `stadiaref@3.4.1` from Samuel's login
+- [ ] CDN examples and SRI pinned to 3.4.1 from the file on npm; the release's plugin zip committed
+
 
 ### 3.3 — the address card, inspect, host lookup, push Tree, host mount
 

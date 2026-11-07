@@ -8,6 +8,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). This pr
 
 ## [Unreleased]
 
+## [3.4.1] — 2026-11-07
+
+A patch that restores type compatibility. Nothing changes at runtime.
+
+### Fixed
+
+- **Types: `User` accepts `id` and `email` again, as deprecated fields that are ignored.** 3.2.0 removed them from the type, so TypeScript code that passed them stopped compiling on a minor update. The runtime still keeps only `name` and `role` (3.2.0's security change is unchanged). `init({ user })` and `setUser()` take the new `UserInput` type, with `id` and `email` marked `@deprecated` until 4.0; `getUser()` and `stadiaref:user-change` still give back `User`, with `name` and `role` only.
+
 ## [3.4.0] — 2026-10-31
 
 StadiaRef stops writing into your page. Labels, badges and outline frames are drawn in an overlay layer of StadiaRef's own, so a framework re-render can't touch them and your elements are left exactly as you wrote them. Surveys of big screens are about ten times faster.
@@ -70,6 +78,7 @@ The `titan` profile catches up with the Titan data-ref spec: it reads lists, loo
 - WordPress updates require the exact asset name for the advertised version, an expected GitHub release URL and GitHub's SHA-256 asset digest. The downloaded zip is verified before WordPress installs it, and missing or mismatched integrity metadata fails closed.
 - CDN examples pin StadiaRef 3.2.0 and carry its SHA-384 Subresource Integrity hash instead of following every future 3.x publication.
 - Reviewer identity is display-only: `setUser()` retains and emits `name` and `role`, and discards IDs, email addresses, tokens and every other field.
+  - This release also removed `id` and `email` from the `User` type, which broke TypeScript callers that passed them. Fixed in [3.4.1](#341--2026-11-07): they are accepted again, deprecated and ignored.
 - esbuild is updated from 0.20.2 to 0.28.2, clearing the reported development-server advisory. The package still has no runtime dependencies.
 
 ### Fixed

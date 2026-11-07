@@ -50,6 +50,10 @@ Turn StadiaRef on and click something: that is where its value is (UI Master spe
 - [x] **Drill-down out from behind its flag,** drawn on the overlay layer.
 - [x] **Ten times faster surveys** on big screens: the overlap solver measures each label once.
 
+## 3.4.1 — types patch
+
+- [x] **`User` accepts `id` and `email` again,** deprecated and ignored, so 3.1-era TypeScript compiles. 3.2.0 had removed them from the type in a minor release. They go in 4.0.
+
 ## 3.5 — reach
 
 - **`npx stadiaref audit <path or URL>`:** the address inventory, duplicates and grammar check from the command line, for CI.

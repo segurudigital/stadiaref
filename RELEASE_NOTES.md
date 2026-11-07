@@ -1,27 +1,22 @@
-# StadiaRef 3.4.0
+# StadiaRef 3.4.1
 
-**Your page stays yours.**
+**A types fix: `setUser({ id, email })` compiles again.**
 
-StadiaRef shows each `data-ref` attribute on a page as a label. Until now those labels were added inside your page's own elements. In 3.4 StadiaRef draws them in a layer of its own, over the page, so it no longer writes into your markup.
+3.2.0 made reviewer identity display-only: StadiaRef keeps a user's `name` and `role` and drops everything else. That was right, but the same release also removed `id` and `email` from the `User` type, so TypeScript code that passed them (as the 2.3.0 docs showed) stopped compiling on a minor update.
 
-## What's new
+## What's fixed
 
-- **Nothing added to your elements.** Labels, badges and outline frames are drawn in StadiaRef's own layer, placed over each element. No label nodes inside your elements, no `position: relative` on them, no stylesheet in your `<head>`.
-- **Re-renders can't drop a label.** A framework can rewrite an element's contents as often as it likes: the label isn't in there.
-- **Labels behave as if they were in the page.** They follow scrolling, including inside scroll containers, are clipped by those containers, step aside under your fixed header or tab bar, and sit on top of open modals and popovers.
-- **Much faster on big screens.** A page with 1,000 addresses shows in about a third of a second, down from more than three.
-- **Drill-down is on.** **Drill in** on the address card narrows the view to one section or block, with a breadcrumb back out. `drill: false` turns it off.
+- **`init({ user })` and `setUser()` accept `id` and `email` again**, through a new `UserInput` type. Both fields are marked deprecated: they are ignored, and they will be removed in 4.0.
+- **Nothing changes at runtime.** StadiaRef still keeps only `name` and `role`. `getUser()` and the `stadiaref:user-change` event still give back `name` and `role` only, and their type (`User`) says so.
 
 ## Upgrading
 
-Nothing to change for most sites. Update the package (`npm install --save-dev stadiaref@3.4.0`) or the WordPress plugin as usual.
-
-If your own tests or tools look for StadiaRef's labels inside your elements, they're now in StadiaRef's shadow root: `#stadiaref-host`'s `shadowRoot`, in `.stadiaref-slot[data-stadiaref-for="<address>"]`. StadiaRef's host now sits at the top of the stacking order, so its labels draw over your own fixed panels.
+Update the package (`npm install --save-dev stadiaref@3.4.1`) or the WordPress plugin as usual. You can drop `id` and `email` from your `setUser()` calls whenever it suits you; your editor will flag them as deprecated.
 
 The full list of changes is in the [changelog](https://github.com/segurudigital/stadiaref/blob/main/CHANGELOG.md).
 
 ## Assets
 
 - `stadiaref.min.js`: the script-tag build
-- `stadiaref-wp-v3.4.0.zip`: the WordPress plugin
+- `stadiaref-wp-v3.4.1.zip`: the WordPress plugin
 - `seguru-debug-toolbar-wp-v2.5.1.zip`: the last Seguru Debug Toolbar release, for sites still on 2.x
