@@ -1,7 +1,7 @@
 # Tasks
 
 **Project:** StadiaRef (was Seguru Debug Toolbar)
-**Current version:** 3.4.1 (in release, 2026-11-07)
+**Current version:** 3.4.1 (released 2026-11-07: GitHub and npm)
 
 > **How this file works**
 > TASKS.md is the canonical list of all open and recently-completed work, organised as **Sprints → Phases → subtasks**. Items are ticked off as they ship. At session end, completed items move from this file to **CHANGELOG.md** (the user-facing record) — only the most recent handoff note stays here as a starting point for the next session. **ROADMAP.md** is the forward view. Agent todo trackers (`TodoWrite`) mirror this file for the active session — they're never the source of truth on their own. All three docs (TASKS, CHANGELOG, ROADMAP) must be in sync at the start and end of every session.
@@ -10,7 +10,9 @@
 
 ## Handoff notes
 
-**Last session:** 2026-10-31 (3.3: the address card, from the 3.3 code prompt)
+**3.4.1 released (2026-11-07):** a types patch. 3.2.0 had removed `id` and `email` from the `User` type, breaking TypeScript callers on a minor update (found moving the Seguru HUB from 3.1.0 to 3.4.0). `UserInput` accepts them again, deprecated and ignored; `User` stays `name` and `role`. Full `ci:local` passed on `d21e14b`; GitHub release and npm as listed under 3.4.1 below.
+
+**Last session before that:** 2026-10-31 (3.3: the address card, from the 3.3 code prompt)
 
 Parts 1–8a of the 3.3 prompt are built, tested and committed on `main`, one commit per part: the address card (default on label click), `click: 'card' | 'copy'` (config, `data-click`, Astro/Vite options, WordPress setting), `setLookup()`, inspect in Pick, Tree push mode (`--stadiaref-tree-w`, `stadiaref:tree`), `dock: 'host'` with `mount`, the hover hint with labels off, the Tree's Problems tab, search and tier filter, `onAddress()`, and drill-down behind `drill: true`. The demo page shows the card with host rows and an action. Docs, types and CHANGELOG `[Unreleased]` are current.
 
@@ -73,9 +75,9 @@ zero npm advisories and clean history/current-tree secret scans.
 - [x] Type test in `test/integration/types/check.ts` (`@ts-expect-error` on `getUser()?.id`); it reproduces the error against the 3.4.0 types
 - [x] Browser test: `init({ user })` and `setUser()` with `id` and `email` give back `{ name, role }`, on the event too
 - [x] CHANGELOG 3.4.1 and a pointer from 3.2.0; `docs/api.md`; release notes; 3.4.1 in every version location
-- [ ] Push; GitHub release `v3.4.1` with its three assets, built from a clean clone
-- [ ] npm `stadiaref@3.4.1` from Samuel's login
-- [ ] CDN examples and SRI pinned to 3.4.1 from the file on npm; the release's plugin zip committed
+- [x] Pushed; GitHub release `v3.4.1` (latest, tag at `d21e14b`) with its three assets, built from a clean clone (SHA-256: `stadiaref.min.js` `510a33c0…f73c`, `stadiaref-wp-v3.4.1.zip` `f2e1928d…4afd`, bridge `8ddccf2e…c9a7`)
+- [x] npm `stadiaref@3.4.1` from Samuel's login, `latest`, no provenance; the npm tarball is byte-identical to the clean-clone pack, and its `stadiaref.min.js` to the GitHub asset and jsDelivr's copy
+- [x] CDN examples and SRI pinned to 3.4.1 from the file on npm; `dist/stadiaref-wp-v3.4.1.zip` is the release asset, committed
 
 
 ### 3.3 — the address card, inspect, host lookup, push Tree, host mount

@@ -7,8 +7,8 @@ No build step. One script tag.
 ```html
 <!-- Exact version and integrity: upgrades are always deliberate -->
 <script
-  src="https://cdn.jsdelivr.net/npm/stadiaref@3.4.0/dist/stadiaref.min.js"
-  integrity="sha384-qb0OagXqCjNMRrR+h4s0mgHFCbDFex2ITjHAcCrwm8wFR8Epnq1gdLZ6dFkVkhq6"
+  src="https://cdn.jsdelivr.net/npm/stadiaref@3.4.1/dist/stadiaref.min.js"
+  integrity="sha384-6weoM4VfV9lkm+d2xTpgov9hmXJDZ+v+oktwDr7sBekz9hUyo0N6VbfExC7lRP0+"
   crossorigin="anonymous"
   defer></script>
 ```
@@ -36,8 +36,8 @@ Set `window.stadiarefConfig` before the script tag:
   };
 </script>
 <script
-  src="https://cdn.jsdelivr.net/npm/stadiaref@3.4.0/dist/stadiaref.min.js"
-  integrity="sha384-qb0OagXqCjNMRrR+h4s0mgHFCbDFex2ITjHAcCrwm8wFR8Epnq1gdLZ6dFkVkhq6"
+  src="https://cdn.jsdelivr.net/npm/stadiaref@3.4.1/dist/stadiaref.min.js"
+  integrity="sha384-6weoM4VfV9lkm+d2xTpgov9hmXJDZ+v+oktwDr7sBekz9hUyo0N6VbfExC7lRP0+"
   crossorigin="anonymous"
   defer></script>
 ```
@@ -46,8 +46,8 @@ For a quick one-off, a few keys also work as attributes on the script tag:
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/stadiaref@3.4.0/dist/stadiaref.min.js"
-  integrity="sha384-qb0OagXqCjNMRrR+h4s0mgHFCbDFex2ITjHAcCrwm8wFR8Epnq1gdLZ6dFkVkhq6"
+  src="https://cdn.jsdelivr.net/npm/stadiaref@3.4.1/dist/stadiaref.min.js"
+  integrity="sha384-6weoM4VfV9lkm+d2xTpgov9hmXJDZ+v+oktwDr7sBekz9hUyo0N6VbfExC7lRP0+"
   crossorigin="anonymous"
   data-profile="generic"
   data-labels="icons"
@@ -107,7 +107,7 @@ Add addresses in your section files:
 To survey a page without touching its markup, save this as a bookmark and click it on any page:
 
 ```text
-javascript:(()=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/stadiaref@3.4.0/dist/stadiaref.min.js';s.integrity='sha384-qb0OagXqCjNMRrR+h4s0mgHFCbDFex2ITjHAcCrwm8wFR8Epnq1gdLZ6dFkVkhq6';s.crossOrigin='anonymous';s.onload=()=>window.stadiaref.show();document.head.appendChild(s)})()
+javascript:(()=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/stadiaref@3.4.1/dist/stadiaref.min.js';s.integrity='sha384-6weoM4VfV9lkm+d2xTpgov9hmXJDZ+v+oktwDr7sBekz9hUyo0N6VbfExC7lRP0+';s.crossOrigin='anonymous';s.onload=()=>window.stadiaref.show();document.head.appendChild(s)})()
 ```
 
 It loads StadiaRef in your tab only. Nobody else sees it. A site with a strict Content Security Policy will block it.
