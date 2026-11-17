@@ -186,3 +186,10 @@ User docs are in `docs/`. Change the doc in the same commit as the behaviour.
 | Page builders | `docs/page-builders.md` |
 | Colours or layout | `docs/design.md`, `src/overlay/styles/tokens.js` |
 | A 2.x name | `docs/migrating-from-2.x.md` |
+
+## Argus close-out
+
+- **Close out on Argus before you report back** (ARGUS-36), every time a card changed or a tag was made: follow `~/Developer/Seguru/argus/docs/closeout.md`. Your lane is `stadiaref`. Update your cards (`done` or `built`, with `doneAt` and the commit), set any tag you made live as a release with its tag, commit, date and notes, refresh `products/stadiaref` state and `checkedAt`, log each write, pin every write. Never publish the Argus page. If the session has no Argus tools, end with one line per card: `<REF> <done | built | blocked: reason | needs decision: question> <commit or file>`.
+- **Owners on Argus are `Code`, `Samuel`, `Cowork` or `Cameron`** (ARGUS-32). Never "Claude Code"; someone outside Seguru goes in `waitingOn`.
+
+_Added 2026-11-17: Argus close-out (ARGUS-36): `argus/docs/closeout.md`, owners._
