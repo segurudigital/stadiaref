@@ -4,7 +4,7 @@
 **Current version:** 3.4.1 (released 2026-11-07: GitHub and npm)
 
 > **How this file works**
-> TASKS.md is the canonical list of all open and recently-completed work, organised as **Sprints → Phases → subtasks**. Items are ticked off as they ship. At session end, completed items move from this file to **CHANGELOG.md** (the user-facing record) — only the most recent handoff note stays here as a starting point for the next session. **ROADMAP.md** is the forward view. Agent todo trackers (`TodoWrite`) mirror this file for the active session — they're never the source of truth on their own. All three docs (TASKS, CHANGELOG, ROADMAP) must be in sync at the start and end of every session.
+> **Argus is the tracker for open work** (lane `stadiaref`, cards `STADIA-nn`); if this file and Argus disagree, Argus wins. TASKS.md keeps the build detail and handoff notes behind those cards, organised as **Sprints → Phases → subtasks**. Items are ticked off as they ship. At session end, completed items move from this file to **CHANGELOG.md** (the user-facing record) — only the most recent handoff note stays here as a starting point for the next session. **ROADMAP.md** is the forward view. Agent todo trackers (`TodoWrite`) mirror this file for the active session — they're never the source of truth on their own. All three docs (TASKS, CHANGELOG, ROADMAP) must be in sync at the start and end of every session.
 
 ---
 
@@ -51,7 +51,7 @@ zero npm advisories and clean history/current-tree secret scans.
 
 **3.1.0 is released** (2026-10-10): GitHub release `v3.1.0` with its three assets, and `stadiaref@3.1.0` on npm as `latest`, with provenance; the lime social preview is uploaded. It is the first publish through npm trusted publishing: the first two runs failed with `ENEEDAUTH` until the trusted publisher entry on npmjs.com was corrected, then the re-run published. StadiaRef is Signal Lime `#A3E635` (Brand Handbook 4.12).
 
-**Next, for the maintainer:**
+**Next, for the maintainer:** (now on Argus as STADIA-13 and STADIA-14; the 3.3.0 npm call is STADIA-12)
 - Delete the `NPM_TOKEN` repository secret and revoke that token on npmjs.com (trusted publishing now works).
 - Upload `assets/wordpress-org/` to the directory's SVN `assets/` when the plugin is listed.
 

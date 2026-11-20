@@ -67,13 +67,13 @@ test/
 
 ### Start
 1. `git status`: the tree should be clean.
-2. Read this file, then **TASKS.md** (open work), **ROADMAP.md** (what's next) and **CHANGELOG.md** (what shipped).
+2. Read your card on Argus (lane `stadiaref`, refs `STADIA-nn`): Argus is the tracker for open work, owners, dates and models. Then read this file, **TASKS.md** (build notes and handoffs), **ROADMAP.md** (what's next) and **CHANGELOG.md** (what shipped).
 3. `git log --oneline -5`
 
 TASKS.md, ROADMAP.md and CHANGELOG.md must agree at the start and end of every session.
 
 ### During
-- TASKS.md is the record of open work. Add anything new there before doing it, and tick items as they finish.
+- Argus is the record of open work. New work gets a card there first; TASKS.md keeps the build detail for it. If the two disagree, Argus wins: fix TASKS.md.
 
 ### End
 1. TASKS.md: what's done is ticked; what's open is carried forward.
